@@ -1,4 +1,5 @@
 import 'package:deepfacelab_client/screens/dashboard/dashboard_screen.dart';
+import 'package:deepfacelab_client/screens/loading/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -28,6 +29,7 @@ class MainView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     var views = useState<List<Widget>>([
+      LoadingScreen(),
       DashboardScreen(),
       SettingsScreen(),
     ]);
@@ -42,6 +44,10 @@ class MainView extends HookWidget {
           SideNavigationBar(
             selectedIndex: selectedIndex.value,
             items: const [
+              SideNavigationBarItem(
+                icon: Icons.dashboard,
+                label: 'Loading',
+              ),
               SideNavigationBarItem(
                 icon: Icons.dashboard,
                 label: 'Dashboard',
