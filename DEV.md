@@ -1,0 +1,1 @@
+project init with: flutter create deepfacelab_client --platforms=linux,windows
