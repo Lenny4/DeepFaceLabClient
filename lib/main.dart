@@ -1,3 +1,5 @@
+import 'package:deepfacelab_client/screens/dashboard/dashboard_screen.dart';
+import 'package:deepfacelab_client/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:side_navigation/side_navigation.dart';
 
@@ -29,15 +31,8 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   /// Views to display
   List<Widget> views = const [
-    Center(
-      child: Text('Dashboard'),
-    ),
-    Center(
-      child: Text('Account'),
-    ),
-    Center(
-      child: Text('Settings'),
-    ),
+    DashboardScreen(),
+    SettingsScreen(),
   ];
 
   /// The currently selected index of the bar
@@ -46,11 +41,6 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /// You can use an AppBar if you want to
-      //appBar: AppBar(
-      //  title: const Text('App'),
-      //),
-
       // The row is needed to display the current view
       body: Row(
         children: [
@@ -63,10 +53,6 @@ class _MainViewState extends State<MainView> {
                 label: 'Dashboard',
               ),
               SideNavigationBarItem(
-                icon: Icons.person,
-                label: 'Account',
-              ),
-              SideNavigationBarItem(
                 icon: Icons.settings,
                 label: 'Settings',
               ),
@@ -77,7 +63,6 @@ class _MainViewState extends State<MainView> {
               });
             },
           ),
-
           /// Make it take the rest of the available width
           Expanded(
             child: views.elementAt(selectedIndex),
