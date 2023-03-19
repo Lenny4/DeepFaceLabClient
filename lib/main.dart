@@ -2,6 +2,7 @@ import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/screens/dashboard/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings/settings_screen.dart';
+import 'package:deepfacelab_client/viewModel/init_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -9,8 +10,8 @@ import 'package:redux/redux.dart' as redux;
 import 'package:side_navigation/side_navigation.dart';
 
 void main() {
-  final subscription = store.onChange.listen((AppState appState) {
-    print(appState.init);
+  store.onChange.listen((AppState appState) {
+    print("store changed");
   });
 
   runApp(MyApp(
@@ -26,6 +27,22 @@ class MyApp extends HookWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    return StoreProvider<AppState>(
+      store: store,
+      child: MaterialApp(
+          theme: ThemeData.dark(),
+          themeMode: ThemeMode.dark,
+          home: const Route()),
+    );
+  }
+}
+
+class Route extends HookWidget {
+  const Route({Key? key}) : super(key: key);
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
     var views = useState<List<Widget>>([
       const DashboardScreen(),
       const SettingsScreen(),
@@ -33,13 +50,10 @@ class MyApp extends HookWidget {
 
     var selectedIndex = useState<int>(0);
 
-    return StoreProvider<AppState>(
-      store: store,
-      child: MaterialApp(
-          theme: ThemeData.dark(),
-          themeMode: ThemeMode.dark,
-          home: Scaffold(
-            body: store.state.init
+    return StoreConnector<AppState, InitViewModel>(
+        builder: (BuildContext context, InitViewModel vm) {
+          return Scaffold(
+            body: vm.init
                 ? Row(
                     children: [
                       SideNavigationBar(
@@ -66,7 +80,8 @@ class MyApp extends HookWidget {
                     ],
                   )
                 : const LoadingScreen(),
-          )),
-    );
+          );
+        },
+        converter: (store) => InitViewModel.fromStore(store));
   }
 }

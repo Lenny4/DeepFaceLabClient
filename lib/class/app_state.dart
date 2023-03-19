@@ -11,24 +11,14 @@ class AppState {
     return const AppState(init: false);
   }
 
-  AppState copyWith({
-    bool? init,
-  }) {
-    return AppState(init: init ?? this.init);
+  AppState copyWith(newState) {
+    return AppState(init: newState['init'] ?? init);
   }
-}
-
-class InitAppStateAction {
-  final bool payload;
-
-  const InitAppStateAction({required this.payload});
 }
 
 AppState appStateReducer(AppState state, action) {
-  if (action is InitAppStateAction) {
-    return state.copyWith(init: action.payload);
-  }
-  return state;
+  // if (action is InitAppStateAction) {}
+  return state.copyWith(action);
 }
 
 final store = redux.Store<AppState>(

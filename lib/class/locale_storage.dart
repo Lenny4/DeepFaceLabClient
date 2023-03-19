@@ -14,7 +14,7 @@ class LocaleStorage {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/deepfacelab_client_data.json');
+    return File('$path/.deepfacelab_client_data.json');
   }
 
   void createFile(File file) {
