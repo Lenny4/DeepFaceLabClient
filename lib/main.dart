@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart' as redux;
-import 'package:side_navigation/side_navigation.dart';
 
 void main() {
   store.onChange.listen((AppState appState) {
@@ -52,35 +51,40 @@ class Route extends HookWidget {
 
     return StoreConnector<AppState, InitViewModel>(
         builder: (BuildContext context, InitViewModel vm) {
-          return Scaffold(
-            body: vm.init
-                ? Row(
-                    children: [
-                      SideNavigationBar(
+          return vm.init
+              ? Scaffold(
+                  body: Row(
+                    children: <Widget>[
+                      // https://api.flutter.dev/flutter/material/NavigationRail-class.html
+                      NavigationRail(
                         selectedIndex: selectedIndex.value,
-                        items: const [
-                          SideNavigationBarItem(
-                            icon: Icons.dashboard,
-                            label: 'Dashboard',
-                          ),
-                          SideNavigationBarItem(
-                            icon: Icons.settings,
-                            label: 'Settings',
-                          ),
-                        ],
-                        onTap: (index) {
+                        groupAlignment: -1.0,
+                        onDestinationSelected: (int index) {
                           selectedIndex.value = index;
                         },
+                        labelType: NavigationRailLabelType.all,
+                        destinations: const <NavigationRailDestination>[
+                          NavigationRailDestination(
+                            icon: Icon(Icons.dashboard),
+                            selectedIcon: Icon(Icons.dashboard),
+                            label: Text('Dashboard'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.settings),
+                            selectedIcon: Icon(Icons.settings),
+                            label: Text('Settings'),
+                          ),
+                        ],
                       ),
-
-                      /// Make it take the rest of the available width
+                      const VerticalDivider(thickness: 1, width: 1),
+                      // This is the main content.
                       Expanded(
                         child: views.value.elementAt(selectedIndex.value),
                       )
                     ],
-                  )
-                : const LoadingScreen(),
-          );
+                  ),
+                )
+              : const Scaffold(body: LoadingScreen());
         },
         converter: (store) => InitViewModel.fromStore(store));
   }
