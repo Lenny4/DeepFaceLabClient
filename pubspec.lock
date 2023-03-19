@@ -94,6 +94,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
+  flutter_redux:
+    dependency: "direct main"
+    description:
+      name: flutter_redux
+      sha256: "3b20be9e08d0038e1452fbfa1fdb1ea0a7c3738c997734530b3c6d0bb5fcdbdc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.10.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
