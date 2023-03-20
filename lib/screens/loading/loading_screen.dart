@@ -20,8 +20,8 @@ class LoadingScreen extends HookWidget {
       initApp();
     }, []);
 
-    return Center(
-      child: Text('LoadingScreen'),
+    return const Center(
+      child: CircularProgressIndicator(),
     );
   }
 }
