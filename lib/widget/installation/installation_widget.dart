@@ -83,6 +83,40 @@ $gitInstallation
                             )
                           ],
                         ),
+                        ElevatedButton(
+                            onPressed: () async {
+                              bool newValue =
+                                  (await Process.run('which', ['git']))
+                                          .stdout !=
+                                      '';
+                              if (!newValue) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                    content: const Text(
+                                      '`git` was not found by running command `which git`',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    content: const Text(
+                                      '`git` found',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              }
+                              hasGit.value = newValue;
+                            },
+                            child: const Text("Click here when it's done")),
                         const Divider(),
                       ],
                     ),
@@ -123,6 +157,40 @@ $ffmpegInstallation
                             )
                           ],
                         ),
+                        ElevatedButton(
+                            onPressed: () async {
+                              bool newValue =
+                                  (await Process.run('which', ['ffmpeg']))
+                                          .stdout !=
+                                      '';
+                              if (!newValue) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                    content: const Text(
+                                      '`ffmpeg` was not found by running command `which ffmpeg`',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    content: const Text(
+                                      '`ffmpeg` found',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              }
+                              hasFfmpeg.value = newValue;
+                            },
+                            child: const Text("Click here when it's done")),
                         const Divider(),
                       ],
                     ),
@@ -232,8 +300,10 @@ PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/u
                                 style: const TextStyle(color: Colors.blue),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    launchUrl(Uri.parse(
-                                        'https://github.com/Lenny4/DeepFaceLabClient/issues'), mode: LaunchMode.platformDefault);
+                                    launchUrl(
+                                        Uri.parse(
+                                            'https://github.com/Lenny4/DeepFaceLabClient/issues'),
+                                        mode: LaunchMode.platformDefault);
                                   },
                               ),
                             ],
