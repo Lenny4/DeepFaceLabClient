@@ -7,10 +7,15 @@ class DashboardScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           InstallationWidget(),
-        ]);
+        ]),
+      ),
+    );
   }
 }

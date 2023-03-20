@@ -6,8 +6,15 @@ class SettingsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Settings'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Settings')
+        ]),
+      ),
     );
   }
 }

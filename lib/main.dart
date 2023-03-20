@@ -52,37 +52,33 @@ class Route extends HookWidget {
     return StoreConnector<AppState, InitViewModel>(
         builder: (BuildContext context, InitViewModel vm) {
           return vm.init
-              ? Scaffold(
-                  body: Row(
-                    children: <Widget>[
-                      // https://api.flutter.dev/flutter/material/NavigationRail-class.html
-                      NavigationRail(
-                        selectedIndex: selectedIndex.value,
-                        groupAlignment: -1.0,
-                        onDestinationSelected: (int index) {
-                          selectedIndex.value = index;
-                        },
-                        labelType: NavigationRailLabelType.all,
-                        destinations: const <NavigationRailDestination>[
-                          NavigationRailDestination(
-                            icon: Icon(Icons.dashboard),
-                            selectedIcon: Icon(Icons.dashboard),
-                            label: Text('Dashboard'),
-                          ),
-                          NavigationRailDestination(
-                            icon: Icon(Icons.settings),
-                            selectedIcon: Icon(Icons.settings),
-                            label: Text('Settings'),
-                          ),
-                        ],
-                      ),
-                      const VerticalDivider(thickness: 1, width: 1),
-                      // This is the main content.
-                      Expanded(
-                        child: views.value.elementAt(selectedIndex.value),
-                      )
-                    ],
-                  ),
+              ? Row(
+                  children: <Widget>[
+                    // https://api.flutter.dev/flutter/material/NavigationRail-class.html
+                    NavigationRail(
+                      selectedIndex: selectedIndex.value,
+                      groupAlignment: -1.0,
+                      onDestinationSelected: (int index) {
+                        selectedIndex.value = index;
+                      },
+                      labelType: NavigationRailLabelType.all,
+                      destinations: const <NavigationRailDestination>[
+                        NavigationRailDestination(
+                          icon: Icon(Icons.dashboard),
+                          selectedIcon: Icon(Icons.dashboard),
+                          label: Text('Dashboard'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.settings),
+                          selectedIcon: Icon(Icons.settings),
+                          label: Text('Settings'),
+                        ),
+                      ],
+                    ),
+                    const VerticalDivider(thickness: 1, width: 1),
+                    // This is the main content.
+                    Expanded(child: views.value.elementAt(selectedIndex.value)),
+                  ],
                 )
               : const Scaffold(body: LoadingScreen());
         },
