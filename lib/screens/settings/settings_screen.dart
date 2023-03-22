@@ -12,7 +12,7 @@ class SettingsScreen extends HookWidget {
       ),
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Settings')
+          Container(margin: const EdgeInsets.all(10.0), child: Text('Settings'))
         ]),
       ),
     );

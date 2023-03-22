@@ -21,23 +21,26 @@ rm miniconda.sh""";
 
   @override
   Widget build(BuildContext context) {
-    var hasConda = useState<bool?>(null);
-    var hasGit = useState<bool?>(null);
-    var hasFfmpeg = useState<bool?>(null);
+    var requirements = useState<Map<String, bool>?>(null);
 
-    void hasRequirements() async {
-      hasConda.value = (await Process.run('which', ['conda'])).stdout != '';
-      hasGit.value = (await Process.run('which', ['git'])).stdout != '';
-      hasFfmpeg.value = (await Process.run('which', ['ffmpeg'])).stdout != '';
+    void updateRequirements() async {
+      requirements.value = {
+        'hasBash': (await Process.run('which', ['bash'])).stdout != '',
+        'hasGit': (await Process.run('which', ['git'])).stdout != '',
+        'hasFfmpeg': (await Process.run('which', ['ffmpeg'])).stdout != '',
+        'hasConda': (await Process.run('which', ['conda'])).stdout != '',
+      };
     }
 
     useEffect(() {
-      hasRequirements();
+      updateRequirements();
     }, []);
 
-    return (hasConda.value == false ||
-            hasGit.value == false ||
-            hasFfmpeg.value == false)
+    return (requirements.value != null &&
+            requirements.value?.entries
+                    .map<bool>((e) => e.value)
+                    .reduce((value, element) => value && element) !=
+                true)
         ? Container(
             margin: const EdgeInsets.all(10.0),
             child: Column(
@@ -47,7 +50,7 @@ rm miniconda.sh""";
                   "Installation",
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                if (hasGit.value == false)
+                if (requirements.value!['hasGit'] == false)
                   Container(
                     margin: const EdgeInsets.only(top: 10.0),
                     child: Column(
@@ -114,14 +117,14 @@ $gitInstallation
                                   ),
                                 );
                               }
-                              hasGit.value = newValue;
+                              requirements.value!['hasGit'] = newValue;
                             },
                             child: const Text("Click here when it's done")),
                         const Divider(),
                       ],
                     ),
                   ),
-                if (hasFfmpeg.value == false)
+                if (requirements.value!['hasFfmpeg'] == false)
                   Container(
                     margin: const EdgeInsets.only(top: 10.0),
                     child: Column(
@@ -188,14 +191,14 @@ $ffmpegInstallation
                                   ),
                                 );
                               }
-                              hasFfmpeg.value = newValue;
+                              requirements.value!['hasFfmpeg'] = newValue;
                             },
                             child: const Text("Click here when it's done")),
                         const Divider(),
                       ],
                     ),
                   ),
-                if (hasConda.value == false)
+                if (requirements.value!['hasConda'] == false)
                   Container(
                     margin: const EdgeInsets.only(top: 10.0),
                     child: Column(
