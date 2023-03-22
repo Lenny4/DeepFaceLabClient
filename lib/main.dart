@@ -1,7 +1,7 @@
 import 'package:deepfacelab_client/class/app_state.dart';
-import 'package:deepfacelab_client/screens/dashboard/dashboard_screen.dart';
-import 'package:deepfacelab_client/screens/loading/loading_screen.dart';
-import 'package:deepfacelab_client/screens/settings/settings_screen.dart';
+import 'package:deepfacelab_client/screens/dashboard_screen.dart';
+import 'package:deepfacelab_client/screens/loading_screen.dart';
+import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/viewModel/init_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';

@@ -8,11 +8,13 @@ class SettingsScreen extends HookWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const SelectableText('Settings'),
       ),
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(margin: const EdgeInsets.all(10.0), child: Text('Settings'))
+          Container(
+              margin: const EdgeInsets.all(10.0),
+              child: const SelectableText('Settings'))
         ]),
       ),
     );
