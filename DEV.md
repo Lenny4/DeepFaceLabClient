@@ -1,5 +1,9 @@
 project init with: flutter create deepfacelab_client --platforms=linux,windows
 
+How can I extract a zip file archive in dart asynchronously?:
+- https://stackoverflow.com/questions/52520744/how-can-i-extract-a-zip-file-archive-in-dart-asynchronously
+- https://api.flutter.dev/flutter/foundation/compute-constant.html
+
 https://azamsharp.medium.com/understanding-global-state-in-flutter-using-redux-2017b7646574
 
 use: https://pub.dev/packages/file_picker#pick-a-directory
