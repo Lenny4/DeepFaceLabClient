@@ -25,12 +25,55 @@ class RequirementWidgetLinux extends HookWidget {
     var whoami = useState<String?>(null);
 
     updateRequirements() async {
-      requirements.value = {
-        'hasBash': (await Process.run('which', ['bash'])).stdout == '',
-        'hasGit': (await Process.run('which', ['git'])).stdout == '',
-        'hasFfmpeg': (await Process.run('which', ['ffmpeg'])).stdout == '',
-        'hasConda': (await Process.run('which', ['conda'])).stdout == '',
+      Map<String, bool> newRequirements = {
+        'hasWget': (await Process.run('which', ['wget'])).stdout != '',
+        'hasBash': (await Process.run('which', ['bash'])).stdout != '',
+        'hasGit': (await Process.run('which', ['git'])).stdout != '',
+        'hasFfmpeg': (await Process.run('which', ['ffmpeg'])).stdout != '',
+        'hasConda': (await Process.run('which', ['conda'])).stdout != '',
       };
+      requirements.value = newRequirements;
+      List<StartProcess> newStartProcesses = [];
+      if (newRequirements['hasWget'] == false ||
+          newRequirements['hasBash'] == false ||
+          newRequirements['hasGit'] == false ||
+          newRequirements['hasFfmpeg'] == false) {
+        newStartProcesses.add(StartProcess(executable: 'pkexec', arguments: [
+          'bash',
+          '-c',
+          """
+apt install \\
+${newRequirements['hasBash'] == false ? "bash \\" : ""}
+${newRequirements['hasWget'] == false ? "wget \\" : ""}
+${newRequirements['hasGit'] == false ? "git \\" : ""}
+${newRequirements['hasFfmpeg'] == false ? "ffmpeg \\" : ""}
+-y
+          """
+        ]));
+      }
+      if (newRequirements['hasConda'] == false) {
+        newStartProcesses.add(StartProcess(executable: 'bash', arguments: [
+          '-c',
+          """\\
+rm -f ${condaInstallFolder.value}/miniconda.sh && \\
+rm -rf ${condaInstallFolder.value}/miniconda && \\
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${condaInstallFolder.value}/miniconda.sh && \\
+bash ${condaInstallFolder.value}/miniconda.sh -b -p ${condaInstallFolder.value}/miniconda && \\
+rm ${condaInstallFolder.value}/miniconda.sh
+"""
+        ]));
+        String binFolderConda = "${condaInstallFolder.value}/miniconda/bin";
+        newStartProcesses.add(StartProcess(executable: 'pkexec', arguments: [
+          'bash',
+          '-c',
+          """\n
+if ! grep -q '$binFolderConda' /etc/environment; then
+  sed -i '\$s/.\$/:${binFolderConda.replaceAll('/', '\\/')}"/' /etc/environment
+fi
+          """
+        ]));
+      }
+      startProcesses.value = newStartProcesses;
       whoami.value = (await Process.run('whoami', [])).stdout;
       requirementOk.value = requirements.value?.entries
           .map<bool>((e) => e.value)
@@ -56,14 +99,21 @@ class RequirementWidgetLinux extends HookWidget {
       });
     }
 
-    onInstallationDone(int code) {
-      // todo toast message && if !hasConda show message need to restart you computer do you want to do it now ?
-      print(code);
+    onInstallationDone() {
+      if(requirements.value!['hasConda'] == false) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          showCloseIcon: true,
+          backgroundColor: Theme.of(context).colorScheme.background,
+          content: const SelectableText('Please restart your computer to load conda in your PATH', style: TextStyle(color: Colors.white),),
+          duration: const Duration(days: 1),
+        ));
+      }
+      onUpdateRequirements();
     }
 
     useEffect(() {
       updateRequirements();
-    }, []);
+    }, [condaInstallFolder.value]);
 
     return (requirements.value != null)
         ? Container(
@@ -74,6 +124,8 @@ class RequirementWidgetLinux extends HookWidget {
                 MarkdownBody(
                   selectable: true,
                   data: """# Requirements
+
+${requirements.value!['hasWget'] == true ? "✅ `wget`" : "❌ `wget` was not found by running command `which wget`, just run `sudo apt install wget -y` to install it"}
 
 ${requirements.value!['hasBash'] == true ? "✅ `bash`" : "❌ `bash` was not found by running command `which bash`, just run `sudo apt install bash -y` to install it"}
 
