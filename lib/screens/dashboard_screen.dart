@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/widget/installation/requirement_widget_linux.dart';
+import 'package:deepfacelab_client/widget/installation/installation_widget.dart';
+import 'package:deepfacelab_client/widget/installation/requirement_linux_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -15,7 +16,8 @@ class DashboardScreen extends HookWidget {
       ),
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (Platform.isLinux) RequirementWidgetLinux(),
+          if (Platform.isLinux) RequirementLinuxWidget(),
+          const InstallationWidget(),
         ]),
       ),
     );

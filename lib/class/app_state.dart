@@ -4,15 +4,19 @@ import 'package:redux/redux.dart' as redux;
 @immutable
 class AppState {
   final bool init;
+  final bool hasRequirements;
 
-  const AppState({required this.init});
+  const AppState({required this.init, required this.hasRequirements});
 
   factory AppState.initial() {
-    return const AppState(init: false);
+    return const AppState(init: false, hasRequirements: false);
   }
 
   AppState copyWith(newState) {
-    return AppState(init: newState['init'] ?? init);
+    return AppState(
+      init: newState['init'] ?? init,
+      hasRequirements: newState['hasRequirements'] ?? hasRequirements,
+    );
   }
 }
 
