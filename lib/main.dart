@@ -3,6 +3,7 @@ import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/viewModel/init_view_model.dart';
+import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -26,12 +27,15 @@ class MyApp extends HookWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return StoreProvider<AppState>(
-      store: store,
-      child: MaterialApp(
-          theme: ThemeData.dark(),
-          themeMode: ThemeMode.dark,
-          home: const Route()),
+    return FilesystemPickerDefaultOptions(
+      fileTileSelectMode: FileTileSelectMode.wholeTile,
+      child: StoreProvider<AppState>(
+        store: store,
+        child: MaterialApp(
+            theme: ThemeData.dark(),
+            themeMode: ThemeMode.dark,
+            home: const Route()),
+      ),
     );
   }
 }

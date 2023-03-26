@@ -41,6 +41,7 @@ dependencies:
   flutter_redux: ^0.10.0
   flutter_markdown: ^0.6.14
   url_launcher: ^6.1.10
+  filesystem_picker: ^3.1.0
 
 dev_dependencies:
   flutter_test:

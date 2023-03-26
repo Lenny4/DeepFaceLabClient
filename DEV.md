@@ -27,3 +27,5 @@ print(output);
 process.exitCode.then((value) {
 print("$value okok");
 });
+
+String homeDirectory = (Platform.environment)['HOME'] ?? "/";

@@ -6,8 +6,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OpenIssueWidget extends HookWidget {
-  String homeDirectory = (Platform.environment)['HOME'] ?? "";
-
   OpenIssueWidget({Key? key}) : super(key: key);
 
   @override
