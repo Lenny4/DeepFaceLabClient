@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/start_process.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -10,31 +11,36 @@ class StartProcessWidget extends HookWidget {
   final String label;
   final List<StartProcess> startProcesses;
   final Function? callback;
+  final ScrollController scrollController = ScrollController();
 
-  const StartProcessWidget(
+  StartProcessWidget(
       {Key? key,
-      required this.label,
-      required this.startProcesses,
-      this.callback})
+        required this.label,
+        required this.startProcesses,
+        this.callback})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var loading = useState<bool>(false);
     var nbPkexec = useState<int>(0);
+    var ouputs = useState<List<String>>([]);
 
     // https://docs.flutter.dev/cookbook/lists/long-lists
     // https://stackoverflow.com/questions/59927528/how-to-refresh-listview-builder-flutter
 
     launchProcesses(int index) async {
+      if (index == 0) {
+        ouputs.value = [];
+      }
       loading.value = true;
       var process = await Process.start(
           startProcesses[index].executable, startProcesses[index].arguments);
       process.stdout.transform(utf8.decoder).forEach((String output) {
-        print(output);
+        ouputs.value = [...ouputs.value, output];
       });
       process.stderr.transform(utf8.decoder).forEach((String output) {
-        print(output);
+        ouputs.value = [...ouputs.value, output];
       });
       process.exitCode.then((value) {
         if (index == startProcesses.length - 1) {
@@ -53,9 +59,20 @@ class StartProcessWidget extends HookWidget {
           .length;
     }
 
+    scrollDown() {
+      if (scrollController.hasClients) {
+        // https://stackoverflow.com/questions/75850193/make-scrollcontroller-scroll-bottom-if-already-at-bottom
+        scrollController.jumpTo(scrollController.position.maxScrollExtent);
+      }
+    }
+
     useEffect(() {
       updateNbPkexec();
     }, [startProcesses]);
+
+    useEffect(() {
+      scrollDown();
+    }, [ouputs.value]);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,13 +84,13 @@ class StartProcessWidget extends HookWidget {
               ElevatedButton.icon(
                 onPressed: !loading.value
                     ? () {
-                        launchProcesses(0);
-                      }
+                  launchProcesses(0);
+                }
                     : null,
                 icon: loading.value
                     ? const CircularProgressIndicator(
-                        color: Colors.white,
-                      )
+                  color: Colors.white,
+                )
                     : const SizedBox.shrink(),
                 label: const Text('Install for me'),
               ),
@@ -87,18 +104,53 @@ class StartProcessWidget extends HookWidget {
         ),
         ExpansionTile(
           title:
-              const Text('If you want to preview what will be run, click here'),
+          const Text('If you want to preview what will be run, click here'),
+          tilePadding: const EdgeInsets.all(0.0),
           children: <Widget>[
             SizedBox(
               width: MediaQuery.of(context).size.width,
-              child: MarkdownBody(selectable: true, data: """
+              child: Row(
+                children: [
+                  Expanded(
+                    child: MarkdownBody(selectable: true, data: """
 ```shell
 ${startProcesses.map((startProcess) => "\$ $startProcess").join('\n\n')}
 ```
 """),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy),
+                    splashRadius: 20,
+                    tooltip: 'Copy to clipboard',
+                    onPressed: () async {
+                      await Clipboard.setData(ClipboardData(
+                          text: startProcesses
+                              .map((startProcess) => "$startProcess;")
+                              .join('\n\n')));
+                    },
+                  )
+                ],
+              ),
             )
           ],
-        )
+        ),
+        if (ouputs.value.isNotEmpty)
+          SizedBox(
+            width: MediaQuery.of(context).size.width - 170,
+            child: Container(
+              height: 500,
+              color: Colors.white10,
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: ouputs.value.length,
+                shrinkWrap: true,
+                prototypeItem: SelectableText(ouputs.value.first),
+                itemBuilder: (context, index) {
+                  return SelectableText(ouputs.value[index]);
+                },
+              ),
+            ),
+          )
       ],
     );
   }

@@ -52,23 +52,24 @@ ${newRequirements['hasFfmpeg'] == false ? "ffmpeg \\" : ""}
         ]));
       }
       if (newRequirements['hasConda'] == false) {
+        String miniCondaFolder = "${condaInstallFolder.value}/miniconda";
         newStartProcesses.add(StartProcess(executable: 'bash', arguments: [
           '-c',
           """\\
-rm -f ${condaInstallFolder.value}/miniconda.sh && \\
-rm -rf ${condaInstallFolder.value}/miniconda && \\
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${condaInstallFolder.value}/miniconda.sh && \\
-bash ${condaInstallFolder.value}/miniconda.sh -b -p ${condaInstallFolder.value}/miniconda && \\
-rm ${condaInstallFolder.value}/miniconda.sh
+rm -f $miniCondaFolder.sh && \\
+rm -rf $miniCondaFolder && \\
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $miniCondaFolder.sh && \\
+bash $miniCondaFolder.sh -b -p $miniCondaFolder && \\
+rm $miniCondaFolder.sh
 """
         ]));
-        String binFolderConda = "${condaInstallFolder.value}/miniconda/bin";
+        String binMiniConda = "$miniCondaFolder/bin";
         newStartProcesses.add(StartProcess(executable: 'pkexec', arguments: [
           'bash',
           '-c',
           """\n
-if ! grep -q '$binFolderConda' /etc/environment; then
-  sed -i '\$s/.\$/:${binFolderConda.replaceAll('/', '\\/')}"/' /etc/environment
+if ! grep -q '$binMiniConda' /etc/environment; then
+  sed -i '\$s/.\$/:${binMiniConda.replaceAll('/', '\\/')}"/' /etc/environment
 fi
           """
         ]));
