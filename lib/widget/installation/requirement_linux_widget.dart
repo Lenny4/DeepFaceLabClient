@@ -105,10 +105,10 @@ fi
       });
     }
 
-    onInstallationDone() {
+    onInstallationDone(int code) {
       if (requirements.value!['hasConda'] == false) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          showCloseIcon: true,
+          showCloseIcon: false,
           backgroundColor: Theme.of(context).colorScheme.background,
           content: const SelectableText(
             'Please restart your computer to load conda in your PATH',

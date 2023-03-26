@@ -2,6 +2,7 @@ import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
+import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/viewModel/init_view_model.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,7 @@ class Route extends HookWidget {
   Widget build(BuildContext context) {
     var views = useState<List<Widget>>([
       const DashboardScreen(),
+      const WorkspaceScreen(),
       const SettingsScreen(),
     ]);
 
@@ -71,6 +73,11 @@ class Route extends HookWidget {
                           icon: Icon(Icons.dashboard),
                           selectedIcon: Icon(Icons.dashboard),
                           label: Text('Dashboard'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.add),
+                          selectedIcon: Icon(Icons.add),
+                          label: Text('Create a \nworkspace'),
                         ),
                         NavigationRailDestination(
                           icon: Icon(Icons.settings),

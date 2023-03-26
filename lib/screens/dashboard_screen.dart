@@ -17,7 +17,7 @@ class DashboardScreen extends HookWidget {
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (Platform.isLinux) RequirementLinuxWidget(),
-          const InstallationWidget(),
+          InstallationWidget(),
         ]),
       ),
     );

@@ -15,10 +15,39 @@ class OpenIssueWidget extends HookWidget {
         children: [
           const TextSpan(
             text:
-                'If you encounter a problem please ',
+            'If you encounter a problem please ',
           ),
           TextSpan(
             text: 'open an issue',
+            style: const TextStyle(color: Colors.blue),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                launchUrl(
+                    Uri.parse(
+                        'https://github.com/Lenny4/DeepFaceLabClient/issues'),
+                    mode: LaunchMode.platformDefault);
+              },
+          ),
+          const TextSpan(
+            text:
+            '.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class OpenIssue2Widget extends HookWidget {
+  OpenIssue2Widget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: 'Open an issue',
             style: const TextStyle(color: Colors.blue),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
