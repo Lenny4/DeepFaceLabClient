@@ -9,3 +9,14 @@ class StartProcess {
     return "$executable ${arguments.join(' ')}";
   }
 }
+
+class StartProcessConda {
+  String command;
+
+  StartProcessConda({required this.command});
+
+  @override
+  String toString() {
+    return command;
+  }
+}

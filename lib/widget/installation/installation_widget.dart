@@ -24,16 +24,13 @@ class InstallationWidget extends HookWidget {
     var loading = useState<bool>(false);
     var installationPath = useState<String?>(null);
     var startProcesses = useState<List<StartProcess>>([]);
-    var startProcesses2 = useState<List<StartProcess>>([]);
+    var startProcessesConda = useState<List<StartProcessConda>>([]);
 
     afterFolderSelected(String path) {
-      startProcesses2.value = [
-        StartProcess(executable: 'bash', arguments: [
-          '-c',
-          """
+      startProcessesConda.value = [
+        StartProcessConda(command: """
 pip install -r $path/requirements-cuda.txt
-            """
-        ])
+            """)
       ];
     }
 
@@ -46,7 +43,7 @@ pip install -r $path/requirements-cuda.txt
         fsType: FilesystemType.folder,
         pickText: pickText,
       ).then((value) {
-        if(value == null) {
+        if (value == null) {
           return;
         }
         if (install) {
@@ -62,7 +59,7 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
             """
             ])
           ];
-          startProcesses2.value = [];
+          startProcessesConda.value = [];
         } else {
           installationPath.value = value;
           afterFolderSelected(value);
@@ -75,7 +72,7 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
     }
 
     onInstallationDone(int code) {
-      if(code != 0) {
+      if (code != 0) {
         loading.value = false;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           showCloseIcon: true,
@@ -211,12 +208,12 @@ Or click on install for me and let DeepFaceLabClient try to download and install
                           startProcesses: startProcesses.value,
                           callback: onDownloadDone,
                         ),
-                      if (startProcesses2.value.isNotEmpty)
+                      if (startProcessesConda.value.isNotEmpty)
                         StartProcessWidget(
                           autoStart: true,
                           height: 200,
                           closeIcon: true,
-                          startProcesses: startProcesses2.value,
+                          startProcessesConda: startProcessesConda.value,
                           callback: onInstallationDone,
                         ),
                     ],

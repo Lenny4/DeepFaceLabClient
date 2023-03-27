@@ -12,7 +12,8 @@ class StartProcessWidget extends HookWidget {
   final bool? autoStart;
   final bool? closeIcon;
   final double? height;
-  final List<StartProcess> startProcesses;
+  final List<StartProcess>? startProcesses;
+  final List<StartProcessConda>? startProcessesConda;
   final Function? callback;
   final ScrollController scrollController = ScrollController();
 
@@ -22,7 +23,8 @@ class StartProcessWidget extends HookWidget {
       this.autoStart,
       this.closeIcon,
       this.height,
-      required this.startProcesses,
+      this.startProcesses,
+      this.startProcessesConda,
       this.callback})
       : super(key: key);
 
@@ -32,17 +34,40 @@ class StartProcessWidget extends HookWidget {
     var nbPkexec = useState<int>(0);
     var ouputs = useState<List<String>>([]);
 
-    // https://docs.flutter.dev/cookbook/lists/long-lists
-    // https://stackoverflow.com/questions/59927528/how-to-refresh-listview-builder-flutter
+    Future<String> getCondaPrefix() async {
+      String condaInit =
+          (await Process.run('conda', ['init', '--verbose', '-d'])).stdout;
+      String? match = RegExp(r'initialize[\s\S]*?initialize', multiLine: true)
+          .firstMatch(condaInit)
+          ?.group(0);
+      Iterable<String>? results = match?.split('\n');
+      results =
+          results?.where((e) => e.startsWith('+')).map((e) => e.substring(1));
+      return results?.join("\n") ?? "";
+    }
 
     launchProcesses(int index) async {
       if (index == 0) {
         ouputs.value = [];
       }
       loading.value = true;
-      var process = await Process.start(
-          startProcesses[index].executable, startProcesses[index].arguments);
-      ouputs.value = [...ouputs.value, "\$ ${startProcesses[index]}"];
+      Process process;
+      if (startProcesses != null) {
+        process = await Process.start(startProcesses![index].executable,
+            startProcesses![index].arguments);
+      } else {
+        process = await Process.start("bash", [
+          '-c',
+          """
+      ${await getCondaPrefix()} && \
+      ${startProcessesConda![index].command}"""
+        ]);
+      }
+      if (startProcesses != null) {
+        ouputs.value = [...ouputs.value, "\$ ${startProcesses![index]}"];
+      } else {
+        ouputs.value = [...ouputs.value, "\$ ${startProcessesConda![index]}"];
+      }
       process.stdout.transform(utf8.decoder).forEach((String output) {
         ouputs.value = [...ouputs.value, output];
       });
@@ -50,7 +75,9 @@ class StartProcessWidget extends HookWidget {
         ouputs.value = [...ouputs.value, output];
       });
       process.exitCode.then((value) {
-        if (index == startProcesses.length - 1) {
+        if ((startProcesses != null && index == startProcesses!.length - 1) ||
+            (startProcessesConda != null &&
+                index == startProcessesConda!.length - 1)) {
           if (callback != null) {
             callback!(value);
           }
@@ -63,9 +90,11 @@ class StartProcessWidget extends HookWidget {
     }
 
     updateNbPkexec() {
-      nbPkexec.value = startProcesses
-          .where((startProcess) => startProcess.executable == 'pkexec')
-          .length;
+      if (startProcesses != null) {
+        nbPkexec.value = startProcesses!
+            .where((startProcess) => startProcess.executable == 'pkexec')
+            .length;
+      }
     }
 
     scrollDown() {
@@ -128,7 +157,7 @@ class StartProcessWidget extends HookWidget {
                     Expanded(
                       child: MarkdownBody(selectable: true, data: """
 ```shell
-${startProcesses.map((startProcess) => "\$ $startProcess").join('\n\n')}
+${startProcesses!.map((startProcess) => "\$ $startProcess").join('\n\n')}
 ```
 """),
                     ),
@@ -138,7 +167,7 @@ ${startProcesses.map((startProcess) => "\$ $startProcess").join('\n\n')}
                       tooltip: 'Copy to clipboard',
                       onPressed: () async {
                         await Clipboard.setData(ClipboardData(
-                            text: startProcesses
+                            text: startProcesses!
                                 .map((startProcess) => "$startProcess;")
                                 .join('\n\n')));
                       },
@@ -151,20 +180,18 @@ ${startProcesses.map((startProcess) => "\$ $startProcess").join('\n\n')}
         if (ouputs.value.isNotEmpty)
           Row(
             children: [
-              SizedBox(
+              Container(
                 width: MediaQuery.of(context).size.width - 170,
-                child: Container(
-                  height: height ?? 500,
-                  color: Colors.white10,
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: ouputs.value.length,
-                    shrinkWrap: true,
-                    prototypeItem: SelectableText(ouputs.value.first),
-                    itemBuilder: (context, index) {
-                      return SelectableText(ouputs.value[index]);
-                    },
-                  ),
+                height: height ?? 500,
+                color: Colors.white10,
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: ouputs.value.length,
+                  shrinkWrap: true,
+                  prototypeItem: SelectableText(ouputs.value.first),
+                  itemBuilder: (context, index) {
+                    return SelectableText(ouputs.value[index]);
+                  },
                 ),
               ),
               if (closeIcon == true)
