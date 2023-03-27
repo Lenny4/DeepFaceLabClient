@@ -12,9 +12,9 @@ use: https://pub.dev/packages/file_picker#pick-a-directory
 Check latest cudnn and cudatoolkit version for your GPU device.
 https://developer.nvidia.com/rdp/cudnn-archive
 https://developer.nvidia.com/cuda-toolkit-archive
-
 https://www.tensorflow.org/install/source#gpu
 conda create [the name must contain python|cudnn|cudatoolkit version]
+all libs versions: https://repo.anaconda.com/pkgs/main/linux-64/
 
 
 var process = await Process.start('pkexec', ['bash', '-c', "pwd && ls -al"]);
