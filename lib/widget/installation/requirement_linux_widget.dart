@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/app_state.dart';
-import 'package:deepfacelab_client/class/start_process.dart';
+import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/startProcess.dart';
 import 'package:deepfacelab_client/viewModel/has_requirements_view_model.dart';
 import 'package:deepfacelab_client/widget/common/divider_with_text.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';

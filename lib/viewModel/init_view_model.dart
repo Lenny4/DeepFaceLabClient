@@ -1,4 +1,4 @@
-import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/appState.dart';
 import 'package:redux/redux.dart';
 
 class InitViewModel {

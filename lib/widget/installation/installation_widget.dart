@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/app_state.dart';
-import 'package:deepfacelab_client/class/start_process.dart';
+import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/startProcess.dart';
 import 'package:deepfacelab_client/viewModel/deepfacelab_folder_view_model.dart';
 import 'package:deepfacelab_client/viewModel/has_requirements_view_model.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
@@ -86,10 +86,19 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
               OpenIssue2Widget(),
             ],
           ),
-          duration: const Duration(days: 1),
+          duration: const Duration(minutes: 1),
         ));
       } else {
         store.dispatch({'deepFaceLabFolder': installationPath.value});
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          showCloseIcon: true,
+          backgroundColor: Theme.of(context).colorScheme.background,
+          content: const SelectableText(
+            'DeepFaceLabClient has been installed correctly. You can now create your first workspace!',
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: const Duration(minutes: 1),
+        ));
       }
     }
 

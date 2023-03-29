@@ -1,4 +1,4 @@
-import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/appState.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';

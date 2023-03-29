@@ -42,6 +42,7 @@ dependencies:
   flutter_markdown: ^0.6.14
   url_launcher: ^6.1.10
   filesystem_picker: ^3.1.0
+  json_annotation: ^4.8.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  build_runner: ^2.3.3
+  json_serializable: ^6.6.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
