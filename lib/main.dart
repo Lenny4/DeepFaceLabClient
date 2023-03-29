@@ -1,4 +1,5 @@
 import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/localeStorage.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
@@ -12,7 +13,9 @@ import 'package:redux/redux.dart' as redux;
 
 void main() {
   store.onChange.listen((AppState appState) {
-    print("store changed");
+    if (appState.init == true && appState.storage != null) {
+      LocaleStorage().writeStorage(appState.storage!.toJson());
+    }
   });
 
   runApp(MyApp(

@@ -10,7 +10,7 @@ class DeepFaceLabFolderViewModel {
 
   static fromStore(Store<AppState> store) {
     return DeepFaceLabFolderViewModel(
-      deepFaceLabFolder: store.state.deepFaceLabFolder,
+      deepFaceLabFolder: store.state.storage?.deepFaceLabFolder,
     );
   }
 }

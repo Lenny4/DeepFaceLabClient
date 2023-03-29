@@ -1,3 +1,4 @@
+import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:redux/redux.dart' as redux;
 
@@ -5,23 +6,22 @@ import 'package:redux/redux.dart' as redux;
 class AppState {
   final bool init;
   final bool hasRequirements;
-  final String? deepFaceLabFolder;
+  final Storage? storage;
 
   const AppState(
       {required this.init,
       required this.hasRequirements,
-      required this.deepFaceLabFolder});
+      required this.storage});
 
   factory AppState.initial() {
-    return const AppState(
-        init: false, hasRequirements: false, deepFaceLabFolder: null);
+    return const AppState(init: false, hasRequirements: false, storage: null);
   }
 
   AppState copyWith(newState) {
     return AppState(
       init: newState['init'] ?? init,
       hasRequirements: newState['hasRequirements'] ?? hasRequirements,
-      deepFaceLabFolder: newState['deepFaceLabFolder'] ?? deepFaceLabFolder,
+      storage: newState['storage'] ?? storage,
     );
   }
 }

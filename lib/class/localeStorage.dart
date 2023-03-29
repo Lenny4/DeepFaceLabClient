@@ -22,7 +22,7 @@ class LocaleStorage {
     file.writeAsString('{}');
   }
 
-  Future<Map> readStorage() async {
+  Future<Map<String, dynamic>> readStorage() async {
     final file = await _localFile;
 
     if (!file.existsSync()) {

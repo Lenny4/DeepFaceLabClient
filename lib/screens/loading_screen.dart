@@ -1,5 +1,6 @@
 import 'package:deepfacelab_client/class/appState.dart';
 import 'package:deepfacelab_client/class/localeStorage.dart';
+import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -12,8 +13,10 @@ class LoadingScreen extends HookWidget {
     final store = StoreProvider.of<AppState>(context);
 
     void initApp() async {
-      var test = await (LocaleStorage()).readStorage();
-      store.dispatch({'init': true});
+      store.dispatch({
+        'init': true,
+        'storage': Storage.fromJson(await LocaleStorage().readStorage())
+      });
     }
 
     useEffect(() {

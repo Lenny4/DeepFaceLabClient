@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/appState.dart';
 import 'package:deepfacelab_client/class/startProcess.dart';
+import 'package:deepfacelab_client/class/storage.dart';
 import 'package:deepfacelab_client/viewModel/deepfacelab_folder_view_model.dart';
 import 'package:deepfacelab_client/viewModel/has_requirements_view_model.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
@@ -89,7 +90,9 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
           duration: const Duration(minutes: 1),
         ));
       } else {
-        store.dispatch({'deepFaceLabFolder': installationPath.value});
+        Storage? storage = store.state.storage;
+        storage?.deepFaceLabFolder = installationPath.value;
+        store.dispatch({'storage': storage});
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           showCloseIcon: true,
           backgroundColor: Theme.of(context).colorScheme.background,
