@@ -7,9 +7,11 @@ part of 'storage.dart';
 // **************************************************************************
 
 Storage _$StorageFromJson(Map<String, dynamic> json) => Storage(
-      json['deepFaceLabFolder'] as String?,
+      deepFaceLabFolder: json['deepFaceLabFolder'] as String?,
+      workspaceDefaultPath: json['workspaceDefaultPath'] as String?,
     );
 
 Map<String, dynamic> _$StorageToJson(Storage instance) => <String, dynamic>{
       'deepFaceLabFolder': instance.deepFaceLabFolder,
+      'workspaceDefaultPath': instance.workspaceDefaultPath,
     };

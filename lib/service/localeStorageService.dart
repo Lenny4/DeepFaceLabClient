@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 // https://docs.flutter.dev/cookbook/persistence/reading-writing-files#complete-example
-class LocaleStorage {
+class LocaleStorageService {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 

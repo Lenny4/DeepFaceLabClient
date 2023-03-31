@@ -1,9 +1,9 @@
 import 'package:deepfacelab_client/class/appState.dart';
-import 'package:deepfacelab_client/class/localeStorage.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
+import 'package:deepfacelab_client/service/localeStorageService.dart';
 import 'package:deepfacelab_client/viewModel/can_use_deepfacelab_view_model.dart';
 import 'package:deepfacelab_client/viewModel/init_view_model.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
@@ -16,7 +16,7 @@ import 'package:redux/redux.dart' as redux;
 void main() {
   store.onChange.listen((AppState appState) {
     if (appState.init == true && appState.storage != null) {
-      LocaleStorage().writeStorage(appState.storage!.toJson());
+      LocaleStorageService().writeStorage(appState.storage!.toJson());
     }
   });
 

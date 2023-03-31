@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/condaEnvList.dart';
 import 'package:deepfacelab_client/class/startProcess.dart';
+import 'package:deepfacelab_client/service/processService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -35,50 +35,6 @@ class StartProcessWidget extends HookWidget {
     var nbPkexec = useState<int>(0);
     var ouputs = useState<List<String>>([]);
 
-    Future<String> getCondaPrefix() async {
-      String condaInit =
-          (await Process.run('conda', ['init', '--verbose', '-d'])).stdout;
-      String? match = RegExp(r'initialize[\s\S]*?initialize', multiLine: true)
-          .firstMatch(condaInit)
-          ?.group(0);
-      Iterable<String>? results = match?.split('\n');
-      results = results
-          ?.where((e) => e.startsWith('+'))
-          .map((e) => e.substring(1))
-          .where((e) => e.startsWith('#') == false);
-      String pythonVersion = '3.7';
-      String cudnnVersion = '7.6.5';
-      String cudatoolkitVersion = '10.1.243';
-      String condaEnvName =
-          'deepFaceLabClient_python${pythonVersion}_cudnn${cudnnVersion}_cudatoolkit$cudatoolkitVersion';
-      CondaEnvList condaEnvList = CondaEnvList.fromJson(jsonDecode(
-          (await Process.run('conda', ['env', 'list', '--json'])).stdout));
-      // https://stackoverflow.com/questions/59343470/type-dynamic-dynamic-is-not-a-subtype-of-type-dynamic-bool-of-tes
-      // https://stackoverflow.com/questions/52354195/list-firstwhere-bad-state-no-element
-      if (condaEnvList.envs.firstWhere((env) => env.contains(condaEnvName),
-              orElse: () => "") ==
-          "") {
-        ouputs.value = [
-          ...ouputs.value,
-          'conda create -n $condaEnvName -c main python=$pythonVersion cudnn=$cudnnVersion cudatoolkit=$cudatoolkitVersion'
-        ];
-        (await Process.run('conda', [
-          'create',
-          '-n',
-          condaEnvName,
-          '-c',
-          'main',
-          'python=$pythonVersion',
-          'cudnn=$cudnnVersion',
-          'cudatoolkit=$cudatoolkitVersion'
-        ]));
-      }
-      String result =
-          "${results?.join("\n") ?? ""} && \\ \n conda activate $condaEnvName";
-      ouputs.value = [...ouputs.value, result];
-      return result;
-    }
-
     launchProcesses(int index) async {
       if (index == 0) {
         ouputs.value = [];
@@ -89,7 +45,8 @@ class StartProcessWidget extends HookWidget {
         process = await Process.start(startProcesses![index].executable,
             startProcesses![index].arguments);
       } else {
-        String condaCommand = """${await getCondaPrefix()} && \\
+        String condaCommand =
+            """${await ProcessService().getCondaPrefix(ouputs)} && \\
       ${startProcessesConda![index].command}""";
         process = await Process.start("bash", ['-c', condaCommand]);
       }
