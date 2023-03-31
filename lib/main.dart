@@ -4,7 +4,9 @@ import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
+import 'package:deepfacelab_client/viewModel/can_use_deepfacelab_view_model.dart';
 import 'package:deepfacelab_client/viewModel/init_view_model.dart';
+import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -91,7 +93,21 @@ class Route extends HookWidget {
                     ),
                     const VerticalDivider(thickness: 1, width: 1),
                     // This is the main content.
-                    Expanded(child: views.value.elementAt(selectedIndex.value)),
+                    Expanded(
+                        child: StoreConnector<AppState,
+                                CanUseDeepfacelabViewModel>(
+                            builder: (BuildContext context,
+                                CanUseDeepfacelabViewModel vm) {
+                              return vm.canUseDeepfacelab
+                                  ? views.value.elementAt(selectedIndex.value)
+                                  : const Scaffold(
+                                      body: SingleChildScrollView(
+                                        child: HasRequirementsWidget(),
+                                      ),
+                                    );
+                            },
+                            converter: (store) =>
+                                CanUseDeepfacelabViewModel.fromStore(store))),
                   ],
                 )
               : const Scaffold(body: LoadingScreen());
