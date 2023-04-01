@@ -14,7 +14,12 @@ class PythonService {
         .readAsString());
   }
 
-  Future<List<Device>> getDevices(Store store) async {
+  updateDevices(Store store) async {
+    if (store.state.devices != null ||
+        store.state.hasRequirements != true ||
+        store.state.storage.deepFaceLabFolder == null) {
+      return;
+    }
     await ProcessService().getCondaPrefix();
     String pythonScript = (await _getPythonScript("getDevices.py")).replaceAll(
         '%deepFaceLabFolder%', store.state.storage.deepFaceLabFolder);
@@ -23,8 +28,10 @@ class PythonService {
       """${await ProcessService().getCondaPrefix()} && \\
       echo -e "$pythonScript" | python"""
     ]);
-    return (jsonDecode(result.stdout) as List<dynamic>)
-        .map((e) => Device.fromJson(e as Map<String, dynamic>))
-        .toList();
+    store.dispatch({
+      'devices': (jsonDecode(result.stdout) as List<dynamic>)
+          .map((e) => Device.fromJson(e as Map<String, dynamic>))
+          .toList()
+    });
   }
 }

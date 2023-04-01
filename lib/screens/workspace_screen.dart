@@ -1,3 +1,4 @@
+import 'package:deepfacelab_client/widget/common/devices_widget.dart';
 import 'package:deepfacelab_client/widget/form/workspace_form_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -15,7 +16,13 @@ class WorkspaceScreen extends HookWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
               margin: const EdgeInsets.all(10.0),
-              child: const WorkspaceFormWidget()),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DevicesWidget(),
+                  const WorkspaceFormWidget(),
+                ],
+              )),
         ]),
       ),
     );

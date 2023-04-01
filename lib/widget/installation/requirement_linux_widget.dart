@@ -240,7 +240,7 @@ You need to install the missing packages, and add it to your `PATH` if necessary
                                         const Text('Recheck my requirements'),
                                   ),
                                 ),
-                                DividerWWithTextWidget(text: "OR"),
+                                DividerWithTextWidget(text: "OR"),
                                 Container(
                                     margin: const EdgeInsets.only(
                                         top: 30.0, bottom: 30.0),
