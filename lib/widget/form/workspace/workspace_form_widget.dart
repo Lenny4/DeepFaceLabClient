@@ -21,26 +21,42 @@ class WorkspaceFormWidget extends HookWidget {
     String? homeDirectory = (Platform.environment)['HOME'];
     final _formKey = GlobalKey<FormState>();
 
-    var workspacePath = useState<String>(
-        store.state.storage?.workspaceDefaultPath ?? homeDirectory ?? "/");
-    var workspaceName = useState<String>("");
+    getWorkspacePath() {
+      return initWorkspace?.path ??
+          store.state.storage?.workspaceDefaultPath ??
+          homeDirectory ??
+          "/";
+    }
+
+    getWorkspaceName() {
+      return initWorkspace?.name ?? "";
+    }
+
+    getWorkspaceEdit() {
+      return initWorkspace == null;
+    }
+
     var workspaceCreateFolder = useState<bool>(true);
     var loading = useState<bool>(false);
-    var edit = useState<bool>(initWorkspace == null);
+    var edit = useState<bool>(getWorkspaceEdit());
+    final workspaceNameController =
+        TextEditingController(text: getWorkspaceName());
+    final workspacePathController =
+        TextEditingController(text: getWorkspacePath());
 
     selectFolder() async {
       var value = await FilesystemPicker.openDialog(
         title: 'Workspace path',
         context: context,
         rootDirectory: Directory("/"),
-        directory: Directory(workspacePath.value),
+        directory: Directory(workspacePathController.text),
         fsType: FilesystemType.folder,
         pickText: 'Validate',
       );
       if (value == null) {
         return;
       }
-      workspacePath.value = value;
+      workspacePathController.text = value;
     }
 
     save() async {
@@ -48,16 +64,19 @@ class WorkspaceFormWidget extends HookWidget {
       _formKey.currentState?.save();
       await WorkspaceService().createUpdateWorkspace(
         oldWorkspace: initWorkspace,
-        newWorkspace:
-            Workspace(name: workspaceName.value, path: workspacePath.value),
+        newWorkspace: Workspace(
+            name: workspaceNameController.text,
+            path: workspacePathController.text),
         createFolder: workspaceCreateFolder.value,
       );
-      workspaceName.value = "";
       loading.value = false;
+      edit.value = false;
     }
 
     onChangeInitWorkspace() {
-      edit.value = initWorkspace == null;
+      edit.value = getWorkspaceEdit();
+      workspacePathController.text = getWorkspacePath();
+      workspaceNameController.text = getWorkspaceName();
     }
 
     useEffect(() {
@@ -76,13 +95,12 @@ class WorkspaceFormWidget extends HookWidget {
           Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
                   decoration: const InputDecoration(
                       hintText: 'Workspace name', labelText: 'Workspace name'),
-                  initialValue: workspaceName.value,
-                  onSaved: (String? value) =>
-                      workspaceName.value = (value ?? "workspace"),
+                  controller: workspaceNameController,
                   keyboardType: TextInputType.text,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -93,11 +111,7 @@ class WorkspaceFormWidget extends HookWidget {
                 ),
                 TextFormField(
                   readOnly: true,
-                  onSaved: (String? value) => workspacePath.value = (value ??
-                      store.state.storage?.workspaceDefaultPath ??
-                      homeDirectory ??
-                      "/"),
-                  initialValue: workspacePath.value,
+                  controller: workspacePathController,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     hintText: 'Workspace path',
@@ -115,40 +129,77 @@ class WorkspaceFormWidget extends HookWidget {
                     return null;
                   },
                 ),
-                CheckboxFormField(
-                  title: MarkdownBody(
-                      selectable: true,
-                      data:
-                          "Create a new folder in `${workspacePath.value}` for the workspace"),
-                  initialValue: true,
-                  onSaved: (bool? value) =>
-                      workspaceCreateFolder.value = (value ?? true),
-                ),
+                initWorkspace == null
+                    ? CheckboxFormField(
+                        title: const MarkdownBody(
+                            selectable: true,
+                            data: "Create a new folder for the workspace"),
+                        initialValue: true,
+                        onSaved: (bool? value) =>
+                            workspaceCreateFolder.value = (value ?? true),
+                      )
+                    : const SelectableText(
+                        "Tip: if you want to rename the folder according to the workspace name, select the parent folder of your workspace folder"),
                 Container(
                   margin: const EdgeInsets.all(10.0),
-                  child: ElevatedButton.icon(
-                    onPressed: !loading.value
-                        ? () {
-                            if (_formKey.currentState!.validate()) {
-                              save();
-                            }
-                          }
-                        : null,
-                    icon: loading.value
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : const SizedBox.shrink(),
-                    label: Text(initWorkspace == null
-                        ? 'Create workspace'
-                        : "Edit workspace"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (initWorkspace != null)
+                        ElevatedButton.icon(
+                          onPressed: !loading.value
+                              ? () {
+                                  edit.value = false;
+                                }
+                              : null,
+                          icon: loading.value
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const SizedBox.shrink(),
+                          label: const Text("Cancel edit"),
+                        ),
+                      ElevatedButton.icon(
+                        onPressed: !loading.value
+                            ? () {
+                                if (_formKey.currentState!.validate()) {
+                                  save();
+                                }
+                              }
+                            : null,
+                        icon: loading.value
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const SizedBox.shrink(),
+                        label: Text(initWorkspace == null
+                            ? 'Create workspace'
+                            : "Edit workspace"),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ] else
-          ...[],
+        ] else ...[
+          Row(children: [
+            Container(
+              margin: const EdgeInsets.only(right: 10.0),
+              child: IconButton(
+                icon: const Icon(Icons.edit),
+                splashRadius: 20,
+                tooltip: 'Edit',
+                onPressed: () => edit.value = true,
+              ),
+            ),
+            MarkdownBody(selectable: true, data: """
+Name of the workspace: `${initWorkspace?.name}`
+
+Path of the workspace: `${initWorkspace?.path}`
+              """)
+          ])
+        ],
       ],
     );
   }

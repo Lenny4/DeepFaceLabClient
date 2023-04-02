@@ -108,9 +108,10 @@ class Root extends HookWidget {
 
     return StoreConnector<AppState, InitViewModel>(
         onWillChange: (prevVm, newVm) {
-          if (prevVm?.nbWorkspace != newVm.nbWorkspace) {
+          if (prevVm?.workspaceJson != newVm.workspaceJson) {
             views.value = getViews();
-            if (prevVm?.init == true) {
+            if (prevVm?.init == true &&
+                prevVm?.nbWorkspace != newVm.nbWorkspace) {
               store.dispatch({'selectedScreenIndex': newVm.nbWorkspace + 1});
             }
           }

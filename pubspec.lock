@@ -533,6 +533,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  slugify:
+    dependency: "direct main"
+    description:
+      name: slugify
+      sha256: b272501565cb28050cac2d96b7bf28a2d24c8dae359280361d124f3093d337c3
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   source_gen:
     dependency: transitive
     description:
