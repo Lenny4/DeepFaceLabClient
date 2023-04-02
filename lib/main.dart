@@ -31,7 +31,6 @@ class MyApp extends HookWidget {
 
   const MyApp({Key? key, required this.store}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return FilesystemPickerDefaultOptions(
@@ -75,7 +74,7 @@ class Root extends HookWidget {
             destination: const NavigationRailDestination(
               icon: Icon(Icons.add),
               selectedIcon: Icon(Icons.add),
-              label: Text('Create a \nworkspace'),
+              label: Text('Create a workspace'),
             ),
             widget: const WorkspaceScreen()),
       ];
@@ -105,16 +104,12 @@ class Root extends HookWidget {
       return result;
     }
 
-    var views = useState<List<NavigationRailElement>>([]);
-
-    store.onChange.listen((AppState appState) {
-      views.value = getViews();
-    });
-    // useEffect(() {
-    //   views.value = getViews();
-    // }, [store.state.init, store.state.storage?.workspaces]);
+    var views = useState<List<NavigationRailElement>>(getViews());
 
     return StoreConnector<AppState, InitViewModel>(
+        onWillChange: (prevVm, newVm) {
+          views.value = getViews();
+        },
         builder: (BuildContext context, InitViewModel vm1) {
           return vm1.init
               ? Row(
@@ -124,7 +119,7 @@ class Root extends HookWidget {
                         return SingleChildScrollView(
                           child: ConstrainedBox(
                             constraints:
-                                BoxConstraints(minHeight: constraint.maxHeight),
+                                BoxConstraints(minHeight: constraint.maxHeight, maxWidth: 150),
                             child: IntrinsicHeight(
                               // https://api.flutter.dev/flutter/material/NavigationRail-class.html
                               child: NavigationRail(
