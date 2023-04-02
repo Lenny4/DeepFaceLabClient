@@ -30,4 +30,13 @@ class WorkspaceService {
       await _updateWorkspace(oldWorkspace, newWorkspace);
     }
   }
+
+  deleteWorkspace({required Workspace workspace}) async {
+    (await Process.run('rm', ['-rf', workspace.path]));
+    var storage = store.state.storage;
+    storage?.workspaces = [
+      ...?storage.workspaces?.where((e) => e.path != workspace.path)
+    ];
+    store.dispatch({'storage': storage});
+  }
 }
