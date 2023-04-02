@@ -25,6 +25,7 @@ class WorkspaceFormWidget extends HookWidget {
         store.state.storage?.workspaceDefaultPath ?? homeDirectory ?? "/");
     var workspaceName = useState<String>("");
     var workspaceCreateFolder = useState<bool>(true);
+    var loading = useState<bool>(false);
 
     selectFolder() async {
       var value = await FilesystemPicker.openDialog(
@@ -39,6 +40,18 @@ class WorkspaceFormWidget extends HookWidget {
         return;
       }
       workspacePath.value = value;
+    }
+
+    save() async {
+      loading.value = true;
+      _formKey.currentState?.save();
+      await WorkspaceService().createUpdateWorkspace(
+        oldWorkspace: initWorkspace,
+        newWorkspace:
+            Workspace(name: workspaceName.value, path: workspacePath.value),
+        createFolder: workspaceCreateFolder.value,
+      );
+      loading.value = false;
     }
 
     // https://docs.flutter.dev/cookbook/forms/validation
@@ -102,19 +115,20 @@ class WorkspaceFormWidget extends HookWidget {
               ),
               Container(
                 margin: const EdgeInsets.all(10.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState?.save();
-                      WorkspaceService().createUpdateWorkspace(
-                          initWorkspace,
-                          Workspace(
-                              name: workspaceName.value,
-                              path: workspacePath.value),
-                          workspaceCreateFolder.value);
-                    }
-                  },
-                  child: const Text('Create workspace'),
+                child: ElevatedButton.icon(
+                  onPressed: !loading.value
+                      ? () {
+                          if (_formKey.currentState!.validate()) {
+                            save();
+                          }
+                        }
+                      : null,
+                  icon: loading.value
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : const SizedBox.shrink(),
+                  label: const Text('Create workspace'),
                 ),
               ),
             ],

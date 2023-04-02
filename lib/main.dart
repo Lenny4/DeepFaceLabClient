@@ -1,4 +1,5 @@
 import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
@@ -40,29 +41,82 @@ class MyApp extends HookWidget {
         child: MaterialApp(
             theme: ThemeData.dark(),
             themeMode: ThemeMode.dark,
-            home: const Route()),
+            home: const Root()),
       ),
     );
   }
 }
 
-class Route extends HookWidget {
-  const Route({Key? key}) : super(key: key);
+class NavigationRailElement {
+  NavigationRailDestination destination;
+  Widget widget;
+
+  NavigationRailElement({required this.destination, required this.widget});
+}
+
+class Root extends HookWidget {
+  const Root({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    var views = useState<List<Widget>>([
-      const DashboardScreen(),
-      const WorkspaceScreen(),
-      const SettingsScreen(),
-    ]);
+    final store = StoreProvider.of<AppState>(context);
 
-    var selectedIndex = useState<int>(0);
+    List<NavigationRailElement> getViews() {
+      List<NavigationRailElement> result = [
+        NavigationRailElement(
+            destination: const NavigationRailDestination(
+              icon: Icon(Icons.dashboard),
+              selectedIcon: Icon(Icons.dashboard),
+              label: Text('Dashboard'),
+            ),
+            widget: const DashboardScreen()),
+        NavigationRailElement(
+            destination: const NavigationRailDestination(
+              icon: Icon(Icons.add),
+              selectedIcon: Icon(Icons.add),
+              label: Text('Create a \nworkspace'),
+            ),
+            widget: const WorkspaceScreen()),
+      ];
+      List<Workspace>? workspaces = store.state.storage?.workspaces;
+      if (store.state.init == true && workspaces != null) {
+        for (Workspace workspace in workspaces) {
+          result.add(
+            NavigationRailElement(
+                destination: NavigationRailDestination(
+                  icon: const Icon(Icons.movie),
+                  selectedIcon: const Icon(Icons.movie),
+                  label: Text(workspace.name),
+                ),
+                widget: WorkspaceScreen(initWorkspace: workspace)),
+          );
+        }
+      }
+      result.add(
+        NavigationRailElement(
+            destination: const NavigationRailDestination(
+              icon: Icon(Icons.settings),
+              selectedIcon: Icon(Icons.settings),
+              label: Text('Settings'),
+            ),
+            widget: const SettingsScreen()),
+      );
+      return result;
+    }
+
+    var views = useState<List<NavigationRailElement>>([]);
+
+    store.onChange.listen((AppState appState) {
+      views.value = getViews();
+    });
+    // useEffect(() {
+    //   views.value = getViews();
+    // }, [store.state.init, store.state.storage?.workspaces]);
 
     return StoreConnector<AppState, InitViewModel>(
-        builder: (BuildContext context, InitViewModel vm) {
-          return vm.init
+        builder: (BuildContext context, InitViewModel vm1) {
+          return vm1.init
               ? Row(
                   children: <Widget>[
                     LayoutBuilder(
@@ -74,29 +128,16 @@ class Route extends HookWidget {
                             child: IntrinsicHeight(
                               // https://api.flutter.dev/flutter/material/NavigationRail-class.html
                               child: NavigationRail(
-                                selectedIndex: selectedIndex.value,
+                                selectedIndex: vm1.selectedScreenIndex,
                                 groupAlignment: -1.0,
                                 onDestinationSelected: (int index) {
-                                  selectedIndex.value = index;
+                                  store
+                                      .dispatch({'selectedScreenIndex': index});
                                 },
                                 labelType: NavigationRailLabelType.all,
-                                destinations: const [
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.dashboard),
-                                    selectedIcon: Icon(Icons.dashboard),
-                                    label: Text('Dashboard'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.add),
-                                    selectedIcon: Icon(Icons.add),
-                                    label: Text('Create a \nworkspace'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.settings),
-                                    selectedIcon: Icon(Icons.settings),
-                                    label: Text('Settings'),
-                                  ),
-                                ],
+                                destinations: views.value
+                                    .map((view) => view.destination)
+                                    .toList(),
                               ),
                             ),
                           ),
@@ -109,9 +150,11 @@ class Route extends HookWidget {
                         child: StoreConnector<AppState,
                                 CanUseDeepfacelabViewModel>(
                             builder: (BuildContext context,
-                                CanUseDeepfacelabViewModel vm) {
-                              return vm.canUseDeepfacelab
-                                  ? views.value.elementAt(selectedIndex.value)
+                                CanUseDeepfacelabViewModel vm2) {
+                              return vm2.canUseDeepfacelab
+                                  ? views.value
+                                      .elementAt(vm1.selectedScreenIndex)
+                                      .widget
                                   : const Scaffold(
                                       body: SingleChildScrollView(
                                         child: HasRequirementsWidget(),

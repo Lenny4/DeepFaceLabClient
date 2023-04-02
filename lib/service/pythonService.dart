@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:deepfacelab_client/class/appState.dart';
 import 'package:deepfacelab_client/class/device.dart';
 import 'package:deepfacelab_client/service/processService.dart';
-import 'package:redux/redux.dart';
 
 class PythonService {
   Future<String> _getPythonScript(String filename) async {
@@ -14,15 +14,15 @@ class PythonService {
         .readAsString());
   }
 
-  updateDevices(Store store) async {
+  updateDevices() async {
     if (store.state.devices != null ||
         store.state.hasRequirements != true ||
-        store.state.storage.deepFaceLabFolder == null) {
+        store.state.storage?.deepFaceLabFolder == null) {
       return;
     }
     await ProcessService().getCondaPrefix();
     String pythonScript = (await _getPythonScript("getDevices.py")).replaceAll(
-        '%deepFaceLabFolder%', store.state.storage.deepFaceLabFolder);
+        '%deepFaceLabFolder%', store.state.storage?.deepFaceLabFolder ?? "/");
     ProcessResult result = await Process.run("bash", [
       '-c',
       """${await ProcessService().getCondaPrefix()} && \\

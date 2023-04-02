@@ -11,10 +11,8 @@ class DevicesWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = StoreProvider.of<AppState>(context);
-
     init() async {
-      PythonService().updateDevices(store);
+      PythonService().updateDevices();
     }
 
     useEffect(() {

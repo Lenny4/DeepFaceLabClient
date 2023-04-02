@@ -7,24 +7,32 @@ import 'package:redux/redux.dart' as redux;
 class AppState {
   final bool init;
   final bool hasRequirements;
+  final int selectedScreenIndex;
   final List<Device>? devices;
   final Storage? storage;
 
   const AppState(
       {required this.init,
       required this.hasRequirements,
+      required this.selectedScreenIndex,
       required this.storage,
       required this.devices});
 
   factory AppState.initial() {
     return const AppState(
-        init: false, hasRequirements: false, storage: null, devices: null);
+        init: false,
+        hasRequirements: false,
+        storage: null,
+        devices: null,
+        selectedScreenIndex: 0);
   }
 
   AppState copyWith(newState) {
     return AppState(
       init: newState['init'] ?? init,
       hasRequirements: newState['hasRequirements'] ?? hasRequirements,
+      selectedScreenIndex:
+          newState['selectedScreenIndex'] ?? selectedScreenIndex,
       storage: newState['storage'] ?? storage,
       devices: newState['devices'] ?? devices,
     );
