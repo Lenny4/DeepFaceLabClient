@@ -13,17 +13,16 @@ class WorkspaceScreen extends HookWidget {
         title: const SelectableText('Create a workspace'),
       ),
       body: SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-              margin: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DevicesWidget(),
-                  const WorkspaceFormWidget(),
-                ],
-              )),
-        ]),
+        child: Container(
+            margin: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DevicesWidget(),
+                const Divider(height: 50),
+                const WorkspaceFormWidget(),
+              ],
+            )),
       ),
     );
   }

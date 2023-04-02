@@ -30,11 +30,66 @@ class DevicesWidget extends HookWidget {
               return vm.devices == null
                   ? const CircularProgressIndicator()
                   : vm.devices != null && vm.devices!.isNotEmpty
-                      ? MarkdownBody(selectable: true, data: """
-| Index        | Name         | Total memory (Gb) |
-|--------------|--------------|-------------------|
-${vm.devices!.map((device) => "|${device.index} | ${device.name} | ${device.totalMemGb} | \n").join()}
-                      """)
+                      ? Table(
+                          border: TableBorder.all(color: Colors.white),
+                          columnWidths: const <int, TableColumnWidth>{
+                            0: IntrinsicColumnWidth(),
+                            1: IntrinsicColumnWidth(),
+                            2: IntrinsicColumnWidth(),
+                          },
+                          defaultVerticalAlignment:
+                              TableCellVerticalAlignment.middle,
+                          children: <TableRow>[
+                            TableRow(
+                              children: <Widget>[
+                                TableCell(
+                                  child: Container(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: const SelectableText("Index")),
+                                ),
+                                TableCell(
+                                  child: Container(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: const SelectableText("Name")),
+                                ),
+                                TableCell(
+                                  child: Container(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: const SelectableText(
+                                          "Total memory (Gb)")),
+                                ),
+                              ],
+                            ),
+                            ...vm.devices!
+                                .map((device) => TableRow(
+                                      children: <Widget>[
+                                        TableCell(
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: SelectableText(
+                                                  device.index.toString())),
+                                        ),
+                                        TableCell(
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child:
+                                                  SelectableText(device.name)),
+                                        ),
+                                        TableCell(
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: SelectableText(device
+                                                  .totalMemGb
+                                                  .toString())),
+                                        ),
+                                      ],
+                                    ))
+                                .toList()
+                          ],
+                        )
                       : const MarkdownBody(
                           selectable: true,
                           data: "No GPU detected on your machine");

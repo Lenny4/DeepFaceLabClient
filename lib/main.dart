@@ -65,31 +65,43 @@ class Route extends HookWidget {
           return vm.init
               ? Row(
                   children: <Widget>[
-                    // https://api.flutter.dev/flutter/material/NavigationRail-class.html
-                    NavigationRail(
-                      selectedIndex: selectedIndex.value,
-                      groupAlignment: -1.0,
-                      onDestinationSelected: (int index) {
-                        selectedIndex.value = index;
+                    LayoutBuilder(
+                      builder: (context, constraint) {
+                        return SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints:
+                                BoxConstraints(minHeight: constraint.maxHeight),
+                            child: IntrinsicHeight(
+                              // https://api.flutter.dev/flutter/material/NavigationRail-class.html
+                              child: NavigationRail(
+                                selectedIndex: selectedIndex.value,
+                                groupAlignment: -1.0,
+                                onDestinationSelected: (int index) {
+                                  selectedIndex.value = index;
+                                },
+                                labelType: NavigationRailLabelType.all,
+                                destinations: const [
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.dashboard),
+                                    selectedIcon: Icon(Icons.dashboard),
+                                    label: Text('Dashboard'),
+                                  ),
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.add),
+                                    selectedIcon: Icon(Icons.add),
+                                    label: Text('Create a \nworkspace'),
+                                  ),
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.settings),
+                                    selectedIcon: Icon(Icons.settings),
+                                    label: Text('Settings'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
                       },
-                      labelType: NavigationRailLabelType.all,
-                      destinations: const <NavigationRailDestination>[
-                        NavigationRailDestination(
-                          icon: Icon(Icons.dashboard),
-                          selectedIcon: Icon(Icons.dashboard),
-                          label: Text('Dashboard'),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(Icons.add),
-                          selectedIcon: Icon(Icons.add),
-                          label: Text('Create a \nworkspace'),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(Icons.settings),
-                          selectedIcon: Icon(Icons.settings),
-                          label: Text('Settings'),
-                        ),
-                      ],
                     ),
                     const VerticalDivider(thickness: 1, width: 1),
                     // This is the main content.
