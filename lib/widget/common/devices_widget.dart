@@ -22,7 +22,7 @@ class DevicesWidget extends HookWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const MarkdownBody(selectable: true, data: "# Your GPUs"),
+        const MarkdownBody(selectable: true, data: "## Your GPUs"),
         StoreConnector<AppState, DevicesViewModel>(
             builder: (BuildContext context, DevicesViewModel vm) {
               return vm.devices == null

@@ -7,12 +7,13 @@ class WorkspaceService {
   _createWorkspace(Workspace newWorkspace, bool? createFolder) async {
     String path = newWorkspace.path;
     var storage = store.state.storage;
-    storage?.workspaceDefaultPath = path;
     if (createFolder == true) {
       path += "/${newWorkspace.name}";
       (await Process.run('mkdir', ['-p', path]));
       newWorkspace.path = path;
       storage?.workspaces = [...?storage.workspaces, newWorkspace];
+    } else {
+      storage?.workspaceDefaultPath = path;
     }
     store.dispatch({'storage': storage});
   }

@@ -108,7 +108,12 @@ class Root extends HookWidget {
 
     return StoreConnector<AppState, InitViewModel>(
         onWillChange: (prevVm, newVm) {
-          views.value = getViews();
+          if (prevVm?.nbWorkspace != newVm.nbWorkspace) {
+            views.value = getViews();
+            if (prevVm?.init == true) {
+              store.dispatch({'selectedScreenIndex': newVm.nbWorkspace + 1});
+            }
+          }
         },
         builder: (BuildContext context, InitViewModel vm1) {
           return vm1.init
@@ -118,8 +123,8 @@ class Root extends HookWidget {
                       builder: (context, constraint) {
                         return SingleChildScrollView(
                           child: ConstrainedBox(
-                            constraints:
-                                BoxConstraints(minHeight: constraint.maxHeight, maxWidth: 150),
+                            constraints: BoxConstraints(
+                                minHeight: constraint.maxHeight, maxWidth: 150),
                             child: IntrinsicHeight(
                               // https://api.flutter.dev/flutter/material/NavigationRail-class.html
                               child: NavigationRail(

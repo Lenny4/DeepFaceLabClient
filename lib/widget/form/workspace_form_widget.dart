@@ -26,6 +26,7 @@ class WorkspaceFormWidget extends HookWidget {
     var workspaceName = useState<String>("");
     var workspaceCreateFolder = useState<bool>(true);
     var loading = useState<bool>(false);
+    var edit = useState<bool>(initWorkspace == null);
 
     selectFolder() async {
       var value = await FilesystemPicker.openDialog(
@@ -51,8 +52,17 @@ class WorkspaceFormWidget extends HookWidget {
             Workspace(name: workspaceName.value, path: workspacePath.value),
         createFolder: workspaceCreateFolder.value,
       );
+      workspaceName.value = "";
       loading.value = false;
     }
+
+    onChangeInitWorkspace() {
+      edit.value = initWorkspace == null;
+    }
+
+    useEffect(() {
+      onChangeInitWorkspace();
+    }, [initWorkspace]);
 
     // https://docs.flutter.dev/cookbook/forms/validation
     return Column(
@@ -61,79 +71,84 @@ class WorkspaceFormWidget extends HookWidget {
         MarkdownBody(
             selectable: true,
             data:
-                "# ${initWorkspace == null ? "Create a workspace" : initWorkspace?.name}"),
-        Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              TextFormField(
-                decoration: const InputDecoration(
-                    hintText: 'Workspace name', labelText: 'Workspace name'),
-                initialValue: workspaceName.value,
-                onSaved: (String? value) =>
-                    workspaceName.value = (value ?? "workspace"),
-                keyboardType: TextInputType.text,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name for your workspace';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                readOnly: true,
-                onSaved: (String? value) => workspacePath.value = (value ??
-                    store.state.storage?.workspaceDefaultPath ??
-                    homeDirectory ??
-                    "/"),
-                initialValue: workspacePath.value,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  hintText: 'Workspace path',
-                  labelText: 'Workspace path',
-                  prefixIcon: IconButton(
-                    icon: const Icon(Icons.folder),
-                    splashRadius: 20,
-                    onPressed: selectFolder,
+                "# ${initWorkspace == null ? "Create a workspace" : edit.value == true ? "Edit workspace" : ""}"),
+        if (edit.value == true) ...[
+          Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  decoration: const InputDecoration(
+                      hintText: 'Workspace name', labelText: 'Workspace name'),
+                  initialValue: workspaceName.value,
+                  onSaved: (String? value) =>
+                      workspaceName.value = (value ?? "workspace"),
+                  keyboardType: TextInputType.text,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a name for your workspace';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  readOnly: true,
+                  onSaved: (String? value) => workspacePath.value = (value ??
+                      store.state.storage?.workspaceDefaultPath ??
+                      homeDirectory ??
+                      "/"),
+                  initialValue: workspacePath.value,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    hintText: 'Workspace path',
+                    labelText: 'Workspace path',
+                    prefixIcon: IconButton(
+                      icon: const Icon(Icons.folder),
+                      splashRadius: 20,
+                      onPressed: selectFolder,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select the path of your workspace';
+                    }
+                    return null;
+                  },
+                ),
+                CheckboxFormField(
+                  title: MarkdownBody(
+                      selectable: true,
+                      data:
+                          "Create a new folder in `${workspacePath.value}` for the workspace"),
+                  initialValue: true,
+                  onSaved: (bool? value) =>
+                      workspaceCreateFolder.value = (value ?? true),
+                ),
+                Container(
+                  margin: const EdgeInsets.all(10.0),
+                  child: ElevatedButton.icon(
+                    onPressed: !loading.value
+                        ? () {
+                            if (_formKey.currentState!.validate()) {
+                              save();
+                            }
+                          }
+                        : null,
+                    icon: loading.value
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const SizedBox.shrink(),
+                    label: Text(initWorkspace == null
+                        ? 'Create workspace'
+                        : "Edit workspace"),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select the path of your workspace';
-                  }
-                  return null;
-                },
-              ),
-              CheckboxFormField(
-                title: MarkdownBody(
-                    selectable: true,
-                    data:
-                        "Create a new folder in `${workspacePath.value}` for the workspace"),
-                initialValue: true,
-                onSaved: (bool? value) =>
-                    workspaceCreateFolder.value = (value ?? true),
-              ),
-              Container(
-                margin: const EdgeInsets.all(10.0),
-                child: ElevatedButton.icon(
-                  onPressed: !loading.value
-                      ? () {
-                          if (_formKey.currentState!.validate()) {
-                            save();
-                          }
-                        }
-                      : null,
-                  icon: loading.value
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : const SizedBox.shrink(),
-                  label: const Text('Create workspace'),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ] else
+          ...[],
       ],
     );
   }
