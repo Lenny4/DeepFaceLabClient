@@ -1,9 +1,9 @@
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/widget/common/devices_widget.dart';
+import 'package:deepfacelab_client/widget/common/file_manager_widget.dart';
 import 'package:deepfacelab_client/widget/form/workspace/workspace_form_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../widget/form/workspace/delete_workspace_form_widget.dart';
 
@@ -27,7 +27,16 @@ class WorkspaceScreen extends HookWidget {
               Expanded(
                 flex: 7,
                 child: SingleChildScrollView(
-                    child: WorkspaceFormWidget(initWorkspace: initWorkspace)),
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    WorkspaceFormWidget(initWorkspace: initWorkspace),
+                    if (initWorkspace != null) ...[
+                      const Divider(),
+                      FileManagerWidget(),
+                    ]
+                  ],
+                )),
               ),
               Container(
                   margin: const EdgeInsets.only(left: 10, right: 10),
@@ -39,9 +48,6 @@ class WorkspaceScreen extends HookWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const MarkdownBody(
-                        selectable: true, data: "# Your configuration"),
-                    const Divider(),
                     DevicesWidget(),
                     const Divider(),
                     DeleteWorkspaceFormWidget(workspace: initWorkspace)

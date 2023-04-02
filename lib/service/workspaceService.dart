@@ -12,9 +12,16 @@ class WorkspaceService {
       storage?.workspaceDefaultPath = path;
       path += "/${slugify(newWorkspace.name)}";
       (await Process.run('mkdir', ['-p', path]));
-      newWorkspace.path = path;
-      storage?.workspaces = [...?storage.workspaces, newWorkspace];
+      (await Process.run('mkdir', ['-p', "$path/data_src"]));
+      (await Process.run('mkdir', ['-p', "$path/data_src/aligned"]));
+      (await Process.run('mkdir', ['-p', "$path/data_src/aligned_debug"]));
+      (await Process.run('mkdir', ['-p', "$path/data_dst"]));
+      (await Process.run('mkdir', ['-p', "$path/data_dst/aligned"]));
+      (await Process.run('mkdir', ['-p', "$path/data_dst/aligned_debug"]));
+      (await Process.run('mkdir', ['-p', "$path/model"]));
     }
+    newWorkspace.path = path;
+    storage?.workspaces = [...?storage.workspaces, newWorkspace];
     store.dispatch({'storage': storage});
   }
 
@@ -43,8 +50,11 @@ class WorkspaceService {
     }
   }
 
-  deleteWorkspace({required Workspace workspace}) async {
-    (await Process.run('rm', ['-rf', workspace.path]));
+  deleteWorkspace(
+      {required Workspace workspace, required bool deleteFolder}) async {
+    if (deleteFolder) {
+      (await Process.run('rm', ['-rf', workspace.path]));
+    }
     var storage = store.state.storage;
     storage?.workspaces = [
       ...?storage.workspaces?.where((e) => e.path != workspace.path)
