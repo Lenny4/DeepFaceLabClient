@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:path/path.dart' as p;
 
 class FileManagerWidget extends HookWidget {
   final String initPath;
@@ -18,9 +17,10 @@ class FileManagerWidget extends HookWidget {
     loadFilesFolders() async {
       fileSystemEntities.value =
           await (Directory(folderPath.value).list()).map((fileSystemEntity) {
-        String filename = p.basename(fileSystemEntity.path);
+        // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
+        String filename = fileSystemEntity.path
+            .substring(fileSystemEntity.path.lastIndexOf('/') + 1);
         return {
-          // todo test if fastest that https://stackoverflow.com/questions/75915594/dart-pathinfo-equivalent/75915804#75915804
           'filename': filename,
           'directory': fileSystemEntity is Directory,
           'image': filename.contains('.png') ||
