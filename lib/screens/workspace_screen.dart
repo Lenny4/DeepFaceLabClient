@@ -26,17 +26,17 @@ class WorkspaceScreen extends HookWidget {
             children: [
               Expanded(
                 flex: 7,
-                child: SingleChildScrollView(
-                    child: Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     WorkspaceFormWidget(initWorkspace: initWorkspace),
                     if (initWorkspace != null) ...[
                       const Divider(),
-                      FileManagerWidget(),
+                      FileManagerWidget(initPath: initWorkspace!.path),
+                      const Text("footer 2"),
                     ]
                   ],
-                )),
+                ),
               ),
               Container(
                   margin: const EdgeInsets.only(left: 10, right: 10),

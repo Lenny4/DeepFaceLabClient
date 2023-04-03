@@ -11,14 +11,14 @@ class WorkspaceService {
     if (createFolder == true) {
       storage?.workspaceDefaultPath = path;
       path += "/${slugify(newWorkspace.name)}";
-      (await Process.run('mkdir', ['-p', path]));
-      (await Process.run('mkdir', ['-p', "$path/data_src"]));
-      (await Process.run('mkdir', ['-p', "$path/data_src/aligned"]));
-      (await Process.run('mkdir', ['-p', "$path/data_src/aligned_debug"]));
-      (await Process.run('mkdir', ['-p', "$path/data_dst"]));
-      (await Process.run('mkdir', ['-p', "$path/data_dst/aligned"]));
-      (await Process.run('mkdir', ['-p', "$path/data_dst/aligned_debug"]));
-      (await Process.run('mkdir', ['-p', "$path/model"]));
+      Directory(path).createSync(recursive: true);
+      Directory("$path/data_src").createSync(recursive: true);
+      Directory("$path/data_src/aligned").createSync(recursive: true);
+      Directory("$path/data_src/aligned_debug").createSync(recursive: true);
+      Directory("$path/data_dst").createSync(recursive: true);
+      Directory("$path/data_dst/aligned").createSync(recursive: true);
+      Directory("$path/data_dst/aligned_debug").createSync(recursive: true);
+      Directory("$path/model").createSync(recursive: true);
     }
     newWorkspace.path = path;
     storage?.workspaces = [...?storage.workspaces, newWorkspace];

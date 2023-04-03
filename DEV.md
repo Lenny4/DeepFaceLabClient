@@ -20,19 +20,6 @@ https://www.tensorflow.org/install/source#gpu
 conda create [the name must contain python|cudnn|cudatoolkit version]
 all libs versions: https://repo.anaconda.com/pkgs/main/linux-64/
 
-var process = await Process.start('pkexec', ['bash', '-c', "pwd && ls -al"]);
-process.stdout.transform(utf8.decoder).forEach((String output) {
-print(output);
-});
-process.stderr.transform(utf8.decoder).forEach((String output) {
-print(output);
-});
-process.exitCode.then((value) {
-print("$value okok");
-});
-
-String homeDirectory = (Platform.environment)['HOME'] ?? "/";
-
 conda init --verbose -d
 conda init --reverse
 conda env list
