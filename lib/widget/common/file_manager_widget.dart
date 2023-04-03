@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:path/path.dart' as p;
 
 class FileManagerWidget extends HookWidget {
   final String initPath;
@@ -11,26 +12,31 @@ class FileManagerWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    var path = useState<String>(initPath);
+    var folderPath = useState<String>(initPath);
     var fileSystemEntities = useState<List<Map<String, dynamic>>>([]);
 
     loadFilesFolders() async {
       fileSystemEntities.value =
-          await (Directory(path.value).list()).map((fileSystemEntity) {
+          await (Directory(folderPath.value).list()).map((fileSystemEntity) {
+        String filename = p.basename(fileSystemEntity.path);
         return {
-          'path': fileSystemEntity.path,
+          // todo test if fastest that https://stackoverflow.com/questions/75915594/dart-pathinfo-equivalent/75915804#75915804
+          'filename': filename,
           'directory': fileSystemEntity is Directory,
+          'image': filename.contains('.png') ||
+              filename.contains('.jpeg') ||
+              filename.contains('.jpg'),
         };
       }).toList();
     }
 
     useEffect(() {
-      path.value = initPath;
+      folderPath.value = initPath;
     }, [initPath]);
 
     useEffect(() {
       loadFilesFolders();
-    }, [path.value]);
+    }, [folderPath.value]);
 
     return fileSystemEntities.value.isNotEmpty
         ? Expanded(
@@ -39,18 +45,36 @@ class FileManagerWidget extends HookWidget {
               children: [
                 const Text("header"),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: fileSystemEntities.value.length,
-                    shrinkWrap: true,
-                    prototypeItem: ListTile(
-                      title: Text(fileSystemEntities.value.first['path']),
-                    ),
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(fileSystemEntities.value[index]['path']),
-                      );
-                    },
-                  ),
+                  child: GridView.builder(
+                      // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
+                      // https://www.youtube.com/watch?v=0blNt4XIi0g
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 100,
+                      ),
+                      itemCount: fileSystemEntities.value.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Tooltip(
+                          message: fileSystemEntities.value[index]['filename'],
+                          child: Card(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                fileSystemEntities.value[index]['directory']
+                                    ? const Icon(Icons.folder, size: 50)
+                                    : fileSystemEntities.value[index]['image']
+                                        ? Image.asset(
+                                            height: 70,
+                                            ("${folderPath.value}/${fileSystemEntities.value[index]['filename']}"))
+                                        : const Icon(Icons.file_open, size: 50),
+                                Text(
+                                    fileSystemEntities.value[index]['filename'],
+                                    maxLines: 1),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
                 ),
                 const Text("footer 1"),
               ],

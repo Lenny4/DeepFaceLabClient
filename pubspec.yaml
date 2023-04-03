@@ -44,6 +44,7 @@ dependencies:
   filesystem_picker: ^3.1.0
   json_annotation: ^4.8.0
   slugify: ^2.0.0
+  path: ^1.8.2
 
 dev_dependencies:
   flutter_test:
