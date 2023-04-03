@@ -17,7 +17,7 @@ class FileManagerWidget extends HookWidget {
 
     loadFilesFolders() async {
       fileSystemEntities.value = null;
-      fileSystemEntities.value =
+      var newFileSystemEntities =
           await (Directory(folderPath.value).list()).map((fileSystemEntity) {
         // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
         String filename = p.basename(fileSystemEntity.path);
@@ -29,6 +29,16 @@ class FileManagerWidget extends HookWidget {
               filename.contains('.jpg'),
         };
       }).toList();
+      newFileSystemEntities.sort((a, b) {
+        if (a['directory'] == true && b['directory'] == true) {
+          return 0;
+        }
+        if (a['directory'] == true) {
+          return -1;
+        }
+        return 1;
+      });
+      fileSystemEntities.value = newFileSystemEntities;
     }
 
     useEffect(() {
