@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:deepfacelab_client/widget/common/context_menu_region.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -78,6 +79,15 @@ class FileManagerHeaderWidget extends HookWidget {
   }
 }
 
+class FileManagerFooterWidget extends HookWidget {
+  FileManagerFooterWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const SelectableText("footer");
+  }
+}
+
 class FileManagerWidget extends HookWidget {
   final String rootPath;
 
@@ -130,60 +140,86 @@ class FileManagerWidget extends HookWidget {
     return fileSystemEntities.value == null
         ? const Center(child: CircularProgressIndicator())
         : Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FileManagerHeaderWidget(
-                    pathNotifier: folderPath,
-                    path: folderPath.value,
-                    rootPath: rootPath),
-                Expanded(
-                  child: GridView.builder(
-                      // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
-                      // https://www.youtube.com/watch?v=0blNt4XIi0g
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 100,
-                      ),
-                      itemCount: fileSystemEntities.value!.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Tooltip(
-                          message: fileSystemEntities.value![index]['filename'],
-                          child: GestureDetector(
-                            onDoubleTap: () {
-                              if (fileSystemEntities.value![index]
-                                      ['directory'] ==
-                                  true) {
-                                folderPath.value =
-                                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index]['filename']}";
-                              }
-                            },
-                            child: Card(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  fileSystemEntities.value![index]['directory']
-                                      ? const Icon(Icons.folder, size: 50)
-                                      : fileSystemEntities.value![index]
-                                              ['image']
-                                          ? Image.asset(
-                                              height: 70,
-                                              ("${folderPath.value}/${fileSystemEntities.value![index]['filename']}"))
-                                          : const Icon(Icons.file_open,
-                                              size: 50),
-                                  Text(
+            child: GestureDetector(
+              onTap: () => ContextMenuController.removeAny(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FileManagerHeaderWidget(
+                      pathNotifier: folderPath,
+                      path: folderPath.value,
+                      rootPath: rootPath),
+                  Expanded(
+                    child: GridView.builder(
+                        // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
+                        // https://www.youtube.com/watch?v=0blNt4XIi0g
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 100,
+                        ),
+                        itemCount: fileSystemEntities.value!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Tooltip(
+                            message: fileSystemEntities.value![index]
+                                ['filename'],
+                            child: ContextMenuRegion(
+                              contextMenuBuilder: (context, primaryAnchor,
+                                  [secondaryAnchor]) {
+                                return AdaptiveTextSelectionToolbar.buttonItems(
+                                  anchors: TextSelectionToolbarAnchors(
+                                    primaryAnchor: primaryAnchor,
+                                    secondaryAnchor: secondaryAnchor as Offset?,
+                                  ),
+                                  buttonItems: <ContextMenuButtonItem>[
+                                    ContextMenuButtonItem(
+                                      onPressed: () {
+                                        ContextMenuController.removeAny();
+                                        // Navigator.of(context).pop();
+                                      },
+                                      label: 'Back',
+                                    ),
+                                  ],
+                                );
+                              },
+                              child: GestureDetector(
+                                onTap: () => ContextMenuController.removeAny(),
+                                onDoubleTap: () {
+                                  if (fileSystemEntities.value![index]
+                                          ['directory'] ==
+                                      true) {
+                                    folderPath.value =
+                                        "${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index]['filename']}";
+                                  }
+                                },
+                                child: Card(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
                                       fileSystemEntities.value![index]
-                                          ['filename'],
-                                      maxLines: 1),
-                                ],
+                                              ['directory']
+                                          ? const Icon(Icons.folder, size: 50)
+                                          : fileSystemEntities.value![index]
+                                                  ['image']
+                                              ? Image.asset(
+                                                  height: 70,
+                                                  ("${folderPath.value}/${fileSystemEntities.value![index]['filename']}"))
+                                              : const Icon(Icons.file_open,
+                                                  size: 50),
+                                      Text(
+                                          fileSystemEntities.value![index]
+                                              ['filename'],
+                                          maxLines: 1),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }),
-                ),
-                const Text("footer 1"),
-              ],
+                          );
+                        }),
+                  ),
+                  FileManagerFooterWidget(),
+                ],
+              ),
             ),
           );
   }

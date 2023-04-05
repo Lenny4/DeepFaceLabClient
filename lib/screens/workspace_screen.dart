@@ -33,7 +33,6 @@ class WorkspaceScreen extends HookWidget {
                     if (initWorkspace != null) ...[
                       const Divider(),
                       FileManagerWidget(rootPath: initWorkspace!.path),
-                      const Text("footer 2"),
                     ]
                   ],
                 ),
