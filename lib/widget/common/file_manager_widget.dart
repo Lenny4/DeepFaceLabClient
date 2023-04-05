@@ -21,6 +21,18 @@ class _PathItem {
   }
 }
 
+class _FileSystemEntity {
+  final String filename;
+  final bool directory;
+  final bool image;
+
+  _FileSystemEntity({
+    required this.filename,
+    required this.directory,
+    required this.image,
+  });
+}
+
 // /.pub-cache/hosted/pub.dev/filesystem_picker-3.1.0/lib/src/picker_page.dart
 class FileManagerHeaderWidget extends HookWidget {
   final String rootPath;
@@ -96,35 +108,33 @@ class FileManagerWidget extends HookWidget {
   @override
   Widget build(BuildContext context) {
     var folderPath = useState<String>(rootPath);
-    var fileSystemEntities = useState<List<Map<String, dynamic>>?>(null);
+    var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
 
     loadFilesFolders() async {
       fileSystemEntities.value = null;
-      var newFileSystemEntities =
+      List<_FileSystemEntity> newFileSystemEntities =
           await (Directory(folderPath.value).list()).map((fileSystemEntity) {
         // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
         String filename = Path.basename(fileSystemEntity.path);
-        return {
-          'filename': filename,
-          'directory': fileSystemEntity is Directory,
-          'image': filename.contains('.png') ||
+        return _FileSystemEntity(
+          filename: filename,
+          directory: fileSystemEntity is Directory,
+          image: filename.contains('.png') ||
               filename.contains('.jpeg') ||
               filename.contains('.jpg'),
-        };
+        );
       }).toList();
       newFileSystemEntities.sort((a, b) {
-        if (a['directory'] == true && b['directory'] == true) {
-          return 0;
+        if (a.directory == true && b.directory == true) {
+          return a.filename.compareTo(b.filename);
         }
-        if (a['directory'] == true) {
+        if (a.directory == true) {
           return -1;
         }
-        if (b['directory'] == true) {
+        if (b.directory == true) {
           return 1;
         }
-        String aFilename = a['filename'] as String;
-        String bFilename = a['filename'] as String;
-        return aFilename.compareTo(bFilename);
+        return a.filename.compareTo(b.filename);
       });
       fileSystemEntities.value = newFileSystemEntities;
     }
@@ -160,8 +170,7 @@ class FileManagerWidget extends HookWidget {
                         itemCount: fileSystemEntities.value!.length,
                         itemBuilder: (BuildContext context, int index) {
                           return Tooltip(
-                            message: fileSystemEntities.value![index]
-                                ['filename'],
+                            message: fileSystemEntities.value![index].filename,
                             child: ContextMenuRegion(
                               contextMenuBuilder: (context, primaryAnchor,
                                   [secondaryAnchor]) {
@@ -184,30 +193,29 @@ class FileManagerWidget extends HookWidget {
                               child: GestureDetector(
                                 onTap: () => ContextMenuController.removeAny(),
                                 onDoubleTap: () {
-                                  if (fileSystemEntities.value![index]
-                                          ['directory'] ==
+                                  if (fileSystemEntities
+                                          .value![index].directory ==
                                       true) {
                                     folderPath.value =
-                                        "${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index]['filename']}";
+                                        "${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index].filename}";
                                   }
                                 },
                                 child: Card(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      fileSystemEntities.value![index]
-                                              ['directory']
+                                      fileSystemEntities.value![index].directory
                                           ? const Icon(Icons.folder, size: 50)
-                                          : fileSystemEntities.value![index]
-                                                  ['image']
+                                          : fileSystemEntities
+                                                  .value![index].image
                                               ? Image.asset(
                                                   height: 70,
-                                                  ("${folderPath.value}/${fileSystemEntities.value![index]['filename']}"))
+                                                  ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
                                               : const Icon(Icons.file_open,
                                                   size: 50),
                                       Text(
-                                          fileSystemEntities.value![index]
-                                              ['filename'],
+                                          fileSystemEntities
+                                              .value![index].filename,
                                           maxLines: 1),
                                     ],
                                   ),
