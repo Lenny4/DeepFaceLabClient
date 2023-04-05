@@ -6,6 +6,7 @@ import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/localeStorageService.dart';
 import 'package:deepfacelab_client/viewModel/can_use_deepfacelab_view_model.dart';
+import 'package:deepfacelab_client/viewModel/dark_mode_view_model.dart';
 import 'package:deepfacelab_client/viewModel/init_view_model.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
@@ -37,10 +38,14 @@ class MyApp extends HookWidget {
       fileTileSelectMode: FileTileSelectMode.wholeTile,
       child: StoreProvider<AppState>(
         store: store,
-        child: MaterialApp(
-            theme: ThemeData.dark(),
-            themeMode: ThemeMode.dark,
-            home: const Root()),
+        child: StoreConnector<AppState, DarkModeViewModel>(
+            builder: (BuildContext context, DarkModeViewModel vm) {
+              return MaterialApp(
+                  theme: vm.darkMode ? ThemeData.dark() : ThemeData.light(),
+                  themeMode: vm.darkMode ? ThemeMode.dark : ThemeMode.light,
+                  home: const Root());
+            },
+            converter: (store) => DarkModeViewModel.fromStore(store)),
       ),
     );
   }

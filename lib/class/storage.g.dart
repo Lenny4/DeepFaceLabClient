@@ -12,10 +12,11 @@ Storage _$StorageFromJson(Map<String, dynamic> json) => Storage(
       workspaces: (json['workspaces'] as List<dynamic>?)
           ?.map((e) => Workspace.fromJson(e as Map<String, dynamic>))
           .toList(),
-    );
+    )..darkMode = json['darkMode'] as bool?;
 
 Map<String, dynamic> _$StorageToJson(Storage instance) => <String, dynamic>{
       'deepFaceLabFolder': instance.deepFaceLabFolder,
       'workspaceDefaultPath': instance.workspaceDefaultPath,
       'workspaces': instance.workspaces,
+      'darkMode': instance.darkMode,
     };

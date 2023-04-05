@@ -1,3 +1,4 @@
+import 'package:deepfacelab_client/class/action/switchThemeAction.dart';
 import 'package:deepfacelab_client/class/device.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';
@@ -40,8 +41,15 @@ class AppState {
 }
 
 AppState appStateReducer(AppState state, action) {
-  // if (action is InitAppStateAction) {}
-  return state.copyWith(action);
+  if (action is SwitchThemeAction) {
+    var storage = state.storage;
+    if (storage != null) {
+      storage.darkMode = !(storage.darkMode ?? true);
+    }
+    return state;
+  } else {
+    return state.copyWith(action);
+  }
 }
 
 final store = redux.Store<AppState>(

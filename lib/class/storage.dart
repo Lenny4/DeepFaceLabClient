@@ -10,6 +10,7 @@ class Storage {
   String? deepFaceLabFolder;
   String? workspaceDefaultPath;
   List<Workspace>? workspaces;
+  bool? darkMode;
 
   factory Storage.fromJson(Map<String, dynamic> json) =>
       _$StorageFromJson(json);
