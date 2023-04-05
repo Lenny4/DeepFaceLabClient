@@ -123,11 +123,17 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      RichText(
-                                        text: TextSpan(
+                                      SelectableText.rich(
+                                        TextSpan(
                                           children: [
-                                            const TextSpan(
+                                            TextSpan(
                                               text: "We did not find ",
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.color,
+                                              ),
                                             ),
                                             TextSpan(
                                               text: ' DeepFaceLab',
@@ -142,8 +148,14 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
                                                           .platformDefault);
                                                 },
                                             ),
-                                            const TextSpan(
+                                            TextSpan(
                                               text: " on your computer.",
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.color,
+                                              ),
                                             ),
                                           ],
                                         ),

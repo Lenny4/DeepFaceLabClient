@@ -149,49 +149,78 @@ ${requirements.value!['hasFfmpeg'] == true ? "✅ `ffmpeg`" : "❌ `ffmpeg` was 
             requirements.value!['hasConda'] == true
                 ? Container(
                     margin: const EdgeInsets.only(top: 10.0),
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: "✅ ",
-                          ),
-                          TextSpan(
-                              text: "conda",
-                              style: TextStyle(
-                                background: Paint()..color = Colors.white10,
-                              )),
-                        ],
-                      ),
-                    ),
+                    child: SelectableText.rich(TextSpan(
+                      children: [
+                        TextSpan(
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color),
+                          text: "✅ ",
+                        ),
+                        TextSpan(
+                            text: "conda",
+                            style: TextStyle(
+                              background: Paint()..color = Colors.white10,
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                            )),
+                      ],
+                    )),
                   )
                 : Container(
                     margin: const EdgeInsets.only(top: 10.0),
-                    child: RichText(
-                      text: TextSpan(
+                    child: SelectableText.rich(
+                      TextSpan(
                         children: [
-                          const TextSpan(
+                          TextSpan(
                             text: "❌ ",
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
                           ),
                           TextSpan(
                               text: "conda",
                               style: TextStyle(
                                 background: Paint()..color = Colors.white10,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                               )),
-                          const TextSpan(
+                          TextSpan(
                             text: " was not found by running command ",
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
                           ),
                           TextSpan(
                               text: "which conda",
                               style: TextStyle(
                                 background: Paint()..color = Colors.white10,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                               )),
-                          const TextSpan(
+                          TextSpan(
                             text: ", to install ",
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
                           ),
                           TextSpan(
                               text: "conda",
                               style: TextStyle(
                                 background: Paint()..color = Colors.white10,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                               )),
                           TextSpan(
                             text: ' follow the tutorial',

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -10,12 +8,14 @@ class OpenIssueWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
+    return SelectableText.rich(
+      TextSpan(
         children: [
-          const TextSpan(
-            text:
-            'If you encounter a problem please ',
+          TextSpan(
+            text: 'If you encounter a problem please ',
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
           ),
           TextSpan(
             text: 'open an issue',
@@ -28,9 +28,11 @@ class OpenIssueWidget extends HookWidget {
                     mode: LaunchMode.platformDefault);
               },
           ),
-          const TextSpan(
-            text:
-            '.',
+          TextSpan(
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+            text: '.',
           ),
         ],
       ),
@@ -43,8 +45,8 @@ class OpenIssue2Widget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
+    return SelectableText.rich(
+      TextSpan(
         children: [
           TextSpan(
             text: 'Open an issue',
@@ -57,9 +59,11 @@ class OpenIssue2Widget extends HookWidget {
                     mode: LaunchMode.platformDefault);
               },
           ),
-          const TextSpan(
-            text:
-            '.',
+          TextSpan(
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+            text: '.',
           ),
         ],
       ),
