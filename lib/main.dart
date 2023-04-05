@@ -69,14 +69,6 @@ class Root extends HookWidget {
 
     var packageInfo = useState<PackageInfo?>(null);
 
-    init() async {
-      packageInfo.value = await PackageInfo.fromPlatform();
-    }
-
-    useEffect(() {
-      init();
-    }, []);
-
     List<NavigationRailElement> getViews() {
       List<NavigationRailElement> result = [
         NavigationRailElement(
@@ -121,6 +113,14 @@ class Root extends HookWidget {
     }
 
     var views = useState<List<NavigationRailElement>>(getViews());
+
+    init() async {
+      packageInfo.value = await PackageInfo.fromPlatform();
+    }
+
+    useEffect(() {
+      init();
+    }, []);
 
     return StoreConnector<AppState, InitViewModel>(
         onWillChange: (prevVm, newVm) {

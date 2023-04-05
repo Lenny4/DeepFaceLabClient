@@ -49,7 +49,7 @@ class DeleteWorkspaceFormWidget extends HookWidget {
                           title: const MarkdownBody(
                               selectable: true,
                               data:
-                                  "Delete the workspace folder on my compter"),
+                                  "Delete the workspace folder on my computer"),
                           initialValue: deleteFolder.value,
                           onSaved: (bool? value) =>
                               deleteFolder.value = (value ?? true),
