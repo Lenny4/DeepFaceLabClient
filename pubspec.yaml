@@ -45,6 +45,7 @@ dependencies:
   json_annotation: ^4.8.0
   slugify: ^2.0.0
   path: ^1.8.2
+  package_info_plus: ^3.0.3
 
 dev_dependencies:
   flutter_test:
