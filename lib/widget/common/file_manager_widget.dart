@@ -26,7 +26,7 @@ class _FileSystemEntity {
   final String filename;
   final bool directory;
   final bool image;
-  bool selected;
+  int? selected;
 
   _FileSystemEntity({
     required this.filename,
@@ -96,11 +96,20 @@ class FileManagerHeaderWidget extends HookWidget {
 }
 
 class FileManagerFooterWidget extends HookWidget {
-  const FileManagerFooterWidget({Key? key}) : super(key: key);
+  final int nbSelectedItems;
+
+  const FileManagerFooterWidget({Key? key, required this.nbSelectedItems})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const SelectableText("footer");
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(children: []),
+        SelectableText("$nbSelectedItems items"),
+      ],
+    );
   }
 }
 
@@ -113,6 +122,7 @@ class FileManagerWidget extends HookWidget {
   Widget build(BuildContext context) {
     var folderPath = useState<String>(rootPath);
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
+    var nbSelectedItems = useState<int>(0);
 
     loadFilesFolders() async {
       fileSystemEntities.value = null;
@@ -126,7 +136,7 @@ class FileManagerWidget extends HookWidget {
           image: filename.contains('.png') ||
               filename.contains('.jpeg') ||
               filename.contains('.jpg'),
-          selected: false,
+          selected: null,
         );
       }).toList();
       newFileSystemEntities.sort((a, b) {
@@ -147,13 +157,28 @@ class FileManagerWidget extends HookWidget {
     onTapContainer() {
       ContextMenuController.removeAny();
       fileSystemEntities.value = fileSystemEntities.value!.map((e) {
-        e.selected = false;
+        e.selected = null;
         return e;
       }).toList();
     }
 
+    changeDirectory(int index) {
+      if (fileSystemEntities.value![index].directory == true) {
+        folderPath.value =
+            "${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index].filename}";
+      }
+    }
+
     onTapCard(int index, [Set<LogicalKeyboardKey>? keysPressed]) {
       ContextMenuController.removeAny();
+      int now = DateTime.now().millisecondsSinceEpoch;
+      int? lastSelected = fileSystemEntities.value![index].selected;
+      if (lastSelected != null &&
+          lastSelected + 500 >= now &&
+          fileSystemEntities.value![index].directory == true) {
+        changeDirectory(index);
+        return;
+      }
       bool ctrl = false;
       bool shift = false;
       if (keysPressed != null) {
@@ -165,35 +190,29 @@ class FileManagerWidget extends HookWidget {
       if (length > 0) {
         if (shift == true) {
           int firstSelectedIndex =
-              newFileSystemEntities?.indexWhere((e) => e.selected == true) ?? 0;
+              newFileSystemEntities?.indexWhere((e) => e.selected == now) ?? 0;
           for (var i = 0; i < length; i++) {
             if ((i >= firstSelectedIndex && i <= index) ||
                 (i <= firstSelectedIndex && i >= index)) {
-              newFileSystemEntities![i].selected = true;
+              newFileSystemEntities![i].selected = now;
             } else {
-              newFileSystemEntities![i].selected = false;
+              newFileSystemEntities![i].selected = null;
             }
           }
         } else {
           if (ctrl == false) {
             for (var i = 0; i < length; i++) {
-              newFileSystemEntities![i].selected = false;
+              newFileSystemEntities![i].selected = null;
             }
           }
-          newFileSystemEntities![index].selected = true;
+          newFileSystemEntities![index].selected = now;
         }
         fileSystemEntities.value = newFileSystemEntities?.toList();
       }
     }
 
-    onDoubleTapCard(int index) {
-      if (fileSystemEntities.value![index].directory == true) {
-        folderPath.value =
-            "${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index].filename}";
-      }
-    }
-
     // https://stackoverflow.com/a/75736557/6824121
+    // todo https://docs.flutter.dev/development/ui/advanced/actions-and-shortcuts instead
     bool onKey(KeyEvent event) {
       final key = event.logicalKey.keyLabel;
       if (event is KeyDownEvent) {
@@ -218,6 +237,14 @@ class FileManagerWidget extends HookWidget {
       loadFilesFolders();
       return null;
     }, [folderPath.value]);
+
+    useEffect(() {
+      nbSelectedItems.value = fileSystemEntities.value
+              ?.where((element) => element.selected != null)
+              .length ??
+          0;
+      return null;
+    }, [fileSystemEntities.value]);
 
     return fileSystemEntities.value == null
         ? const Center(child: CircularProgressIndicator())
@@ -265,11 +292,10 @@ class FileManagerWidget extends HookWidget {
                               child: GestureDetector(
                                 onTap: () => onTapCard(
                                     index, RawKeyboard.instance.keysPressed),
-                                onDoubleTap: () => onDoubleTapCard(index),
                                 child: Card(
                                   color: fileSystemEntities
-                                              .value![index].selected ==
-                                          true
+                                              .value![index].selected !=
+                                          null
                                       ? Theme.of(context).colorScheme.primary
                                       : null,
                                   child: Column(
@@ -296,7 +322,9 @@ class FileManagerWidget extends HookWidget {
                           );
                         }),
                   ),
-                  const FileManagerFooterWidget(),
+                  FileManagerFooterWidget(
+                    nbSelectedItems: nbSelectedItems.value,
+                  ),
                 ],
               ),
             ),
