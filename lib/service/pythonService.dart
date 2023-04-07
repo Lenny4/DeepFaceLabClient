@@ -9,7 +9,7 @@ import 'package:deepfacelab_client/service/processService.dart';
 class PythonService {
   Future<String> _getPythonScript(String filename) async {
     return (await (File(
-            ((await Process.run("pwd", [])).stdout + "/python/" + filename)
+            ((await Process.run("pwd", [])).stdout + "${Platform.pathSeparator}python${Platform.pathSeparator}" + filename)
                 .replaceAll("\n", "")))
         .readAsString());
   }
@@ -22,7 +22,7 @@ class PythonService {
     }
     await ProcessService().getCondaPrefix();
     String pythonScript = (await _getPythonScript("getDevices.py")).replaceAll(
-        '%deepFaceLabFolder%', store.state.storage?.deepFaceLabFolder ?? "/");
+        '%deepFaceLabFolder%', store.state.storage?.deepFaceLabFolder ?? Platform.pathSeparator);
     ProcessResult result = await Process.run("bash", [
       '-c',
       """${await ProcessService().getCondaPrefix()} && \\

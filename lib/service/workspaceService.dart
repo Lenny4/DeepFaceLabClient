@@ -6,21 +6,13 @@ import 'package:slugify/slugify.dart';
 
 class WorkspaceService {
   _createWorkspace(Workspace newWorkspace, bool? createFolder) async {
-    String path = newWorkspace.path;
     var storage = store.state.storage;
     if (createFolder == true) {
-      storage?.workspaceDefaultPath = path;
-      path += "/${slugify(newWorkspace.name)}";
-      Directory(path).createSync(recursive: true);
-      Directory("$path/data_src").createSync(recursive: true);
-      Directory("$path/data_src/aligned").createSync(recursive: true);
-      Directory("$path/data_src/aligned_debug").createSync(recursive: true);
-      Directory("$path/data_dst").createSync(recursive: true);
-      Directory("$path/data_dst/aligned").createSync(recursive: true);
-      Directory("$path/data_dst/aligned_debug").createSync(recursive: true);
-      Directory("$path/model").createSync(recursive: true);
+      storage?.workspaceDefaultPath = newWorkspace.path;
+      newWorkspace.path =
+          "${newWorkspace.path}${Platform.pathSeparator}${slugify(newWorkspace.name)}";
     }
-    newWorkspace.path = path;
+    reCreateDirectories(workspace: newWorkspace);
     storage?.workspaces = [...?storage.workspaces, newWorkspace];
     int newSelectedScreenIndex = 0;
     int? workspaceLength = storage?.workspaces?.length;
@@ -33,7 +25,7 @@ class WorkspaceService {
 
   _updateWorkspace(Workspace oldWorkspace, Workspace newWorkspace) async {
     if (oldWorkspace.path != newWorkspace.path) {
-      newWorkspace.path = "${newWorkspace.path}/${slugify(newWorkspace.name)}";
+      newWorkspace.path = "${newWorkspace.path}${Platform.pathSeparator}${slugify(newWorkspace.name)}";
       (await Process.run('mv', [oldWorkspace.path, newWorkspace.path]));
     }
     var storage = store.state.storage;
@@ -43,6 +35,28 @@ class WorkspaceService {
       storage?.workspaces![index] = newWorkspace;
     }
     store.dispatch({'storage': storage});
+  }
+
+  reCreateDirectories({required Workspace workspace}) async {
+    Directory(workspace.path).createSync(recursive: true);
+    Directory("${workspace.path}${Platform.pathSeparator}data_src")
+        .createSync(recursive: true);
+    Directory(
+            "${workspace.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned")
+        .createSync(recursive: true);
+    Directory(
+            "${workspace.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned_debug")
+        .createSync(recursive: true);
+    Directory("${workspace.path}${Platform.pathSeparator}data_dst")
+        .createSync(recursive: true);
+    Directory(
+            "${workspace.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned")
+        .createSync(recursive: true);
+    Directory(
+            "${workspace.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned_debug")
+        .createSync(recursive: true);
+    Directory("${workspace.path}${Platform.pathSeparator}model")
+        .createSync(recursive: true);
   }
 
   createUpdateWorkspace(
