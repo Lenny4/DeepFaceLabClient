@@ -8,11 +8,13 @@ import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/localeStorageService.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redux/redux.dart' as redux;
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   store.onChange.listen((AppState appState) {
@@ -152,8 +154,26 @@ class Root extends HookWidget {
                                   alignment: Alignment.bottomCenter,
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: SelectableText(
-                                        packageInfo.value?.version ?? ""),
+                                    child: SelectableText.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: packageInfo.value?.version ??
+                                                "",
+                                            style: const TextStyle(
+                                                color: Colors.blue),
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () {
+                                                launchUrl(
+                                                    Uri.parse(
+                                                        'https://github.com/Lenny4/DeepFaceLabClient/releases'),
+                                                    mode: LaunchMode
+                                                        .platformDefault);
+                                              },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
