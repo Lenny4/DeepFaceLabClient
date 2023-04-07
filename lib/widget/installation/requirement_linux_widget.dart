@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/appState.dart';
 import 'package:deepfacelab_client/class/startProcess.dart';
-import 'package:deepfacelab_client/viewModel/has_requirements_view_model.dart';
 import 'package:deepfacelab_client/widget/common/divider_with_text_widget.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
 import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
@@ -11,7 +10,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class RequirementLinuxWidget extends HookWidget {
@@ -20,7 +19,9 @@ class RequirementLinuxWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = StoreProvider.of<AppState>(context);
+    final hasRequirements =
+        useSelector<AppState, bool>((state) => state.hasRequirements);
+    final dispatch = useDispatch<AppState>();
     var requirements = useState<Map<String, bool>?>(null);
     var loading = useState<bool>(false);
     var startProcesses = useState<List<StartProcess>>([]);
@@ -79,7 +80,7 @@ fi
       }
       startProcesses.value = newStartProcesses;
       whoami.value = (await Process.run('whoami', [])).stdout;
-      store.dispatch({
+      dispatch({
         'hasRequirements': requirements.value?.entries
             .map<bool>((e) => e.value)
             .reduce((value, element) => value && element)
@@ -237,16 +238,13 @@ ${requirements.value!['hasFfmpeg'] == true ? "✅ `ffmpeg`" : "❌ `ffmpeg` was 
                       ),
                     ),
                   ),
-            StoreConnector<AppState, HasRequirementsViewModel>(
-                builder: (BuildContext context, HasRequirementsViewModel vm) {
-                  return !vm.hasRequirements
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(top: 50.0),
-                              child:
-                                  const MarkdownBody(selectable: true, data: """
+            hasRequirements != true
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 50.0),
+                        child: const MarkdownBody(selectable: true, data: """
 ## Install by yourself
                     
 You need to install the missing packages, and add it to your `PATH` if necessary
@@ -254,72 +252,66 @@ You need to install the missing packages, and add it to your `PATH` if necessary
 - You can do it yourself and then click on `Recheck my requirements`.
 - Or you can click on `Install for me` and DeepFaceLabClient will try to install all missing packages for you.
 """),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(
-                                  top: 30.0, bottom: 30.0),
-                              child: ElevatedButton.icon(
-                                onPressed:
-                                    loading.value ? null : onUpdateRequirements,
-                                icon: loading.value
-                                    ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                    : const SizedBox.shrink(),
-                                label: const Text('Recheck my requirements'),
-                              ),
-                            ),
-                            DividerWithTextWidget(text: "OR"),
-                            Container(
-                                margin: const EdgeInsets.only(
-                                    top: 30.0, bottom: 30.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const MarkdownBody(
-                                        selectable: true, data: """
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 30.0, bottom: 30.0),
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              loading.value ? null : onUpdateRequirements,
+                          icon: loading.value
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const SizedBox.shrink(),
+                          label: const Text('Recheck my requirements'),
+                        ),
+                      ),
+                      DividerWithTextWidget(text: "OR"),
+                      Container(
+                          margin:
+                              const EdgeInsets.only(top: 30.0, bottom: 30.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const MarkdownBody(selectable: true, data: """
 ## Let DeepFaceLabClient try to install
 """),
-                                    if (requirements.value!['hasConda'] ==
-                                        false) ...[
-                                      Row(
-                                        children: [
-                                          MarkdownBody(
-                                              selectable: true, data: """
+                              if (requirements.value!['hasConda'] == false) ...[
+                                Row(
+                                  children: [
+                                    MarkdownBody(selectable: true, data: """
 `conda` will be install in this folder `${condaInstallFolder.value}`
 """),
-                                          IconButton(
-                                            icon: const Icon(Icons.folder),
-                                            splashRadius: 20,
-                                            onPressed: selectFolder,
-                                          ),
-                                        ],
-                                      ),
-                                      MarkdownBody(selectable: true, data: """
+                                    IconButton(
+                                      icon: const Icon(Icons.folder),
+                                      splashRadius: 20,
+                                      onPressed: selectFolder,
+                                    ),
+                                  ],
+                                ),
+                                MarkdownBody(selectable: true, data: """
 please click on the folder icon to change the location (you must have write permission to this folder as user `${whoami.value}`)
 
 Note that DeepFaceLabClient will add a path in your `/etc/environment` file to add `conda` in your `PATH`,
 when the installation is done you will need to restart your computer.
 """),
-                                    ],
-                                    Container(
-                                      margin: const EdgeInsets.only(top: 10.0),
-                                      child: StartProcessWidget(
-                                        label: "Install for me",
-                                        startProcesses: startProcesses.value,
-                                        callback: onInstallationDone,
-                                      ),
-                                    ),
-                                  ],
-                                )),
-                            Container(
+                              ],
+                              Container(
                                 margin: const EdgeInsets.only(top: 10.0),
-                                child: OpenIssueWidget()),
-                          ],
-                        )
-                      : const SizedBox.shrink();
-                },
-                converter: (store) => HasRequirementsViewModel.fromStore(store))
+                                child: StartProcessWidget(
+                                  label: "Install for me",
+                                  startProcesses: startProcesses.value,
+                                  callback: onInstallationDone,
+                                ),
+                              ),
+                            ],
+                          )),
+                      Container(
+                          margin: const EdgeInsets.only(top: 10.0),
+                          child: OpenIssueWidget()),
+                    ],
+                  )
+                : const SizedBox.shrink()
           ] else ...[
             const CircularProgressIndicator()
           ],

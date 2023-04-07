@@ -47,7 +47,7 @@ class WorkspaceScreen extends HookWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DevicesWidget(),
+                    const DevicesWidget(),
                     const Divider(),
                     DeleteWorkspaceFormWidget(workspace: initWorkspace)
                   ],

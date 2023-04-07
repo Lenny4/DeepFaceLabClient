@@ -103,7 +103,7 @@ class FileManagerFooterWidget extends HookWidget {
 class FileManagerWidget extends HookWidget {
   final String rootPath;
 
-  FileManagerWidget({Key? key, required this.rootPath}) : super(key: key);
+  const FileManagerWidget({Key? key, required this.rootPath}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 class DividerWithTextWidget extends HookWidget {
   final String text;
 
-  DividerWithTextWidget({Key? key, required this.text}) : super(key: key);
+  const DividerWithTextWidget({Key? key, required this.text}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

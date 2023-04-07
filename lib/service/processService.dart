@@ -6,7 +6,7 @@ import 'package:deepfacelab_client/class/condaEnvList.dart';
 import 'package:flutter/cupertino.dart';
 
 class ProcessService {
-  Future<String> getCondaPrefix([ValueNotifier? ouputs]) async {
+  Future<String> getCondaPrefix([ValueNotifier<List<String>>? ouputs]) async {
     String condaInit =
         (await Process.run('conda', ['init', '--verbose', '-d'])).stdout;
     String? match = RegExp(r'initialize[\s\S]*?initialize', multiLine: true)

@@ -22,7 +22,13 @@ class WorkspaceService {
     }
     newWorkspace.path = path;
     storage?.workspaces = [...?storage.workspaces, newWorkspace];
-    store.dispatch({'storage': storage});
+    int newSelectedScreenIndex = 0;
+    int? workspaceLength = storage?.workspaces?.length;
+    if (workspaceLength != null) {
+      newSelectedScreenIndex = workspaceLength + 1;
+    }
+    store.dispatch(
+        {'selectedScreenIndex': newSelectedScreenIndex, 'storage': storage});
   }
 
   _updateWorkspace(Workspace oldWorkspace, Workspace newWorkspace) async {

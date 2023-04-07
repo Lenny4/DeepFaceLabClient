@@ -246,14 +246,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.14"
-  flutter_redux:
+  flutter_redux_hooks:
     dependency: "direct main"
     description:
-      name: flutter_redux
-      sha256: "3b20be9e08d0038e1452fbfa1fdb1ea0a7c3738c997734530b3c6d0bb5fcdbdc"
+      name: flutter_redux_hooks
+      sha256: a9bd07e31b9d7449fc921b006f1767912672936567063cc699b689fa537dc578
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.2.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -766,5 +766,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.19.4 <3.0.0"
+  dart: ">=2.19.5 <3.0.0"
   flutter: ">=3.3.0"

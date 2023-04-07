@@ -1,18 +1,16 @@
 import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/storage.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/localeStorageService.dart';
-import 'package:deepfacelab_client/viewModel/can_use_deepfacelab_view_model.dart';
-import 'package:deepfacelab_client/viewModel/dark_mode_view_model.dart';
-import 'package:deepfacelab_client/viewModel/init_view_model.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redux/redux.dart' as redux;
 
@@ -39,14 +37,7 @@ class MyApp extends HookWidget {
       fileTileSelectMode: FileTileSelectMode.wholeTile,
       child: StoreProvider<AppState>(
         store: store,
-        child: StoreConnector<AppState, DarkModeViewModel>(
-            builder: (BuildContext context, DarkModeViewModel vm) {
-              return MaterialApp(
-                  theme: vm.darkMode ? ThemeData.dark() : ThemeData.light(),
-                  themeMode: vm.darkMode ? ThemeMode.dark : ThemeMode.light,
-                  home: const Root());
-            },
-            converter: (store) => DarkModeViewModel.fromStore(store)),
+        child: const Root(),
       ),
     );
   }
@@ -65,8 +56,18 @@ class Root extends HookWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final store = StoreProvider.of<AppState>(context);
-
+    final darkMode =
+        useSelector<AppState, bool?>((state) => state.storage?.darkMode);
+    final workspaces = useSelector<AppState, List<Workspace>?>(
+        (state) => state.storage?.workspaces);
+    final init = useSelector<AppState, bool>((state) => state.init);
+    final selectedScreenIndex =
+        useSelector<AppState, int>((state) => state.selectedScreenIndex);
+    final hasRequirements =
+        useSelector<AppState, bool>((state) => state.hasRequirements);
+    final deepFaceLabFolder = useSelector<AppState, String?>(
+        (state) => state.storage?.deepFaceLabFolder);
+    final dispatch = useDispatch<AppState>();
     var packageInfo = useState<PackageInfo?>(null);
 
     List<NavigationRailElement> getViews() {
@@ -86,8 +87,7 @@ class Root extends HookWidget {
             ),
             widget: const WorkspaceScreen()),
       ];
-      List<Workspace>? workspaces = store.state.storage?.workspaces;
-      if (store.state.init == true && workspaces != null) {
+      if (init == true && workspaces != null) {
         for (Workspace workspace in workspaces) {
           result.add(
             NavigationRailElement(
@@ -114,87 +114,77 @@ class Root extends HookWidget {
 
     var views = useState<List<NavigationRailElement>>(getViews());
 
-    init() async {
+    initWidget() async {
+      dispatch({
+        'init': true,
+        'storage': Storage.fromJson(await LocaleStorageService().readStorage()),
+      });
       packageInfo.value = await PackageInfo.fromPlatform();
     }
 
     useEffect(() {
-      init();
+      initWidget();
+      return null;
     }, []);
 
-    return StoreConnector<AppState, InitViewModel>(
-        onWillChange: (prevVm, newVm) {
-          if (prevVm?.workspaceJson != newVm.workspaceJson) {
-            views.value = getViews();
-            if (prevVm?.init == true &&
-                prevVm?.nbWorkspace != newVm.nbWorkspace) {
-              store.dispatch({'selectedScreenIndex': newVm.nbWorkspace + 1});
-            }
-          }
-        },
-        builder: (BuildContext context, InitViewModel vm1) {
-          return vm1.init
-              ? Row(
-                  children: <Widget>[
-                    LayoutBuilder(
-                      builder: (context, constraint) {
-                        return SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                                minHeight: constraint.maxHeight, maxWidth: 150),
-                            child: IntrinsicHeight(
-                              // https://api.flutter.dev/flutter/material/NavigationRail-class.html
-                              child: NavigationRail(
-                                trailing: Expanded(
-                                  child: Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 8.0),
-                                      child: SelectableText(
-                                          packageInfo.value?.version ?? ""),
-                                    ),
+    useEffect(() {
+      views.value = getViews();
+      return null;
+    }, [workspaces]);
+
+    return MaterialApp(
+        theme: darkMode != false ? ThemeData.dark() : ThemeData.light(),
+        themeMode: darkMode != false ? ThemeMode.dark : ThemeMode.light,
+        home: init == true
+            ? Row(
+                children: <Widget>[
+                  LayoutBuilder(
+                    builder: (context, constraint) {
+                      return SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              minHeight: constraint.maxHeight, maxWidth: 150),
+                          child: IntrinsicHeight(
+                            // https://api.flutter.dev/flutter/material/NavigationRail-class.html
+                            child: NavigationRail(
+                              trailing: Expanded(
+                                child: Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: SelectableText(
+                                        packageInfo.value?.version ?? ""),
                                   ),
                                 ),
-                                selectedIndex: vm1.selectedScreenIndex,
-                                groupAlignment: -1.0,
-                                onDestinationSelected: (int index) {
-                                  store
-                                      .dispatch({'selectedScreenIndex': index});
-                                },
-                                labelType: NavigationRailLabelType.all,
-                                destinations: views.value
-                                    .map((view) => view.destination)
-                                    .toList(),
                               ),
+                              selectedIndex: selectedScreenIndex,
+                              groupAlignment: -1.0,
+                              onDestinationSelected: (int index) {
+                                dispatch({'selectedScreenIndex': index});
+                              },
+                              labelType: NavigationRailLabelType.all,
+                              destinations: views.value
+                                  .map((view) => view.destination)
+                                  .toList(),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                    const VerticalDivider(thickness: 1, width: 1),
-                    // This is the main content.
-                    Expanded(
-                        child: StoreConnector<AppState,
-                                CanUseDeepfacelabViewModel>(
-                            builder: (BuildContext context,
-                                CanUseDeepfacelabViewModel vm2) {
-                              return vm2.canUseDeepfacelab
-                                  ? views.value
-                                      .elementAt(vm1.selectedScreenIndex)
-                                      .widget
-                                  : const Scaffold(
-                                      body: SingleChildScrollView(
-                                        child: HasRequirementsWidget(),
-                                      ),
-                                    );
-                            },
-                            converter: (store) =>
-                                CanUseDeepfacelabViewModel.fromStore(store))),
-                  ],
-                )
-              : const Scaffold(body: LoadingScreen());
-        },
-        converter: (store) => InitViewModel.fromStore(store));
+                        ),
+                      );
+                    },
+                  ),
+                  const VerticalDivider(thickness: 1, width: 1),
+                  // This is the main content.
+                  Expanded(
+                      child: hasRequirements == true &&
+                              deepFaceLabFolder != null
+                          ? views.value.elementAt(selectedScreenIndex!).widget
+                          : const Scaffold(
+                              body: SingleChildScrollView(
+                                child: HasRequirementsWidget(),
+                              ),
+                            )),
+                ],
+              )
+            : const Scaffold(body: LoadingScreen()));
   }
 }

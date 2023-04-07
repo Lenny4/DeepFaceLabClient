@@ -8,7 +8,7 @@ import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 
 class WorkspaceFormWidget extends HookWidget {
   final Workspace? initWorkspace;
@@ -17,13 +17,14 @@ class WorkspaceFormWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = StoreProvider.of<AppState>(context);
     String? homeDirectory = (Platform.environment)['HOME'];
-    final _formKey = GlobalKey<FormState>();
+    final workspaceDefaultPath = useSelector<AppState, String?>(
+        (state) => state.storage?.workspaceDefaultPath);
+    final formKey = GlobalKey<FormState>();
 
     getWorkspacePath() {
       return initWorkspace?.path ??
-          store.state.storage?.workspaceDefaultPath ??
+          workspaceDefaultPath ??
           homeDirectory ??
           "/";
     }
@@ -39,34 +40,34 @@ class WorkspaceFormWidget extends HookWidget {
     var workspaceCreateFolder = useState<bool>(true);
     var loading = useState<bool>(false);
     var edit = useState<bool>(getWorkspaceEdit());
-    final workspaceNameController =
-        TextEditingController(text: getWorkspaceName());
-    final workspacePathController =
-        TextEditingController(text: getWorkspacePath());
+    final workspaceNameController = useState<TextEditingController>(
+        TextEditingController(text: getWorkspaceName()));
+    final workspacePathController = useState<TextEditingController>(
+        TextEditingController(text: getWorkspacePath()));
 
     selectFolder() async {
       var value = await FilesystemPicker.openDialog(
         title: 'Workspace path',
         context: context,
         rootDirectory: Directory("/"),
-        directory: Directory(workspacePathController.text),
+        directory: Directory(workspacePathController.value.text),
         fsType: FilesystemType.folder,
         pickText: 'Validate',
       );
       if (value == null) {
         return;
       }
-      workspacePathController.text = value;
+      workspacePathController.value = TextEditingController(text: value);
     }
 
     save() async {
       loading.value = true;
-      _formKey.currentState?.save();
+      formKey.currentState?.save();
       await WorkspaceService().createUpdateWorkspace(
         oldWorkspace: initWorkspace,
         newWorkspace: Workspace(
-            name: workspaceNameController.text,
-            path: workspacePathController.text),
+            name: workspaceNameController.value.text,
+            path: workspacePathController.value.text),
         createFolder: workspaceCreateFolder.value,
       );
       loading.value = false;
@@ -75,12 +76,15 @@ class WorkspaceFormWidget extends HookWidget {
 
     onChangeInitWorkspace() {
       edit.value = getWorkspaceEdit();
-      workspacePathController.text = getWorkspacePath();
-      workspaceNameController.text = getWorkspaceName();
+      workspaceNameController.value =
+          TextEditingController(text: getWorkspaceName());
+      workspacePathController.value =
+          TextEditingController(text: getWorkspacePath());
     }
 
     useEffect(() {
       onChangeInitWorkspace();
+      return null;
     }, [initWorkspace]);
 
     // https://docs.flutter.dev/cookbook/forms/validation
@@ -93,14 +97,14 @@ class WorkspaceFormWidget extends HookWidget {
                 "# ${initWorkspace == null ? "Create a workspace" : edit.value == true ? "Edit workspace" : ""}"),
         if (edit.value == true) ...[
           Form(
-            key: _formKey,
+            key: formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
                   decoration: const InputDecoration(
                       hintText: 'Workspace name', labelText: 'Workspace name'),
-                  controller: workspaceNameController,
+                  controller: workspaceNameController.value,
                   keyboardType: TextInputType.text,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -111,7 +115,7 @@ class WorkspaceFormWidget extends HookWidget {
                 ),
                 TextFormField(
                   readOnly: true,
-                  controller: workspacePathController,
+                  controller: workspacePathController.value,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     hintText: 'Workspace path',
@@ -162,7 +166,7 @@ class WorkspaceFormWidget extends HookWidget {
                       ElevatedButton.icon(
                         onPressed: !loading.value
                             ? () {
-                                if (_formKey.currentState!.validate()) {
+                                if (formKey.currentState!.validate()) {
                                   save();
                                 }
                               }
