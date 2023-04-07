@@ -1,5 +1,6 @@
 // https://github.com/flutter/samples/blob/main/experimental/context_menus/lib/context_menu_region.dart
 // https://stackoverflow.com/questions/74868518/how-to-have-a-custom-context-menu-for-textfields-in-flutter
+// https://api.flutter.dev/flutter/widgets/ContextMenuController-class.html
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class ContextMenuRegion extends StatefulWidget {
     super.key,
     required this.child,
     required this.contextMenuBuilder,
+    this.beforeShow,
   });
 
   /// Builds the context menu.
@@ -22,6 +24,8 @@ class ContextMenuRegion extends StatefulWidget {
 
   /// The child widget that will be listened to for gestures.
   final Widget child;
+
+  final Null Function()? beforeShow;
 
   @override
   State<ContextMenuRegion> createState() => _ContextMenuRegionState();
@@ -67,6 +71,7 @@ class _ContextMenuRegionState extends State<ContextMenuRegion> {
   }
 
   void _show(Offset position) {
+    widget.beforeShow!();
     _contextMenuController.show(
       context: context,
       contextMenuBuilder: (context) {
