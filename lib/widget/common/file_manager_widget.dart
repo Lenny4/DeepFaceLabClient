@@ -169,11 +169,13 @@ class FileManagerWidget extends HookWidget {
       }
     }
 
-    onTapCard(int index, [Set<LogicalKeyboardKey>? keysPressed]) {
+    onTapCard(int index,
+        {Set<LogicalKeyboardKey>? keysPressed, bool? rightClick}) {
       ContextMenuController.removeAny();
       int now = DateTime.now().millisecondsSinceEpoch;
       int? lastSelected = fileSystemEntities.value![index].selected;
-      if (lastSelected != null &&
+      if (rightClick != true &&
+          lastSelected != null &&
           lastSelected + 500 >= now &&
           fileSystemEntities.value![index].directory == true) {
         changeDirectory(index);
@@ -271,7 +273,8 @@ class FileManagerWidget extends HookWidget {
                           return Tooltip(
                             message: fileSystemEntities.value![index].filename,
                             child: ContextMenuRegion(
-                              beforeShow: () => onTapCard(index),
+                              beforeShow: () =>
+                                  onTapCard(index, rightClick: true),
                               contextMenuBuilder: (context, primaryAnchor,
                                   [secondaryAnchor]) {
                                 return AdaptiveTextSelectionToolbar.buttonItems(
@@ -290,8 +293,9 @@ class FileManagerWidget extends HookWidget {
                                 );
                               },
                               child: GestureDetector(
-                                onTap: () => onTapCard(
-                                    index, RawKeyboard.instance.keysPressed),
+                                onTap: () => onTapCard(index,
+                                    keysPressed:
+                                        RawKeyboard.instance.keysPressed),
                                 child: Card(
                                   color: fileSystemEntities
                                               .value![index].selected !=
