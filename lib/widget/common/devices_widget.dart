@@ -23,10 +23,13 @@ class DevicesWidget extends HookWidget {
       return null;
     }, []);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const MarkdownBody(selectable: true, data: "## Your GPUs"),
+    return ExpansionTile(
+      initiallyExpanded: true,
+      expandedAlignment: Alignment.topLeft,
+      title: Text(
+          'Your GPUs ${(devices != null && devices.isNotEmpty ? "(${devices.length})" : "") ?? ""}'),
+      tilePadding: const EdgeInsets.all(0.0),
+      children: <Widget>[
         devices == null
             ? const CircularProgressIndicator()
             : devices.isNotEmpty

@@ -5,6 +5,7 @@ import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:path/path.dart' as Path;
 
 class _PathItem {
@@ -106,8 +107,32 @@ class FileManagerFooterWidget extends HookWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(children: []),
+        const SizedBox.shrink(),
         SelectableText("$nbSelectedItems items"),
+      ],
+    );
+  }
+}
+
+class FileManagerShortcutWidget extends HookWidget {
+  const FileManagerShortcutWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const ExpansionTile(
+      expandedAlignment: Alignment.topLeft,
+      title: Text('Shortcuts'),
+      tilePadding: EdgeInsets.all(0.0),
+      children: <Widget>[
+        MarkdownBody(data: """
+- `f2`: rename
+- `Ctrl + A`: Select all
+- `del`: Delete
+- `left click`: Select
+- `right click`: Contextual menu
+- `Ctrl + click`: Select multiple
+- `Shift + click`: Select range
+    """)
       ],
     );
   }
@@ -222,7 +247,7 @@ class FileManagerWidget extends HookWidget {
       if (length > 0) {
         if (shift == true) {
           int firstSelectedIndex =
-              newFileSystemEntities?.indexWhere((e) => e.selected == now) ?? 0;
+              newFileSystemEntities?.indexWhere((e) => e.selected != null) ?? 0;
           for (var i = 0; i < length; i++) {
             if ((i >= firstSelectedIndex && i <= index) ||
                 (i <= firstSelectedIndex && i >= index)) {
