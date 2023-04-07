@@ -149,6 +149,8 @@ class FileManagerWidget extends HookWidget {
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
     var nbSelectedItems = useState<int>(0);
     var myFocusNode = useState<FocusNode>(FocusNode());
+    var loadingRename = useState<bool>(false);
+    final formRenameKey = GlobalKey<FormState>();
 
     loadFilesFolders() async {
       fileSystemEntities.value = null;
@@ -198,10 +200,90 @@ class FileManagerWidget extends HookWidget {
     }
 
     rename() {
-      print("rename");
+      ContextMenuController.removeAny();
+      if (nbSelectedItems.value != 1) {
+        return;
+      }
+      var fileSystemEntity = fileSystemEntities.value
+          ?.firstWhere((element) => element.selected != null);
+      final controller =
+          TextEditingController(text: fileSystemEntity?.filename);
+      final extension = Path.extension(fileSystemEntity?.filename ?? "");
+      controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset:
+            fileSystemEntity?.filename.replaceFirst(extension, "").length ?? 0,
+      );
+      validateFormRename() async {
+        if (formRenameKey.currentState!.validate()) {
+          loadingRename.value = true;
+          if (fileSystemEntity?.directory == true) {
+            await Directory(
+                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
+                .rename(
+                    "${folderPath.value}${Platform.pathSeparator}${controller.text}");
+          } else {
+            await File(
+                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
+                .rename(
+                    "${folderPath.value}${Platform.pathSeparator}${controller.text}");
+          }
+          await loadFilesFolders();
+          loadingRename.value = false;
+          return true;
+        }
+        return false;
+      }
+
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          content: Form(
+            key: formRenameKey,
+            child: TextFormField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.text,
+              onFieldSubmitted: (value) {
+                validateFormRename().then((value) {
+                  if (value == true) {
+                    Navigator.pop(context);
+                  }
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'This field must not be empty';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton.icon(
+              onPressed: !loadingRename.value
+                  ? () {
+                      validateFormRename().then((value) {
+                        if (value == true) {
+                          Navigator.pop(context);
+                        }
+                      });
+                    }
+                  : null,
+              icon: loadingRename.value
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : const SizedBox.shrink(),
+              label: const Text("Rename"),
+            ),
+          ],
+        ),
+      );
     }
 
     delete() {
+      ContextMenuController.removeAny();
       print("delete");
     }
 
@@ -316,6 +398,7 @@ class FileManagerWidget extends HookWidget {
                             gridDelegate:
                                 const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 100,
+                              childAspectRatio: 0.7,
                             ),
                             itemCount: fileSystemEntities.value!.length,
                             itemBuilder: (BuildContext context, int index) {
@@ -336,10 +419,12 @@ class FileManagerWidget extends HookWidget {
                                       ),
                                       buttonItems: <ContextMenuButtonItem>[
                                         ContextMenuButtonItem(
-                                          onPressed: () {
-                                            ContextMenuController.removeAny();
-                                          },
-                                          label: 'Back',
+                                          onPressed: rename,
+                                          label: 'Rename',
+                                        ),
+                                        ContextMenuButtonItem(
+                                          onPressed: delete,
+                                          label: 'Delete',
                                         ),
                                       ],
                                     );

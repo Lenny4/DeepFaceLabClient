@@ -15,11 +15,11 @@ class DeleteWorkspaceFormWidget extends HookWidget {
   Widget build(BuildContext context) {
     var loading = useState<bool>(false);
     var deleteFolder = useState<bool>(true);
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     delete() async {
       loading.value = true;
-      _formKey.currentState?.save();
+      formKey.currentState?.save();
       var thisWorkspace = workspace;
       if (thisWorkspace != null) {
         WorkspaceService().deleteWorkspace(
@@ -40,7 +40,7 @@ class DeleteWorkspaceFormWidget extends HookWidget {
                 title: SelectableText('Delete `${workspace?.name}`'),
                 content: IntrinsicHeight(
                   child: Form(
-                    key: _formKey,
+                    key: formKey,
                     child: Column(
                       children: [
                         SelectableText(
