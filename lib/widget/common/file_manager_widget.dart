@@ -123,6 +123,7 @@ class FileManagerWidget extends HookWidget {
     var folderPath = useState<String>(rootPath);
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
     var nbSelectedItems = useState<int>(0);
+    var myFocusNode = useState<FocusNode>(FocusNode());
 
     loadFilesFolders() async {
       fileSystemEntities.value = null;
@@ -155,11 +156,28 @@ class FileManagerWidget extends HookWidget {
     }
 
     onTapContainer() {
+      FocusScope.of(context).requestFocus(myFocusNode.value);
       ContextMenuController.removeAny();
       fileSystemEntities.value = fileSystemEntities.value!.map((e) {
         e.selected = null;
         return e;
       }).toList();
+    }
+
+    selectAll() {
+      int now = DateTime.now().millisecondsSinceEpoch;
+      fileSystemEntities.value = fileSystemEntities.value!.map((e) {
+        e.selected = now;
+        return e;
+      }).toList();
+    }
+
+    rename() {
+      print("rename");
+    }
+
+    delete() {
+      print("delete");
     }
 
     changeDirectory(int index) {
@@ -171,14 +189,26 @@ class FileManagerWidget extends HookWidget {
 
     onTapCard(int index,
         {Set<LogicalKeyboardKey>? keysPressed, bool? rightClick}) {
+      FocusScope.of(context).requestFocus(myFocusNode.value);
       ContextMenuController.removeAny();
       int now = DateTime.now().millisecondsSinceEpoch;
       int? lastSelected = fileSystemEntities.value![index].selected;
       if (rightClick != true &&
           lastSelected != null &&
-          lastSelected + 500 >= now &&
-          fileSystemEntities.value![index].directory == true) {
-        changeDirectory(index);
+          lastSelected + 500 >= now) {
+        if (fileSystemEntities.value![index].directory == true) {
+          changeDirectory(index);
+        } else {
+          String executable = 'xdg-open';
+          if (Platform.isWindows) {
+            executable = 'start';
+          }
+          Process.run(executable, [
+            folderPath.value +
+                Platform.pathSeparator +
+                fileSystemEntities.value![index].filename
+          ]);
+        }
         return;
       }
       bool ctrl = false;
@@ -213,23 +243,6 @@ class FileManagerWidget extends HookWidget {
       }
     }
 
-    // https://stackoverflow.com/a/75736557/6824121
-    // todo https://docs.flutter.dev/development/ui/advanced/actions-and-shortcuts instead
-    bool onKey(KeyEvent event) {
-      final key = event.logicalKey.keyLabel;
-      if (event is KeyDownEvent) {
-        print("Key down: $key");
-      }
-      return false;
-    }
-
-    useEffect(() {
-      ServicesBinding.instance.keyboard.addHandler(onKey);
-      return () {
-        ServicesBinding.instance.keyboard.removeHandler(onKey);
-      };
-    }, []);
-
     useEffect(() {
       folderPath.value = rootPath;
       return null;
@@ -261,70 +274,91 @@ class FileManagerWidget extends HookWidget {
                       path: folderPath.value,
                       rootPath: rootPath),
                   Expanded(
-                    child: GridView.builder(
-                        // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
-                        // https://www.youtube.com/watch?v=0blNt4XIi0g
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 100,
-                        ),
-                        itemCount: fileSystemEntities.value!.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Tooltip(
-                            message: fileSystemEntities.value![index].filename,
-                            child: ContextMenuRegion(
-                              beforeShow: () =>
-                                  onTapCard(index, rightClick: true),
-                              contextMenuBuilder: (context, primaryAnchor,
-                                  [secondaryAnchor]) {
-                                return AdaptiveTextSelectionToolbar.buttonItems(
-                                  anchors: TextSelectionToolbarAnchors(
-                                    primaryAnchor: primaryAnchor,
-                                    secondaryAnchor: secondaryAnchor as Offset?,
-                                  ),
-                                  buttonItems: <ContextMenuButtonItem>[
-                                    ContextMenuButtonItem(
-                                      onPressed: () {
-                                        ContextMenuController.removeAny();
-                                      },
-                                      label: 'Back',
-                                    ),
-                                  ],
-                                );
-                              },
-                              child: GestureDetector(
-                                onTap: () => onTapCard(index,
-                                    keysPressed:
-                                        RawKeyboard.instance.keysPressed),
-                                child: Card(
-                                  color: fileSystemEntities
-                                              .value![index].selected !=
-                                          null
-                                      ? Theme.of(context).colorScheme.primary
-                                      : null,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      fileSystemEntities.value![index].directory
-                                          ? const Icon(Icons.folder, size: 50)
-                                          : fileSystemEntities
-                                                  .value![index].image
-                                              ? Image.asset(
-                                                  height: 70,
-                                                  ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
-                                              : const Icon(Icons.file_open,
-                                                  size: 50),
-                                      Text(
+                    child: CallbackShortcuts(
+                      bindings: {
+                        const SingleActivator(LogicalKeyboardKey.keyA,
+                            control: true): selectAll,
+                        const SingleActivator(LogicalKeyboardKey.f2): rename,
+                        const SingleActivator(LogicalKeyboardKey.delete):
+                            delete,
+                      },
+                      child: Focus(
+                        focusNode: myFocusNode.value,
+                        autofocus: true,
+                        child: GridView.builder(
+                            // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
+                            // https://www.youtube.com/watch?v=0blNt4XIi0g
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 100,
+                            ),
+                            itemCount: fileSystemEntities.value!.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Tooltip(
+                                message:
+                                    fileSystemEntities.value![index].filename,
+                                child: ContextMenuRegion(
+                                  beforeShow: () =>
+                                      onTapCard(index, rightClick: true),
+                                  contextMenuBuilder: (context, primaryAnchor,
+                                      [secondaryAnchor]) {
+                                    return AdaptiveTextSelectionToolbar
+                                        .buttonItems(
+                                      anchors: TextSelectionToolbarAnchors(
+                                        primaryAnchor: primaryAnchor,
+                                        secondaryAnchor:
+                                            secondaryAnchor as Offset?,
+                                      ),
+                                      buttonItems: <ContextMenuButtonItem>[
+                                        ContextMenuButtonItem(
+                                          onPressed: () {
+                                            ContextMenuController.removeAny();
+                                          },
+                                          label: 'Back',
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  child: GestureDetector(
+                                    onTap: () => onTapCard(index,
+                                        keysPressed:
+                                            RawKeyboard.instance.keysPressed),
+                                    child: Card(
+                                      color: fileSystemEntities
+                                                  .value![index].selected !=
+                                              null
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : null,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
                                           fileSystemEntities
-                                              .value![index].filename,
-                                          maxLines: 1),
-                                    ],
+                                                  .value![index].directory
+                                              ? const Icon(Icons.folder,
+                                                  size: 50)
+                                              : fileSystemEntities
+                                                      .value![index].image
+                                                  ? Image.asset(
+                                                      height: 70,
+                                                      ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
+                                                  : const Icon(Icons.file_open,
+                                                      size: 50),
+                                          Text(
+                                              fileSystemEntities
+                                                  .value![index].filename,
+                                              maxLines: 1),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }),
+                              );
+                            }),
+                      ),
+                    ),
                   ),
                   FileManagerFooterWidget(
                     nbSelectedItems: nbSelectedItems.value,
