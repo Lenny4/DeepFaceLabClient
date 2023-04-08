@@ -187,7 +187,7 @@ class FileManagerMissingFolderWidget extends HookWidget {
     }
 
     updateFromParent() {
-      reCreateDirectories();
+      missingDirectories.value = getMissingDirectories();
     }
 
     controller.updateFromParent = updateFromParent;
@@ -200,9 +200,27 @@ class FileManagerMissingFolderWidget extends HookWidget {
     return missingDirectories.value.isNotEmpty
         ? Container(
             margin: const EdgeInsets.only(top: 10),
-            child: ElevatedButton(
-              onPressed: reCreateDirectories,
-              child: const Text("Create missing directories"),
+            child: Row(
+              children: [
+                ElevatedButton(
+                  onPressed: reCreateDirectories,
+                  child: const Text("Create missing directories"),
+                ),
+                IconButton(
+                    icon: const Icon(Icons.info),
+                    splashRadius: 20,
+                    tooltip: 'Information',
+                    onPressed: () => showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            content: MarkdownBody(selectable: true, data: """
+These folders are missing in your workspaces:
+
+${missingDirectories.value.map((path) => path.replaceFirst(workspace?.path ?? "", "")).join('\n\n')}
+                          """),
+                          ),
+                        ))
+              ],
             ),
           )
         : const SizedBox.shrink();
