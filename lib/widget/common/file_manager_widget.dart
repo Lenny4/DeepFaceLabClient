@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:deepfacelab_client/class/workspace.dart';
+import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/workspaceService.dart';
 import 'package:deepfacelab_client/widget/common/context_menu_region.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
@@ -147,8 +148,14 @@ class FileManagerShortcutWidget extends HookWidget {
 
 class FileManagerMissingFolderWidget extends HookWidget {
   final Workspace? workspace;
+  final UpdateChildController controller;
+  final Null Function() updateMain;
 
-  const FileManagerMissingFolderWidget({Key? key, required this.workspace})
+  const FileManagerMissingFolderWidget(
+      {Key? key,
+      required this.workspace,
+      required this.controller,
+      required this.updateMain})
       : super(key: key);
 
   @override
@@ -171,10 +178,19 @@ class FileManagerMissingFolderWidget extends HookWidget {
 
     reCreateDirectories() async {
       if (workspace != null) {
-        await WorkspaceService().reCreateDirectories(workspace: workspace);
+        if (missingDirectories.value.isNotEmpty) {
+          await WorkspaceService().reCreateDirectories(workspace: workspace);
+          updateMain();
+        }
+        missingDirectories.value = getMissingDirectories();
       }
-      missingDirectories.value = getMissingDirectories();
     }
+
+    updateFromParent() {
+      reCreateDirectories();
+    }
+
+    controller.updateFromParent = updateFromParent;
 
     useEffect(() {
       missingDirectories.value = getMissingDirectories();
@@ -195,8 +211,15 @@ class FileManagerMissingFolderWidget extends HookWidget {
 
 class FileManagerWidget extends HookWidget {
   final String rootPath;
+  final UpdateChildController controller;
+  final Null Function() updateFileMissing;
 
-  const FileManagerWidget({Key? key, required this.rootPath}) : super(key: key);
+  const FileManagerWidget(
+      {Key? key,
+      required this.rootPath,
+      required this.controller,
+      required this.updateFileMissing})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -318,29 +341,30 @@ class FileManagerWidget extends HookWidget {
         return;
       }
       final controller =
-      TextEditingController(text: fileSystemEntity?.filename);
+          TextEditingController(text: fileSystemEntity?.filename);
       final extension = Path.extension(fileSystemEntity?.filename ?? "");
       controller.selection = TextSelection(
         baseOffset: 0,
         extentOffset:
-        fileSystemEntity?.filename.replaceFirst(extension, "").length ?? 0,
+            fileSystemEntity?.filename.replaceFirst(extension, "").length ?? 0,
       );
       validateFormRename() async {
         if (formRenameKey.currentState!.validate()) {
           loadingForm.value = true;
           if (fileSystemEntity?.directory == true) {
             await Directory(
-                "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
+                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
                 .rename(
-                "${folderPath.value}${Platform.pathSeparator}${controller.text}");
+                    "${folderPath.value}${Platform.pathSeparator}${controller.text}");
           } else {
             await File(
-                "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
+                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
                 .rename(
-                "${folderPath.value}${Platform.pathSeparator}${controller.text}");
+                    "${folderPath.value}${Platform.pathSeparator}${controller.text}");
           }
           await loadFilesFolders();
           loadingForm.value = false;
+          updateFileMissing();
           return true;
         }
         return false;
@@ -374,17 +398,17 @@ class FileManagerWidget extends HookWidget {
             ElevatedButton.icon(
               onPressed: !loadingForm.value
                   ? () {
-                validateFormRename().then((value) {
-                  if (value == true) {
-                    Navigator.pop(context);
-                  }
-                });
-              }
+                      validateFormRename().then((value) {
+                        if (value == true) {
+                          Navigator.pop(context);
+                        }
+                      });
+                    }
                   : null,
               icon: loadingForm.value
                   ? const CircularProgressIndicator(
-                color: Colors.white,
-              )
+                      color: Colors.white,
+                    )
                   : const SizedBox.shrink(),
               label: const Text("Rename"),
             ),
@@ -395,13 +419,24 @@ class FileManagerWidget extends HookWidget {
 
     swapDstSrcVideos() {
       ContextMenuController.removeAny();
-      String? srcVideoFilename = fileSystemEntities.value?.firstWhere((element) => element.video && element.filename.contains("data_src.")).filename;
-      String? dstVideoFilename = fileSystemEntities.value?.firstWhere((element) => element.video && element.filename.contains("data_dst.")).filename;
-      if(srcVideoFilename != null && dstVideoFilename != null) {
-        String temp = "${folderPath.value}${Platform.pathSeparator}${srcVideoFilename}_old";
-        (File(folderPath.value + Platform.pathSeparator + srcVideoFilename)).rename(temp);
-        (File(folderPath.value + Platform.pathSeparator + dstVideoFilename)).rename(folderPath.value + Platform.pathSeparator + srcVideoFilename);
-        (File(temp)).rename(folderPath.value + Platform.pathSeparator + dstVideoFilename);
+      String? srcVideoFilename = fileSystemEntities.value
+          ?.firstWhere((element) =>
+              element.video && element.filename.contains("data_src."))
+          .filename;
+      String? dstVideoFilename = fileSystemEntities.value
+          ?.firstWhere((element) =>
+              element.video && element.filename.contains("data_dst."))
+          .filename;
+      if (srcVideoFilename != null && dstVideoFilename != null) {
+        String temp =
+            "${folderPath.value}${Platform.pathSeparator}${srcVideoFilename}_old";
+        (File(folderPath.value + Platform.pathSeparator + srcVideoFilename))
+            .rename(temp);
+        (File(folderPath.value + Platform.pathSeparator + dstVideoFilename))
+            .rename(
+                folderPath.value + Platform.pathSeparator + srcVideoFilename);
+        (File(temp)).rename(
+            folderPath.value + Platform.pathSeparator + dstVideoFilename);
       }
       loadFilesFolders();
     }
@@ -466,8 +501,10 @@ class FileManagerWidget extends HookWidget {
               onPressed: !loadingForm.value
                   ? () {
                       loadingForm.value = true;
-                      deleteFilesAndDirectories()
-                          .then((value) => Navigator.pop(context));
+                      deleteFilesAndDirectories().then((value) {
+                        Navigator.pop(context);
+                        updateFileMissing();
+                      });
                     }
                   : null,
               icon: loadingForm.value
@@ -569,6 +606,12 @@ class FileManagerWidget extends HookWidget {
       }
     }
 
+    updateFromParent() {
+      loadFilesFolders();
+    }
+
+    controller.updateFromParent = updateFromParent;
+
     useEffect(() {
       folderPath.value = rootPath;
       return null;
@@ -652,12 +695,14 @@ class FileManagerWidget extends HookWidget {
                                         if (folderPath.value == rootPath &&
                                             ((fileSystemEntities
                                                         .value![index].filename
-                                                        .contains("data_dst.") &&
+                                                        .contains(
+                                                            "data_dst.") &&
                                                     fileSystemEntities
                                                         .value![index].video) ||
                                                 (fileSystemEntities
                                                         .value![index].filename
-                                                        .contains("data_src.") &&
+                                                        .contains(
+                                                            "data_src.") &&
                                                     fileSystemEntities
                                                         .value![index]
                                                         .video))) ...[

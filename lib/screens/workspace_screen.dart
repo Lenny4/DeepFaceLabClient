@@ -7,6 +7,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../widget/form/workspace/delete_workspace_form_widget.dart';
 
+class UpdateChildController {
+  late void Function() updateFromParent;
+}
+
 class WorkspaceScreen extends HookWidget {
   final Workspace? initWorkspace;
 
@@ -14,6 +18,20 @@ class WorkspaceScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    // https://stackoverflow.com/a/53706941/6824121
+    var mainController =
+        useState<UpdateChildController>(UpdateChildController());
+    var fileMissingController =
+        useState<UpdateChildController>(UpdateChildController());
+
+    updateFileMissingController() {
+      fileMissingController.value.updateFromParent();
+    }
+
+    updateMainController() {
+      mainController.value.updateFromParent();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: SelectableText(
@@ -32,7 +50,11 @@ class WorkspaceScreen extends HookWidget {
                     WorkspaceFormWidget(initWorkspace: initWorkspace),
                     if (initWorkspace != null) ...[
                       const Divider(),
-                      FileManagerWidget(rootPath: initWorkspace!.path),
+                      FileManagerWidget(
+                        rootPath: initWorkspace!.path,
+                        controller: mainController.value,
+                        updateFileMissing: updateFileMissingController,
+                      ),
                     ]
                   ],
                 ),
@@ -50,7 +72,11 @@ class WorkspaceScreen extends HookWidget {
                     const DevicesWidget(),
                     if (initWorkspace != null) ...[
                       const FileManagerShortcutWidget(),
-                      FileManagerMissingFolderWidget(workspace: initWorkspace),
+                      FileManagerMissingFolderWidget(
+                        workspace: initWorkspace,
+                        controller: fileMissingController.value,
+                        updateMain: updateMainController,
+                      ),
                     ],
                     DeleteWorkspaceFormWidget(workspace: initWorkspace)
                   ],
