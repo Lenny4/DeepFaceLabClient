@@ -17,6 +17,10 @@ class ProcessService {
         ?.where((e) => e.startsWith('+'))
         .map((e) => e.substring(1))
         .where((e) => e.startsWith('#') == false);
+    // https://developer.nvidia.com/rdp/cudnn-archive
+    // https://developer.nvidia.com/cuda-toolkit-archive
+    // https://www.tensorflow.org/install/source#gpu
+    // https://repo.anaconda.com/pkgs/main/linux-64/
     String pythonVersion = '3.7';
     String cudnnVersion = '7.6.5';
     String cudatoolkitVersion = '10.1.243';
