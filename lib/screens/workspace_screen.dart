@@ -48,9 +48,11 @@ class WorkspaceScreen extends HookWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const DevicesWidget(),
-                    if (initWorkspace != null)
+                    if (initWorkspace != null) ...[
                       const FileManagerShortcutWidget(),
-                    DeleteWorkspaceFormWidget(workspace: initWorkspace),
+                      FileManagerMissingFolderWidget(workspace: initWorkspace),
+                    ],
+                    DeleteWorkspaceFormWidget(workspace: initWorkspace)
                   ],
                 )),
               ),

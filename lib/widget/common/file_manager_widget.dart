@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:deepfacelab_client/class/workspace.dart';
+import 'package:deepfacelab_client/service/workspaceService.dart';
 import 'package:deepfacelab_client/widget/common/context_menu_region.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
@@ -42,12 +44,12 @@ class _FileSystemEntity {
 }
 
 // /.pub-cache/hosted/pub.dev/filesystem_picker-3.1.0/lib/src/picker_page.dart
-class FileManagerHeaderWidget extends HookWidget {
+class _FileManagerHeaderWidget extends HookWidget {
   final String rootPath;
   final String path;
   final ValueNotifier<String> pathNotifier;
 
-  const FileManagerHeaderWidget(
+  const _FileManagerHeaderWidget(
       {Key? key,
       required this.rootPath,
       required this.path,
@@ -100,10 +102,10 @@ class FileManagerHeaderWidget extends HookWidget {
   }
 }
 
-class FileManagerFooterWidget extends HookWidget {
+class _FileManagerFooterWidget extends HookWidget {
   final int nbSelectedItems;
 
-  const FileManagerFooterWidget({Key? key, required this.nbSelectedItems})
+  const _FileManagerFooterWidget({Key? key, required this.nbSelectedItems})
       : super(key: key);
 
   @override
@@ -139,6 +141,54 @@ class FileManagerShortcutWidget extends HookWidget {
     """)
       ],
     );
+  }
+}
+
+class FileManagerMissingFolderWidget extends HookWidget {
+  final Workspace? workspace;
+
+  const FileManagerMissingFolderWidget({Key? key, required this.workspace})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    getMissingDirectories() {
+      List<String> result = [];
+      if (workspace == null) {
+        return result;
+      }
+      for (var directoryPath in WorkspaceService.directories) {
+        String fullPath = (workspace?.path ?? "") + directoryPath;
+        if (Directory(fullPath).existsSync() == false) {
+          result.add(fullPath);
+        }
+      }
+      return result;
+    }
+
+    var missingDirectories = useState<List<String>>(getMissingDirectories());
+
+    reCreateDirectories() async {
+      if (workspace != null) {
+        await WorkspaceService().reCreateDirectories(workspace: workspace);
+      }
+      missingDirectories.value = getMissingDirectories();
+    }
+
+    useEffect(() {
+      missingDirectories.value = getMissingDirectories();
+      return null;
+    }, [workspace]);
+
+    return missingDirectories.value.isNotEmpty
+        ? Container(
+            margin: const EdgeInsets.only(top: 10),
+            child: ElevatedButton(
+              onPressed: reCreateDirectories,
+              child: const Text("Create missing directories"),
+            ),
+          )
+        : const SizedBox.shrink();
   }
 }
 
@@ -499,7 +549,7 @@ class FileManagerWidget extends HookWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FileManagerHeaderWidget(
+                  _FileManagerHeaderWidget(
                       pathNotifier: folderPath,
                       path: folderPath.value,
                       rootPath: rootPath),
@@ -607,7 +657,7 @@ class FileManagerWidget extends HookWidget {
                       ),
                     ),
                   ),
-                  FileManagerFooterWidget(
+                  _FileManagerFooterWidget(
                     nbSelectedItems: nbSelectedItems.value,
                   ),
                 ],

@@ -5,6 +5,16 @@ import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:slugify/slugify.dart';
 
 class WorkspaceService {
+  static List<String> directories = [
+    "${Platform.pathSeparator}data_src",
+    "${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned",
+    "${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned_debug",
+    "${Platform.pathSeparator}data_dst",
+    "${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned",
+    "${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned_debug",
+    "${Platform.pathSeparator}model",
+  ];
+
   _createWorkspace(Workspace newWorkspace, bool? createFolder) async {
     var storage = store.state.storage;
     if (createFolder == true) {
@@ -25,7 +35,8 @@ class WorkspaceService {
 
   _updateWorkspace(Workspace oldWorkspace, Workspace newWorkspace) async {
     if (oldWorkspace.path != newWorkspace.path) {
-      newWorkspace.path = "${newWorkspace.path}${Platform.pathSeparator}${slugify(newWorkspace.name)}";
+      newWorkspace.path =
+          "${newWorkspace.path}${Platform.pathSeparator}${slugify(newWorkspace.name)}";
       (await Process.run('mv', [oldWorkspace.path, newWorkspace.path]));
     }
     var storage = store.state.storage;
@@ -37,26 +48,13 @@ class WorkspaceService {
     store.dispatch({'storage': storage});
   }
 
-  reCreateDirectories({required Workspace workspace}) async {
-    Directory(workspace.path).createSync(recursive: true);
-    Directory("${workspace.path}${Platform.pathSeparator}data_src")
-        .createSync(recursive: true);
-    Directory(
-            "${workspace.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned")
-        .createSync(recursive: true);
-    Directory(
-            "${workspace.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned_debug")
-        .createSync(recursive: true);
-    Directory("${workspace.path}${Platform.pathSeparator}data_dst")
-        .createSync(recursive: true);
-    Directory(
-            "${workspace.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned")
-        .createSync(recursive: true);
-    Directory(
-            "${workspace.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned_debug")
-        .createSync(recursive: true);
-    Directory("${workspace.path}${Platform.pathSeparator}model")
-        .createSync(recursive: true);
+  reCreateDirectories({required Workspace? workspace}) async {
+    if (workspace == null) {
+      return;
+    }
+    for (var directoryPath in directories) {
+      Directory(workspace.path + directoryPath).createSync(recursive: true);
+    }
   }
 
   createUpdateWorkspace(
