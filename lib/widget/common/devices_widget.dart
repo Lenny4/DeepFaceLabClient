@@ -24,7 +24,6 @@ class DevicesWidget extends HookWidget {
     }, []);
 
     return ExpansionTile(
-      initiallyExpanded: true,
       expandedAlignment: Alignment.topLeft,
       title: Text(
           'Your GPUs ${(devices != null && devices.isNotEmpty ? "(${devices.length})" : "") ?? ""}'),

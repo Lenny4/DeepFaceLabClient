@@ -138,6 +138,7 @@ class FileManagerShortcutWidget extends HookWidget {
 - `right click`: Contextual menu
 - `Ctrl + click`: Select multiple
 - `Shift + click`: Select range
+- `double click`: Open file
     """)
       ],
     );
@@ -215,15 +216,47 @@ class FileManagerWidget extends HookWidget {
         // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
         String filename = Path.basename(fileSystemEntity.path);
         return _FileSystemEntity(
-          filename: filename,
-          directory: fileSystemEntity is Directory,
-          image: filename.contains('.png') ||
-              filename.contains('.jpeg') ||
-              filename.contains('.jpg'),
-          selected: null,
-          required: false,
-          video: false,
-        );
+            filename: filename,
+            directory: fileSystemEntity is Directory,
+            image: filename.endsWith('.png') ||
+                filename.endsWith('.jpeg') ||
+                filename.endsWith('.jpg'),
+            selected: null,
+            required: false,
+            video: filename.endsWith('.3g2') ||
+                filename.endsWith('.3gp') ||
+                filename.endsWith('.aaf') ||
+                filename.endsWith('.asf') ||
+                filename.endsWith('.avchd') ||
+                filename.endsWith('.avi') ||
+                filename.endsWith('.drc') ||
+                filename.endsWith('.flv') ||
+                filename.endsWith('.m2v') ||
+                filename.endsWith('.m3u8') ||
+                filename.endsWith('.m4p') ||
+                filename.endsWith('.m4v') ||
+                filename.endsWith('.mkv') ||
+                filename.endsWith('.mng') ||
+                filename.endsWith('.mov') ||
+                filename.endsWith('.mp2') ||
+                filename.endsWith('.mp4') ||
+                filename.endsWith('.mpe') ||
+                filename.endsWith('.mpeg') ||
+                filename.endsWith('.mpg') ||
+                filename.endsWith('.mpv') ||
+                filename.endsWith('.mxf') ||
+                filename.endsWith('.nsv') ||
+                filename.endsWith('.ogg') ||
+                filename.endsWith('.ogv') ||
+                filename.endsWith('.qt') ||
+                filename.endsWith('.rm') ||
+                filename.endsWith('.rmvb') ||
+                filename.endsWith('.roq') ||
+                filename.endsWith('.svi') ||
+                filename.endsWith('.vob') ||
+                filename.endsWith('.webm') ||
+                filename.endsWith('.wmv') ||
+                filename.endsWith('.yuv'));
       }).toList();
       newFileSystemEntities.sort((a, b) {
         if (a.directory == true && b.directory == true) {
@@ -285,26 +318,26 @@ class FileManagerWidget extends HookWidget {
         return;
       }
       final controller =
-          TextEditingController(text: fileSystemEntity?.filename);
+      TextEditingController(text: fileSystemEntity?.filename);
       final extension = Path.extension(fileSystemEntity?.filename ?? "");
       controller.selection = TextSelection(
         baseOffset: 0,
         extentOffset:
-            fileSystemEntity?.filename.replaceFirst(extension, "").length ?? 0,
+        fileSystemEntity?.filename.replaceFirst(extension, "").length ?? 0,
       );
       validateFormRename() async {
         if (formRenameKey.currentState!.validate()) {
           loadingForm.value = true;
           if (fileSystemEntity?.directory == true) {
             await Directory(
-                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
+                "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
                 .rename(
-                    "${folderPath.value}${Platform.pathSeparator}${controller.text}");
+                "${folderPath.value}${Platform.pathSeparator}${controller.text}");
           } else {
             await File(
-                    "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
+                "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
                 .rename(
-                    "${folderPath.value}${Platform.pathSeparator}${controller.text}");
+                "${folderPath.value}${Platform.pathSeparator}${controller.text}");
           }
           await loadFilesFolders();
           loadingForm.value = false;
@@ -341,23 +374,36 @@ class FileManagerWidget extends HookWidget {
             ElevatedButton.icon(
               onPressed: !loadingForm.value
                   ? () {
-                      validateFormRename().then((value) {
-                        if (value == true) {
-                          Navigator.pop(context);
-                        }
-                      });
-                    }
+                validateFormRename().then((value) {
+                  if (value == true) {
+                    Navigator.pop(context);
+                  }
+                });
+              }
                   : null,
               icon: loadingForm.value
                   ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
+                color: Colors.white,
+              )
                   : const SizedBox.shrink(),
               label: const Text("Rename"),
             ),
           ],
         ),
       );
+    }
+
+    swapDstSrcVideos() {
+      ContextMenuController.removeAny();
+      String? srcVideoFilename = fileSystemEntities.value?.firstWhere((element) => element.video && element.filename.contains("data_src.")).filename;
+      String? dstVideoFilename = fileSystemEntities.value?.firstWhere((element) => element.video && element.filename.contains("data_dst.")).filename;
+      if(srcVideoFilename != null && dstVideoFilename != null) {
+        String temp = "${folderPath.value}${Platform.pathSeparator}${srcVideoFilename}_old";
+        (File(folderPath.value + Platform.pathSeparator + srcVideoFilename)).rename(temp);
+        (File(folderPath.value + Platform.pathSeparator + dstVideoFilename)).rename(folderPath.value + Platform.pathSeparator + srcVideoFilename);
+        (File(temp)).rename(folderPath.value + Platform.pathSeparator + dstVideoFilename);
+      }
+      loadFilesFolders();
     }
 
     delete() {
@@ -463,7 +509,7 @@ class FileManagerWidget extends HookWidget {
           }
           String filename = Path.basename(value);
           File(value)
-              .rename(folderPath.value +
+              .copy(folderPath.value +
                   Platform.pathSeparator +
                   fileSystemEntities.value![index].filename +
                   Path.extension(filename))
@@ -601,6 +647,23 @@ class FileManagerWidget extends HookWidget {
                                           ContextMenuButtonItem(
                                             onPressed: delete,
                                             label: 'Delete',
+                                          ),
+                                        ],
+                                        if (folderPath.value == rootPath &&
+                                            ((fileSystemEntities
+                                                        .value![index].filename
+                                                        .contains("data_dst.") &&
+                                                    fileSystemEntities
+                                                        .value![index].video) ||
+                                                (fileSystemEntities
+                                                        .value![index].filename
+                                                        .contains("data_src.") &&
+                                                    fileSystemEntities
+                                                        .value![index]
+                                                        .video))) ...[
+                                          ContextMenuButtonItem(
+                                            onPressed: swapDstSrcVideos,
+                                            label: 'Swap dst and src videos',
                                           ),
                                         ]
                                       ],
