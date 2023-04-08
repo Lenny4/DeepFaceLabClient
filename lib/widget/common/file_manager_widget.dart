@@ -149,7 +149,7 @@ class FileManagerWidget extends HookWidget {
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
     var nbSelectedItems = useState<int>(0);
     var myFocusNode = useState<FocusNode>(FocusNode());
-    var loadingRename = useState<bool>(false);
+    var loadingForm = useState<bool>(false);
     final formRenameKey = GlobalKey<FormState>();
 
     loadFilesFolders() async {
@@ -216,7 +216,7 @@ class FileManagerWidget extends HookWidget {
       );
       validateFormRename() async {
         if (formRenameKey.currentState!.validate()) {
-          loadingRename.value = true;
+          loadingForm.value = true;
           if (fileSystemEntity?.directory == true) {
             await Directory(
                     "${folderPath.value}${Platform.pathSeparator}${fileSystemEntity?.filename}")
@@ -229,7 +229,7 @@ class FileManagerWidget extends HookWidget {
                     "${folderPath.value}${Platform.pathSeparator}${controller.text}");
           }
           await loadFilesFolders();
-          loadingRename.value = false;
+          loadingForm.value = false;
           return true;
         }
         return false;
@@ -261,7 +261,7 @@ class FileManagerWidget extends HookWidget {
           ),
           actions: <Widget>[
             ElevatedButton.icon(
-              onPressed: !loadingRename.value
+              onPressed: !loadingForm.value
                   ? () {
                       validateFormRename().then((value) {
                         if (value == true) {
@@ -270,7 +270,7 @@ class FileManagerWidget extends HookWidget {
                       });
                     }
                   : null,
-              icon: loadingRename.value
+              icon: loadingForm.value
                   ? const CircularProgressIndicator(
                       color: Colors.white,
                     )
@@ -284,7 +284,78 @@ class FileManagerWidget extends HookWidget {
 
     delete() {
       ContextMenuController.removeAny();
-      print("delete");
+      var deleteFileSystemEntities = fileSystemEntities.value
+          ?.where((element) => element.selected != null);
+      if (deleteFileSystemEntities == null ||
+          deleteFileSystemEntities.isEmpty) {
+        return;
+      }
+      String deleteSentence = "";
+      int nbDirectory =
+          deleteFileSystemEntities.where((element) => element.directory).length;
+      int nbFiles = deleteFileSystemEntities
+          .where((element) => !element.directory)
+          .length;
+      if (nbDirectory > 0) {
+        String directoryString = "directory";
+        if (nbDirectory > 1) {
+          directoryString = "directories";
+        }
+        deleteSentence += "$nbDirectory $directoryString";
+      }
+      if (nbFiles > 0) {
+        String fileString = "file";
+        if (nbFiles > 1) {
+          fileString = "files";
+        }
+        if (deleteSentence.isNotEmpty) {
+          deleteSentence += " and ";
+        }
+        deleteSentence += "$nbFiles $fileString";
+      }
+      deleteFilesAndDirectories() async {
+        loadingForm.value = true;
+        for (var deleteFileSystemEntity in deleteFileSystemEntities) {
+          if (deleteFileSystemEntity.directory == true) {
+            await Directory(
+                    "${folderPath.value}${Platform.pathSeparator}${deleteFileSystemEntity.filename}")
+                .delete(recursive: true);
+          } else {
+            await File(
+                    "${folderPath.value}${Platform.pathSeparator}${deleteFileSystemEntity.filename}")
+                .delete(recursive: true);
+          }
+        }
+        await loadFilesFolders();
+        loadingForm.value = false;
+      }
+
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          content:
+              SelectableText("Do you really want to delete $deleteSentence"),
+          actions: <Widget>[
+            ElevatedButton.icon(
+              style: const ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll(Colors.red)),
+              onPressed: !loadingForm.value
+                  ? () {
+                      loadingForm.value = true;
+                      deleteFilesAndDirectories()
+                          .then((value) => Navigator.pop(context));
+                    }
+                  : null,
+              icon: loadingForm.value
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : const SizedBox.shrink(),
+              label: const Text("Delete"),
+            ),
+          ],
+        ),
+      );
     }
 
     changeDirectory(int index) {
