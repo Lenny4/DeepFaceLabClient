@@ -15,22 +15,22 @@ for device in Devices.getDevices():
     for attr, value in device.__dict__.items():
         deviceJson[attr] = value
     all_devices.append(deviceJson)
-all_devices.append({
-    'index': 0,
-    'tf_dev_type': 'tf_dev_type',
-    'name': 'name',
-    'total_mem': 3221225472,
-    'total_mem_gb': 3221225472 / 1024 ** 3,
-    'free_mem': 3221225472,
-    'free_mem_gb': 3221225472 / 1024 ** 3,
-})
-all_devices.append({
-    'index': 1,
-    'tf_dev_type': 'tf_dev_type',
-    'name': 'name',
-    'total_mem': 3221225472,
-    'total_mem_gb': 3221225472 / 1024 ** 3,
-    'free_mem': 3221225472,
-    'free_mem_gb': 3221225472 / 1024 ** 3,
-})
+# all_devices.append({
+#     'index': 0,
+#     'tf_dev_type': 'tf_dev_type',
+#     'name': 'name',
+#     'total_mem': 3221225472,
+#     'total_mem_gb': 3221225472 / 1024 ** 3,
+#     'free_mem': 3221225472,
+#     'free_mem_gb': 3221225472 / 1024 ** 3,
+# })
+# all_devices.append({
+#     'index': 1,
+#     'tf_dev_type': 'tf_dev_type',
+#     'name': 'name',
+#     'total_mem': 3221225472,
+#     'total_mem_gb': 3221225472 / 1024 ** 3,
+#     'free_mem': 3221225472,
+#     'free_mem_gb': 3221225472 / 1024 ** 3,
+# })
 print(json.dumps(all_devices), end='')

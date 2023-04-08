@@ -49,7 +49,7 @@ class WorkspaceFormWidget extends HookWidget {
       var value = await FilesystemPicker.openDialog(
         title: 'Workspace path',
         context: context,
-        rootDirectory: Directory("/"),
+        rootDirectory: Directory(Platform.pathSeparator),
         directory: Directory(workspacePathController.value.text),
         fsType: FilesystemType.folder,
         pickText: 'Validate',

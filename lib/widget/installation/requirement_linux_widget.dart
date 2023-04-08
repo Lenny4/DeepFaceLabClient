@@ -97,7 +97,7 @@ fi
       FilesystemPicker.openDialog(
         title: 'Save to folder',
         context: context,
-        rootDirectory: Directory("/"),
+        rootDirectory: Directory(Platform.pathSeparator),
         directory: Directory(condaInstallFolder.value),
         fsType: FilesystemType.folder,
         pickText: 'Validate (use this folder to install conda)',

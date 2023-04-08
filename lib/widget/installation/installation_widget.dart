@@ -40,7 +40,7 @@ pip install -r $path/requirements-cuda.txt
       FilesystemPicker.openDialog(
         title: title,
         context: context,
-        rootDirectory: Directory("/"),
+        rootDirectory: Directory(Platform.pathSeparator),
         directory: Directory(homeDirectory),
         fsType: FilesystemType.folder,
         pickText: pickText,

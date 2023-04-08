@@ -27,13 +27,17 @@ class _FileSystemEntity {
   final String filename;
   final bool directory;
   final bool image;
+  final bool video;
   int? selected;
+  bool required;
 
   _FileSystemEntity({
     required this.filename,
     required this.directory,
     required this.image,
+    required this.video,
     required this.selected,
+    required this.required,
   });
 }
 
@@ -145,6 +149,8 @@ class FileManagerWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? homeDirectory = (Platform.environment)['HOME'];
+
     var folderPath = useState<String>(rootPath);
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
     var nbSelectedItems = useState<int>(0);
@@ -165,6 +171,8 @@ class FileManagerWidget extends HookWidget {
               filename.contains('.jpeg') ||
               filename.contains('.jpg'),
           selected: null,
+          required: false,
+          video: false,
         );
       }).toList();
       newFileSystemEntities.sort((a, b) {
@@ -179,6 +187,21 @@ class FileManagerWidget extends HookWidget {
         }
         return a.filename.compareTo(b.filename);
       });
+      if (folderPath.value == rootPath) {
+        for (var video in ["data_src", "data_dst"]) {
+          if (newFileSystemEntities.indexWhere(
+                  (element) => element.filename.contains("$video.")) ==
+              -1) {
+            newFileSystemEntities.add(_FileSystemEntity(
+                filename: video,
+                directory: false,
+                image: false,
+                video: true,
+                selected: null,
+                required: true));
+          }
+        }
+      }
       fileSystemEntities.value = newFileSystemEntities;
     }
 
@@ -194,7 +217,9 @@ class FileManagerWidget extends HookWidget {
     selectAll() {
       int now = DateTime.now().millisecondsSinceEpoch;
       fileSystemEntities.value = fileSystemEntities.value!.map((e) {
-        e.selected = now;
+        if (e.required == false) {
+          e.selected = now;
+        }
         return e;
       }).toList();
     }
@@ -206,6 +231,9 @@ class FileManagerWidget extends HookWidget {
       }
       var fileSystemEntity = fileSystemEntities.value
           ?.firstWhere((element) => element.selected != null);
+      if (fileSystemEntity?.required == true) {
+        return;
+      }
       final controller =
           TextEditingController(text: fileSystemEntity?.filename);
       final extension = Path.extension(fileSystemEntity?.filename ?? "");
@@ -284,8 +312,8 @@ class FileManagerWidget extends HookWidget {
 
     delete() {
       ContextMenuController.removeAny();
-      var deleteFileSystemEntities = fileSystemEntities.value
-          ?.where((element) => element.selected != null);
+      var deleteFileSystemEntities = fileSystemEntities.value?.where(
+          (element) => element.selected != null && element.required == false);
       if (deleteFileSystemEntities == null ||
           deleteFileSystemEntities.isEmpty) {
         return;
@@ -369,6 +397,30 @@ class FileManagerWidget extends HookWidget {
         {Set<LogicalKeyboardKey>? keysPressed, bool? rightClick}) {
       FocusScope.of(context).requestFocus(myFocusNode.value);
       ContextMenuController.removeAny();
+      if (fileSystemEntities.value![index].required == true &&
+          rightClick != true) {
+        FilesystemPicker.openDialog(
+          title: 'Select ${fileSystemEntities.value![index].filename} file',
+          context: context,
+          rootDirectory: Directory(Platform.pathSeparator),
+          directory: Directory(homeDirectory ?? Platform.pathSeparator),
+          fsType: FilesystemType.file,
+          fileTileSelectMode: FileTileSelectMode.wholeTile,
+          pickText: 'Validate',
+        ).then((value) {
+          if (value == null) {
+            return;
+          }
+          String filename = Path.basename(value);
+          File(value)
+              .rename(folderPath.value +
+                  Platform.pathSeparator +
+                  fileSystemEntities.value![index].filename +
+                  Path.extension(filename))
+              .then((value) => loadFilesFolders());
+        });
+        return;
+      }
       int now = DateTime.now().millisecondsSinceEpoch;
       int? lastSelected = fileSystemEntities.value![index].selected;
       if (rightClick != true &&
@@ -468,8 +520,8 @@ class FileManagerWidget extends HookWidget {
                             // https://www.youtube.com/watch?v=0blNt4XIi0g
                             gridDelegate:
                                 const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 100,
-                              childAspectRatio: 0.7,
+                              maxCrossAxisExtent: 110,
+                              childAspectRatio: 0.8,
                             ),
                             itemCount: fileSystemEntities.value!.length,
                             itemBuilder: (BuildContext context, int index) {
@@ -489,14 +541,18 @@ class FileManagerWidget extends HookWidget {
                                             secondaryAnchor as Offset?,
                                       ),
                                       buttonItems: <ContextMenuButtonItem>[
-                                        ContextMenuButtonItem(
-                                          onPressed: rename,
-                                          label: 'Rename',
-                                        ),
-                                        ContextMenuButtonItem(
-                                          onPressed: delete,
-                                          label: 'Delete',
-                                        ),
+                                        if (fileSystemEntities
+                                                .value![index].required ==
+                                            false) ...[
+                                          ContextMenuButtonItem(
+                                            onPressed: rename,
+                                            label: 'Rename',
+                                          ),
+                                          ContextMenuButtonItem(
+                                            onPressed: delete,
+                                            label: 'Delete',
+                                          ),
+                                        ]
                                       ],
                                     );
                                   },
@@ -517,16 +573,26 @@ class FileManagerWidget extends HookWidget {
                                             MainAxisAlignment.center,
                                         children: [
                                           fileSystemEntities
-                                                  .value![index].directory
-                                              ? const Icon(Icons.folder,
-                                                  size: 50)
+                                                  .value![index].required
+                                              ? const Icon(Icons.add, size: 50)
                                               : fileSystemEntities
-                                                      .value![index].image
-                                                  ? Image.asset(
-                                                      height: 70,
-                                                      ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
-                                                  : const Icon(Icons.file_open,
-                                                      size: 50),
+                                                      .value![index].directory
+                                                  ? const Icon(Icons.folder,
+                                                      size: 50)
+                                                  : fileSystemEntities
+                                                          .value![index].video
+                                                      ? const Icon(
+                                                          Icons.video_file,
+                                                          size: 50)
+                                                      : fileSystemEntities
+                                                              .value![index]
+                                                              .image
+                                                          ? Image.asset(
+                                                              height: 70,
+                                                              ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
+                                                          : const Icon(
+                                                              Icons.file_open,
+                                                              size: 50),
                                           Text(
                                               fileSystemEntities
                                                   .value![index].filename,
