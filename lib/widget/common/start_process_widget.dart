@@ -33,11 +33,11 @@ class StartProcessWidget extends HookWidget {
   Widget build(BuildContext context) {
     var loading = useState<bool>(false);
     var nbPkexec = useState<int>(0);
-    var ouputs = useState<List<String>>([]);
+    var outputs = useState<List<String>>([]);
 
     launchProcesses(int index) async {
       if (index == 0) {
-        ouputs.value = [];
+        outputs.value = [];
       }
       loading.value = true;
       Process process;
@@ -46,20 +46,27 @@ class StartProcessWidget extends HookWidget {
             startProcesses![index].arguments);
       } else {
         String condaCommand =
-            """${await ProcessService().getCondaPrefix(ouputs)} && \\
+            """${await ProcessService().getCondaPrefix(outputs)} && \\
       ${startProcessesConda![index].command}""";
-        process = await Process.start("bash", ['-c', condaCommand]);
+        process = await Process.start("bash", ['-c', condaCommand.trim()]);
       }
       if (startProcesses != null) {
-        ouputs.value = [...ouputs.value, "\$ ${startProcesses![index]}"];
+        outputs.value = [...outputs.value, "\$ ${startProcesses![index]}"];
       } else {
-        ouputs.value = [...ouputs.value, "\$ ${startProcessesConda![index]}"];
+        outputs.value = [...outputs.value, "\$ ${startProcessesConda![index]}"];
       }
       process.stdout.transform(utf8.decoder).forEach((String output) {
-        ouputs.value = [...ouputs.value, output];
+        outputs.value = [...outputs.value, output];
+        if (startProcessesConda != null &&
+            startProcessesConda![index].getAnswer != null) {
+          String? answer = startProcessesConda![index].getAnswer!(output);
+          if (answer != null) {
+            process.stdin.write("$answer\n");
+          }
+        }
       });
       process.stderr.transform(utf8.decoder).forEach((String output) {
-        ouputs.value = [...ouputs.value, output];
+        outputs.value = [...outputs.value, output];
       });
       process.exitCode.then((value) {
         if ((startProcesses != null && index == startProcesses!.length - 1) ||
@@ -96,11 +103,13 @@ class StartProcessWidget extends HookWidget {
       if (autoStart == true) {
         launchProcesses(0);
       }
+      return null;
     }, [startProcesses]);
 
     useEffect(() {
       scrollDown();
-    }, [ouputs.value]);
+      return null;
+    }, [outputs.value]);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,21 +173,22 @@ ${startProcesses!.map((startProcess) => "\$ $startProcess").join('\n\n')}
               )
             ],
           ),
-        if (ouputs.value.isNotEmpty)
+        if (outputs.value.isNotEmpty)
           Row(
             children: [
-              Container(
-                width: MediaQuery.of(context).size.width - 170,
-                height: height ?? 500,
-                color: Colors.white10,
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: ouputs.value.length,
-                  shrinkWrap: true,
-                  prototypeItem: SelectableText(ouputs.value.first),
-                  itemBuilder: (context, index) {
-                    return SelectableText(ouputs.value[index]);
-                  },
+              Expanded(
+                child: Container(
+                  height: height ?? 500,
+                  color: Colors.white10,
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: outputs.value.length,
+                    shrinkWrap: true,
+                    prototypeItem: SelectableText(outputs.value.first),
+                    itemBuilder: (context, index) {
+                      return SelectableText(outputs.value[index]);
+                    },
+                  ),
                 ),
               ),
               if (closeIcon == true)
@@ -187,7 +197,7 @@ ${startProcesses!.map((startProcess) => "\$ $startProcess").join('\n\n')}
                   splashRadius: 20,
                   tooltip: 'Close',
                   onPressed: () {
-                    ouputs.value = [];
+                    outputs.value = [];
                   },
                 )
             ],

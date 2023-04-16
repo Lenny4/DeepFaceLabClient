@@ -51,10 +51,10 @@ class ProcessService {
       ]));
     }
     String result =
-        "${results?.join("\n") ?? ""} && \\ \n conda activate $condaEnvName";
+        "${results?.join("\n") ?? ""}\nconda activate $condaEnvName";
     if (ouputs != null) {
       ouputs.value = [...ouputs.value, result];
     }
-    return result;
+    return result.trim();
   }
 }

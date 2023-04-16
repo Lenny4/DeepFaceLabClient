@@ -1,5 +1,6 @@
 import 'package:deepfacelab_client/class/action/switchThemeAction.dart';
 import 'package:deepfacelab_client/class/device.dart';
+import 'package:deepfacelab_client/class/runningDeepfacelabCommand.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:redux/redux.dart' as redux;
@@ -10,6 +11,7 @@ class AppState {
   final bool hasRequirements;
   final int selectedScreenIndex;
   final List<Device>? devices;
+  final List<RunningDeepfacelabCommand> runningDeepfacelabCommands;
   final Storage? storage;
 
   const AppState(
@@ -17,15 +19,18 @@ class AppState {
       required this.hasRequirements,
       required this.selectedScreenIndex,
       required this.storage,
-      required this.devices});
+      required this.devices,
+      required this.runningDeepfacelabCommands});
 
   factory AppState.initial() {
     return const AppState(
-        init: false,
-        hasRequirements: false,
-        storage: null,
-        devices: null,
-        selectedScreenIndex: 0);
+      init: false,
+      hasRequirements: false,
+      storage: null,
+      devices: null,
+      selectedScreenIndex: 0,
+      runningDeepfacelabCommands: [],
+    );
   }
 
   AppState copyWith(newState) {
@@ -36,6 +41,8 @@ class AppState {
           newState['selectedScreenIndex'] ?? selectedScreenIndex,
       storage: newState['storage'] ?? storage,
       devices: newState['devices'] ?? devices,
+      runningDeepfacelabCommands:
+          newState['runningDeepfacelabCommands'] ?? runningDeepfacelabCommands,
     );
   }
 }

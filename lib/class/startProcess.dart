@@ -12,8 +12,9 @@ class StartProcess {
 
 class StartProcessConda {
   String command;
+  String? Function(String)? getAnswer;
 
-  StartProcessConda({required this.command});
+  StartProcessConda({required this.command, this.getAnswer});
 
   @override
   String toString() {

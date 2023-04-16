@@ -46,6 +46,7 @@ dependencies:
   path: ^1.8.2
   package_info_plus: ^3.0.3
   flutter_redux_hooks: ^0.2.0
+  collection: ^1.17.0
 
 dev_dependencies:
   flutter_test:
