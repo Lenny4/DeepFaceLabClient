@@ -77,10 +77,10 @@ class WindowCommand2Screen extends HookWidget {
                             ?.value;
                       })
                 ],
-                callback: (int code) {
-                  // todo
-                  print(code);
-                },
+                // callback: (int code) {
+                //   // todo
+                //   print(code);
+                // },
               ))
             : const Scaffold(body: LoadingScreen()));
   }

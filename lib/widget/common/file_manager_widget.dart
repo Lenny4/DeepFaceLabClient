@@ -49,13 +49,15 @@ class _FileManagerHeaderWidget extends HookWidget {
   final String rootPath;
   final String path;
   final ValueNotifier<String> pathNotifier;
+  final void Function() refresh;
 
-  const _FileManagerHeaderWidget(
-      {Key? key,
-      required this.rootPath,
-      required this.path,
-      required this.pathNotifier})
-      : super(key: key);
+  const _FileManagerHeaderWidget({
+    Key? key,
+    required this.rootPath,
+    required this.path,
+    required this.pathNotifier,
+    required this.refresh,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -91,14 +93,25 @@ class _FileManagerHeaderWidget extends HookWidget {
       return null;
     }, [path, rootPath]);
 
-    return Breadcrumbs<String>(
-      items: items.value,
-      onSelect: (String? value) {
-        if (value == null || value == path) {
-          return;
-        }
-        pathNotifier.value = value;
-      },
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Breadcrumbs<String>(
+          items: items.value,
+          onSelect: (String? value) {
+            if (value == null || value == path) {
+              return;
+            }
+            pathNotifier.value = value;
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          splashRadius: 20,
+          tooltip: 'Refresh (f5)',
+          onPressed: refresh,
+        )
+      ],
     );
   }
 }
@@ -133,6 +146,7 @@ class FileManagerShortcutWidget extends HookWidget {
       children: <Widget>[
         MarkdownBody(data: """
 - `f2`: rename
+- `f5`: refresh
 - `Ctrl + A`: Select all
 - `del`: Delete
 - `left click`: Select
@@ -660,7 +674,8 @@ class FileManagerWidget extends HookWidget {
                   _FileManagerHeaderWidget(
                       pathNotifier: folderPath,
                       path: folderPath.value,
-                      rootPath: rootPath),
+                      rootPath: rootPath,
+                      refresh: loadFilesFolders),
                   Expanded(
                     child: CallbackShortcuts(
                       bindings: {
@@ -669,6 +684,8 @@ class FileManagerWidget extends HookWidget {
                         const SingleActivator(LogicalKeyboardKey.f2): rename,
                         const SingleActivator(LogicalKeyboardKey.delete):
                             delete,
+                        const SingleActivator(LogicalKeyboardKey.f5):
+                            loadFilesFolders,
                       },
                       child: Focus(
                         focusNode: myFocusNode.value,
@@ -683,103 +700,104 @@ class FileManagerWidget extends HookWidget {
                             ),
                             itemCount: fileSystemEntities.value!.length,
                             itemBuilder: (BuildContext context, int index) {
-                              return Tooltip(
-                                message:
-                                    fileSystemEntities.value![index].filename,
-                                child: ContextMenuRegion(
-                                  beforeShow: () =>
-                                      onTapCard(index, rightClick: true),
-                                  contextMenuBuilder: (context, primaryAnchor,
-                                      [secondaryAnchor]) {
-                                    return AdaptiveTextSelectionToolbar
-                                        .buttonItems(
-                                      anchors: TextSelectionToolbarAnchors(
-                                        primaryAnchor: primaryAnchor,
-                                        secondaryAnchor:
-                                            secondaryAnchor as Offset?,
-                                      ),
-                                      buttonItems: <ContextMenuButtonItem>[
-                                        if (fileSystemEntities
-                                                .value![index].required ==
-                                            false) ...[
-                                          ContextMenuButtonItem(
-                                            onPressed: rename,
-                                            label: 'Rename',
-                                          ),
-                                          ContextMenuButtonItem(
-                                            onPressed: delete,
-                                            label: 'Delete',
-                                          ),
-                                        ],
-                                        if (folderPath.value == rootPath &&
-                                            ((fileSystemEntities
-                                                        .value![index].filename
-                                                        .contains(
-                                                            "data_dst.") &&
-                                                    fileSystemEntities
-                                                        .value![index].video) ||
-                                                (fileSystemEntities
-                                                        .value![index].filename
-                                                        .contains(
-                                                            "data_src.") &&
-                                                    fileSystemEntities
-                                                        .value![index]
-                                                        .video))) ...[
-                                          ContextMenuButtonItem(
-                                            onPressed: swapDstSrcVideos,
-                                            label: 'Swap dst and src videos',
-                                          ),
-                                        ]
+                              var child = ContextMenuRegion(
+                                beforeShow: () =>
+                                    onTapCard(index, rightClick: true),
+                                contextMenuBuilder: (context, primaryAnchor,
+                                    [secondaryAnchor]) {
+                                  return AdaptiveTextSelectionToolbar
+                                      .buttonItems(
+                                    anchors: TextSelectionToolbarAnchors(
+                                      primaryAnchor: primaryAnchor,
+                                      secondaryAnchor:
+                                          secondaryAnchor as Offset?,
+                                    ),
+                                    buttonItems: <ContextMenuButtonItem>[
+                                      if (fileSystemEntities
+                                              .value![index].required ==
+                                          false) ...[
+                                        ContextMenuButtonItem(
+                                          onPressed: rename,
+                                          label: 'Rename',
+                                        ),
+                                        ContextMenuButtonItem(
+                                          onPressed: delete,
+                                          label: 'Delete',
+                                        ),
                                       ],
-                                    );
-                                  },
-                                  child: GestureDetector(
-                                    onTap: () => onTapCard(index,
-                                        keysPressed:
-                                            RawKeyboard.instance.keysPressed),
-                                    child: Card(
-                                      color: fileSystemEntities
-                                                  .value![index].selected !=
-                                              null
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                          : null,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          fileSystemEntities
-                                                  .value![index].required
-                                              ? const Icon(Icons.add, size: 50)
-                                              : fileSystemEntities
-                                                      .value![index].directory
-                                                  ? const Icon(Icons.folder,
-                                                      size: 50)
-                                                  : fileSystemEntities
-                                                          .value![index].video
-                                                      ? const Icon(
-                                                          Icons.video_file,
-                                                          size: 50)
-                                                      : fileSystemEntities
-                                                              .value![index]
-                                                              .image
-                                                          ? Image.asset(
-                                                              height: 70,
-                                                              ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
-                                                          : const Icon(
-                                                              Icons.file_open,
-                                                              size: 50),
-                                          Text(
-                                              fileSystemEntities
-                                                  .value![index].filename,
-                                              maxLines: 1),
-                                        ],
-                                      ),
+                                      if (folderPath.value == rootPath &&
+                                          ((fileSystemEntities
+                                                      .value![index].filename
+                                                      .contains("data_dst.") &&
+                                                  fileSystemEntities
+                                                      .value![index].video) ||
+                                              (fileSystemEntities
+                                                      .value![index].filename
+                                                      .contains("data_src.") &&
+                                                  fileSystemEntities
+                                                      .value![index]
+                                                      .video))) ...[
+                                        ContextMenuButtonItem(
+                                          onPressed: swapDstSrcVideos,
+                                          label: 'Swap dst and src videos',
+                                        ),
+                                      ]
+                                    ],
+                                  );
+                                },
+                                child: GestureDetector(
+                                  onTap: () => onTapCard(index,
+                                      keysPressed:
+                                          RawKeyboard.instance.keysPressed),
+                                  child: Card(
+                                    color: fileSystemEntities
+                                                .value![index].selected !=
+                                            null
+                                        ? Theme.of(context).colorScheme.primary
+                                        : null,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        fileSystemEntities
+                                                .value![index].required
+                                            ? const Icon(Icons.add, size: 50)
+                                            : fileSystemEntities
+                                                    .value![index].directory
+                                                ? const Icon(Icons.folder,
+                                                    size: 50)
+                                                : fileSystemEntities
+                                                        .value![index].video
+                                                    ? const Icon(
+                                                        Icons.video_file,
+                                                        size: 50)
+                                                    : fileSystemEntities
+                                                            .value![index].image
+                                                        ? Image.asset(
+                                                            height: 70,
+                                                            ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
+                                                        : const Icon(
+                                                            Icons.file_open,
+                                                            size: 50),
+                                        Text(
+                                            fileSystemEntities
+                                                .value![index].filename,
+                                            maxLines: 1),
+                                      ],
                                     ),
                                   ),
                                 ),
                               );
+                              if (fileSystemEntities
+                                      .value![index].filename.length >
+                                  12) {
+                                return Tooltip(
+                                  message:
+                                      fileSystemEntities.value![index].filename,
+                                  child: child,
+                                );
+                              }
+                              return child;
                             }),
                       ),
                     ),
