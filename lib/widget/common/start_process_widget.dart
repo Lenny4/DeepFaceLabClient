@@ -95,8 +95,12 @@ class StartProcessWidget extends HookWidget {
 
     scrollDown() {
       if (scrollController.hasClients) {
-        // https://stackoverflow.com/questions/75850193/make-scrollcontroller-scroll-bottom-if-already-at-bottom
-        scrollController.jumpTo(scrollController.position.maxScrollExtent);
+        double currentPosition = scrollController.position.pixels;
+        double maxScrollExtent = scrollController.position.maxScrollExtent;
+        double delta = 100.0;
+        if (currentPosition >= maxScrollExtent - delta) {
+          scrollController.jumpTo(maxScrollExtent);
+        }
       }
     }
 

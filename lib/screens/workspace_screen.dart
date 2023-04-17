@@ -89,13 +89,15 @@ class WorkspaceScreen extends HookWidget {
                     const DevicesWidget(),
                     if (initWorkspace != null) ...[
                       const FileManagerShortcutWidget(),
+                    ],
+                    DeepfacelabCommandWidget(workspace: initWorkspace),
+                    if (initWorkspace != null) ...[
                       FileManagerMissingFolderWidget(
                         workspace: initWorkspace,
                         controller: fileMissingController.value,
                         updateMain: updateMainController,
                       ),
                     ],
-                    DeepfacelabCommandWidget(workspace: initWorkspace),
                     DeleteWorkspaceFormWidget(workspace: initWorkspace)
                   ],
                 )),

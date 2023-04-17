@@ -618,7 +618,8 @@ class FileManagerWidget extends HookWidget {
               newFileSystemEntities![i].selected = null;
             }
           }
-          newFileSystemEntities![index].selected = now;
+          newFileSystemEntities![index].selected =
+              newFileSystemEntities[index].selected != null ? null : now;
         }
         fileSystemEntities.value = newFileSystemEntities?.toList();
       }
