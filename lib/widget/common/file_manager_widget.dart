@@ -643,6 +643,13 @@ class FileManagerWidget extends HookWidget {
       loadFilesFolders();
     }
 
+    afterLoadFilesFolders() {
+      nbSelectedItems.value = fileSystemEntities.value
+              ?.where((element) => element.selected != null)
+              .length ??
+          0;
+    }
+
     controller.updateFromParent = updateFromParent;
 
     useEffect(() {
@@ -656,10 +663,7 @@ class FileManagerWidget extends HookWidget {
     }, [folderPath.value]);
 
     useEffect(() {
-      nbSelectedItems.value = fileSystemEntities.value
-              ?.where((element) => element.selected != null)
-              .length ??
-          0;
+      afterLoadFilesFolders();
       return null;
     }, [fileSystemEntities.value]);
 
