@@ -187,22 +187,25 @@ class WorkspaceFormWidget extends HookWidget {
             ),
           ),
         ] else ...[
-          Row(children: [
-            Container(
-              margin: const EdgeInsets.only(right: 10.0),
-              child: IconButton(
-                icon: const Icon(Icons.edit),
-                splashRadius: 20,
-                tooltip: 'Edit',
-                onPressed: () => edit.value = true,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              Container(
+                margin: const EdgeInsets.only(right: 10.0),
+                child: IconButton(
+                  icon: const Icon(Icons.edit),
+                  splashRadius: 20,
+                  tooltip: 'Edit',
+                  onPressed: () => edit.value = true,
+                ),
               ),
-            ),
-            MarkdownBody(selectable: true, data: """
+              MarkdownBody(selectable: true, data: """
 Name of the workspace: `${initWorkspace?.name}`
 
 Path of the workspace: `${initWorkspace?.path}`
-              """)
-          ])
+                """)
+            ]),
+          )
         ],
       ],
     );
