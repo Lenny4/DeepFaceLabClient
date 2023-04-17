@@ -13,6 +13,7 @@ class StartProcessWidget extends HookWidget {
   final bool? autoStart;
   final bool? closeIcon;
   final double? height;
+  final bool? usePrototypeItem;
   final List<StartProcess>? startProcesses;
   final List<StartProcessConda>? startProcessesConda;
   final Function? callback;
@@ -26,6 +27,7 @@ class StartProcessWidget extends HookWidget {
       this.height,
       this.startProcesses,
       this.startProcessesConda,
+      this.usePrototypeItem,
       this.callback})
       : super(key: key);
 
@@ -178,13 +180,15 @@ ${startProcesses!.map((startProcess) => "\$ $startProcess").join('\n\n')}
             children: [
               Expanded(
                 child: Container(
-                  height: height ?? 500,
+                  height: height,
                   color: Colors.white10,
                   child: ListView.builder(
                     controller: scrollController,
                     itemCount: outputs.value.length,
                     shrinkWrap: true,
-                    prototypeItem: SelectableText(outputs.value.first),
+                    prototypeItem: usePrototypeItem == false
+                        ? null
+                        : SelectableText(outputs.value.first),
                     itemBuilder: (context, index) {
                       return SelectableText(outputs.value[index]);
                     },

@@ -1,29 +1,13 @@
-import 'package:collection/collection.dart';
+import 'dart:convert';
+
+import 'package:deepfacelab_client/class/answer.dart';
 import 'package:deepfacelab_client/class/appState.dart';
-import 'package:deepfacelab_client/class/runningDeepfacelabCommand.dart';
-import 'package:deepfacelab_client/class/startProcess.dart';
+import 'package:deepfacelab_client/class/windowCommand.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
-import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
-
-class _Command {
-  String key;
-  String title;
-  String? workspacePath;
-  String command;
-  bool loading;
-  String? Function(String) getAnswer;
-
-  _Command(
-      {required this.key,
-      required this.title,
-      required this.workspacePath,
-      required this.command,
-      required this.loading,
-      required this.getAnswer});
-}
 
 class DeepfacelabCommandWidget extends HookWidget {
   final Workspace? workspace;
@@ -33,73 +17,63 @@ class DeepfacelabCommandWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final runningDeepfacelabCommands =
-        useSelector<AppState, List<RunningDeepfacelabCommand>>(
-            (state) => state.runningDeepfacelabCommands);
-    final dispatch = useDispatch<AppState>();
     final deepFaceLabFolder = useSelector<AppState, String?>(
         (state) => state.storage?.deepFaceLabFolder);
 
-    List<_Command> getCommands() {
+    List<WindowCommand> getCommands() {
       if (workspace == null) {
         return [];
       }
-      String keyExtractImageFromDataSrc = '2_extract_image_from_data_src';
-      String keyExtractImageFromDataDst = '3_extract_image_from_data_dst';
       return [
-        _Command(
-            key: keyExtractImageFromDataSrc,
-            workspacePath: workspace?.path,
+        WindowCommand(
+            windowTitle: '[${workspace?.name}] Extract image from data src',
             title: 'Extract image from data src',
             command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
 --input-file "${workspace?.path}/data_src.*" \\
 --output-dir "${workspace?.path}/data_src"
             """,
-            loading: runningDeepfacelabCommands?.firstWhereOrNull((element) =>
-                    element.key == keyExtractImageFromDataSrc &&
-                    element.workspacePath == workspace?.path) !=
-                null,
-            getAnswer: (String output) {
-              if (output.contains('Enter FPS')) {
-                return '0';
-              }
-              return null;
-            }),
-        _Command(
-            key: keyExtractImageFromDataDst,
-            workspacePath: workspace?.path,
+            loading: false,
+            answers: [
+              Answer(value: '0', outputs: ['Enter FPS']),
+              Answer(value: 'png', outputs: ['Output image format']),
+            ]),
+        WindowCommand(
+            windowTitle: '[${workspace?.name}] Extract image from data dst',
             title: 'Extract image from data dst',
             command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
 --input-file "${workspace?.path}/data_dst.*" \\
 --output-dir "${workspace?.path}/data_dst"
             """,
-            loading: runningDeepfacelabCommands?.firstWhereOrNull((element) =>
-                    element.key == keyExtractImageFromDataDst &&
-                    element.workspacePath == workspace?.path) !=
-                null,
-            getAnswer: (String output) {
-              if (output.contains('Enter FPS')) {
-                return '0';
-              }
-              return null;
-            }),
+            loading: false,
+            answers: [
+              Answer(value: '0', outputs: ['Enter FPS']),
+              Answer(value: 'png', outputs: ['Output image format']),
+            ]),
       ];
     }
 
-    var commands = useState<List<_Command>>(getCommands());
+    var commands = useState<List<WindowCommand>>(getCommands());
 
-    onRunningDeepfacelabCommandsUpdate() {
-      var newCommands = commands.value.toList();
-      for (var i = 0; i < newCommands.length; i++) {
-        newCommands[i].loading = runningDeepfacelabCommands?.firstWhereOrNull(
-                (element) =>
-                    element.key == newCommands[i].key &&
-                    element.workspacePath == newCommands[i].workspacePath) !=
-            null;
+    onCommandUpdate() async {
+      bool hasUpdate = false;
+      for (var command in commands.value) {
+        if (command.loading) {
+          hasUpdate = true;
+          var window = await DesktopMultiWindow.createWindow(
+              jsonEncode(command.toJson()));
+          window
+            ..setFrame(const Offset(0, 0) & const Size(1280, 720))
+            ..center()
+            ..setTitle(command.windowTitle)
+            ..show();
+          command.loading = false;
+        }
       }
-      commands.value = newCommands;
+      if (hasUpdate) {
+        commands.value = commands.value.toList();
+      }
     }
 
     useEffect(() {
@@ -108,9 +82,9 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
     }, [workspace]);
 
     useEffect(() {
-      onRunningDeepfacelabCommandsUpdate();
+      onCommandUpdate();
       return null;
-    }, [runningDeepfacelabCommands]);
+    }, [commands.value]);
 
     return ExpansionTile(
       expandedAlignment: Alignment.topLeft,
@@ -122,51 +96,12 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
                 onTap: command.loading
                     ? null
                     : () {
-                        var newRunningDeepfacelabCommands = [
-                          ...?runningDeepfacelabCommands
-                        ];
-                        if (newRunningDeepfacelabCommands.firstWhereOrNull(
-                                (element) =>
-                                    element.key == command.key &&
-                                    workspace?.path == element.workspacePath) !=
-                            null) {
-                          return;
-                        }
-                        newRunningDeepfacelabCommands
-                            .add(RunningDeepfacelabCommand(
-                                key: command.key,
-                                workspacePath: workspace?.path,
-                                condaProcess: StartProcessWidget(
-                                  autoStart: true,
-                                  height: 200,
-                                  closeIcon: true,
-                                  startProcessesConda: [
-                                    StartProcessConda(
-                                        command: command.command,
-                                        getAnswer: command.getAnswer)
-                                  ],
-                                  callback: () {
-                                    // todo
-                                    print("callback");
-                                  },
-                                )));
-                        dispatch({
-                          'runningDeepfacelabCommands':
-                              newRunningDeepfacelabCommands
-                        });
+                        command.loading = true;
+                        commands.value = commands.value.toList();
                       },
                 title: Text(command.title),
-                trailing: command.loading
-                    ? ElevatedButton(
-                        style: const ButtonStyle(
-                            backgroundColor:
-                                MaterialStatePropertyAll(Colors.red)),
-                        onPressed: () {
-                          print('stop');
-                        },
-                        child: const Text("Stop"),
-                      )
-                    : null,
+                trailing:
+                    command.loading ? const CircularProgressIndicator() : null,
               ))
           .toList(),
     );

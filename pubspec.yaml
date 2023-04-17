@@ -47,6 +47,7 @@ dependencies:
   package_info_plus: ^3.0.3
   flutter_redux_hooks: ^0.2.0
   collection: ^1.17.0
+  desktop_multi_window: ^0.2.0
 
 dev_dependencies:
   flutter_test:

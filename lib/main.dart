@@ -1,9 +1,14 @@
+import 'dart:convert';
+
+import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/appState.dart';
 import 'package:deepfacelab_client/class/storage.dart';
+import 'package:deepfacelab_client/class/windowCommand.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
+import 'package:deepfacelab_client/screens/window_command_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/localeStorageService.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
@@ -16,16 +21,25 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redux/redux.dart' as redux;
 import 'package:url_launcher/url_launcher.dart';
 
-void main() {
-  store.onChange.listen((AppState appState) {
-    if (appState.init == true && appState.storage != null) {
-      LocaleStorageService().writeStorage(appState.storage!.toJson());
-    }
-  });
+void main(List<String> args) {
+  if (args.firstOrNull == 'multi_window') {
+    var command =
+        WindowCommand.fromJson(jsonDecode(args[2]) as Map<String, dynamic>);
+    runApp(WindowCommandScreen(
+      store: store,
+      command: command,
+    ));
+  } else {
+    store.onChange.listen((AppState appState) {
+      if (appState.init == true && appState.storage != null) {
+        LocaleStorageService().writeStorage(appState.storage!.toJson());
+      }
+    });
 
-  runApp(MyApp(
-    store: store,
-  ));
+    runApp(MyApp(
+      store: store,
+    ));
+  }
 }
 
 class MyApp extends HookWidget {

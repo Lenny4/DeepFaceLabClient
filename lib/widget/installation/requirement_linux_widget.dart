@@ -302,6 +302,7 @@ when the installation is done you will need to restart your computer.
                                   label: "Install for me",
                                   startProcesses: startProcesses.value,
                                   callback: onInstallationDone,
+                                  usePrototypeItem: false,
                                 ),
                               ),
                             ],
