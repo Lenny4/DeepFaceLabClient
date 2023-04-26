@@ -60,29 +60,30 @@ class WindowCommand2Screen extends HookWidget {
         themeMode: darkMode != false ? ThemeMode.dark : ThemeMode.light,
         home: init == true
             ? Scaffold(
-                body: StartProcessWidget(
-                height: 500,
-                autoStart: true,
-                closeIcon: true,
-                usePrototypeItem: false,
-                startProcessesConda: [
-                  StartProcessConda(
-                      command: command.command,
-                      regex: command.regex,
-                      getAnswer: (String output) {
-                        return command.answers
-                            .firstWhereOrNull((answer) =>
-                                answer.outputs.firstWhereOrNull(
-                                    (search) => output.contains(search)) !=
-                                null)
-                            ?.value;
-                      })
-                ],
-                // callback: (int code) {
-                //   // todo
-                //   print(code);
-                // },
-              ))
+                body: SingleChildScrollView(
+                  child: StartProcessWidget(
+                  autoStart: true,
+                  closeIcon: false,
+                  usePrototypeItem: false,
+                  startProcessesConda: [
+                    StartProcessConda(
+                        command: command.command,
+                        regex: command.regex,
+                        getAnswer: (String output) {
+                          return command.answers
+                              .firstWhereOrNull((answer) =>
+                                  answer.outputs.firstWhereOrNull(
+                                      (search) => output.contains(search)) !=
+                                  null)
+                              ?.value;
+                        })
+                  ],
+                  // callback: (int code) {
+                  //   // todo
+                  //   print(code);
+                  // },
+              ),
+                ))
             : const Scaffold(body: LoadingScreen()));
   }
 }
