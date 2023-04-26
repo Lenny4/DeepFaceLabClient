@@ -23,11 +23,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 void main(List<String> args) {
   if (args.firstOrNull == 'multi_window') {
-    var command =
+    var windowCommand =
         WindowCommand.fromJson(jsonDecode(args[2]) as Map<String, dynamic>);
     runApp(WindowCommandScreen(
       store: store,
-      command: command,
+      windowCommand: windowCommand,
     ));
   } else {
     store.onChange.listen((AppState appState) {

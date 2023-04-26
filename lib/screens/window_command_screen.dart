@@ -14,25 +14,25 @@ import '../class/windowCommand.dart';
 
 class WindowCommandScreen extends HookWidget {
   final redux.Store<AppState> store;
-  final WindowCommand command;
+  final WindowCommand windowCommand;
 
   const WindowCommandScreen(
-      {Key? key, required this.store, required this.command})
+      {Key? key, required this.store, required this.windowCommand})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StoreProvider<AppState>(
       store: store,
-      child: WindowCommand2Screen(command: command),
+      child: WindowCommand2Screen(windowCommand: windowCommand),
     );
   }
 }
 
 class WindowCommand2Screen extends HookWidget {
-  final WindowCommand command;
+  final WindowCommand windowCommand;
 
-  const WindowCommand2Screen({Key? key, required this.command})
+  const WindowCommand2Screen({Key? key, required this.windowCommand})
       : super(key: key);
 
   // This widget is the root of your application.
@@ -61,16 +61,16 @@ class WindowCommand2Screen extends HookWidget {
         home: init == true
             ? Scaffold(
                 body: SingleChildScrollView(
-                  child: StartProcessWidget(
+                child: StartProcessWidget(
                   autoStart: true,
                   closeIcon: false,
                   usePrototypeItem: false,
                   startProcessesConda: [
                     StartProcessConda(
-                        command: command.command,
-                        regex: command.regex,
+                        command: windowCommand.command,
+                        regex: windowCommand.regex,
                         getAnswer: (String output) {
-                          return command.answers
+                          return windowCommand.answers
                               .firstWhereOrNull((answer) =>
                                   answer.outputs.firstWhereOrNull(
                                       (search) => output.contains(search)) !=
@@ -82,8 +82,8 @@ class WindowCommand2Screen extends HookWidget {
                   //   // todo
                   //   print(code);
                   // },
-              ),
-                ))
+                ),
+              ))
             : const Scaffold(body: LoadingScreen()));
   }
 }

@@ -20,7 +20,7 @@ class DeepfacelabCommandWidget extends HookWidget {
     final deepFaceLabFolder = useSelector<AppState, String?>(
         (state) => state.storage?.deepFaceLabFolder);
 
-    List<WindowCommand> getCommands() {
+    List<WindowCommand> getWindowCommands() {
       if (workspace == null) {
         return [];
       }
@@ -56,54 +56,55 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
       ];
     }
 
-    var commands = useState<List<WindowCommand>>(getCommands());
+    var windowCommands = useState<List<WindowCommand>>(getWindowCommands());
 
-    onCommandUpdate() async {
+    onWindowCommandUpdate() async {
       bool hasUpdate = false;
-      for (var command in commands.value) {
-        if (command.loading) {
+      for (var windowCommand in windowCommands.value) {
+        if (windowCommand.loading) {
           hasUpdate = true;
           var window = await DesktopMultiWindow.createWindow(
-              jsonEncode(command.toJson()));
+              jsonEncode(windowCommand.toJson()));
           window
             ..setFrame(const Offset(0, 0) & const Size(1280, 720))
             ..center()
-            ..setTitle(command.windowTitle)
+            ..setTitle(windowCommand.windowTitle)
             ..show();
-          command.loading = false;
+          windowCommand.loading = false;
         }
       }
       if (hasUpdate) {
-        commands.value = commands.value.toList();
+        windowCommands.value = windowCommands.value.toList();
       }
     }
 
     useEffect(() {
-      commands.value = getCommands();
+      windowCommands.value = getWindowCommands();
       return null;
     }, [workspace]);
 
     useEffect(() {
-      onCommandUpdate();
+      onWindowCommandUpdate();
       return null;
-    }, [commands.value]);
+    }, [windowCommands.value]);
 
     return ExpansionTile(
       expandedAlignment: Alignment.topLeft,
       initiallyExpanded: true,
       title: const Text('Commands'),
       tilePadding: const EdgeInsets.all(0.0),
-      children: commands.value
-          .map((command) => ListTile(
-                onTap: command.loading
+      children: windowCommands.value
+          .map((windowCommand) => ListTile(
+                onTap: windowCommand.loading
                     ? null
                     : () {
-                        command.loading = true;
-                        commands.value = commands.value.toList();
+                        windowCommand.loading = true;
+                        windowCommands.value = windowCommands.value.toList();
                       },
-                title: Text(command.title),
-                trailing:
-                    command.loading ? const CircularProgressIndicator() : null,
+                title: Text(windowCommand.title),
+                trailing: windowCommand.loading
+                    ? const CircularProgressIndicator()
+                    : null,
               ))
           .toList(),
     );
