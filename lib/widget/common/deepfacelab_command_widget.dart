@@ -37,7 +37,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
             answers: [
               Answer(value: '0', outputs: ['Enter FPS']),
               Answer(value: 'png', outputs: ['Output image format']),
-            ]),
+            ],
+            regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
         WindowCommand(
             windowTitle: '[${workspace?.name}] Extract image from data dst',
             title: 'Extract image from data dst',
@@ -50,7 +51,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
             answers: [
               Answer(value: '0', outputs: ['Enter FPS']),
               Answer(value: 'png', outputs: ['Output image format']),
-            ]),
+            ],
+            regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
       ];
     }
 

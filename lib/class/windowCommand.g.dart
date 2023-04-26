@@ -15,6 +15,8 @@ WindowCommand _$WindowCommandFromJson(Map<String, dynamic> json) =>
       answers: (json['answers'] as List<dynamic>)
           .map((e) => Answer.fromJson(e as Map<String, dynamic>))
           .toList(),
+      regex:
+          (json['regex'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$WindowCommandToJson(WindowCommand instance) =>
@@ -24,4 +26,5 @@ Map<String, dynamic> _$WindowCommandToJson(WindowCommand instance) =>
       'command': instance.command,
       'loading': instance.loading,
       'answers': instance.answers,
+      'regex': instance.regex,
     };

@@ -37,6 +37,20 @@ class StartProcessWidget extends HookWidget {
     var nbPkexec = useState<int>(0);
     var outputs = useState<List<String>>([]);
 
+    addOutput(String output, [List<String>? regex]) {
+      if (regex != null) {
+        for (var reg in regex) {
+          String? match = RegExp(r'' + reg + '').firstMatch(output)?.group(0);
+          if (match != null) {
+            outputs.value[outputs.value.length - 1] = output;
+            outputs.value = [...outputs.value];
+            return;
+          }
+        }
+      }
+      outputs.value = [...outputs.value, output];
+    }
+
     launchProcesses(int index) async {
       if (index == 0) {
         outputs.value = [];
@@ -53,12 +67,18 @@ class StartProcessWidget extends HookWidget {
         process = await Process.start("bash", ['-c', condaCommand.trim()]);
       }
       if (startProcesses != null) {
-        outputs.value = [...outputs.value, "\$ ${startProcesses![index]}"];
+        addOutput("\$ ${startProcesses![index]}");
       } else {
-        outputs.value = [...outputs.value, "\$ ${startProcessesConda![index]}"];
+        addOutput("\$ ${startProcessesConda![index]}");
       }
       process.stdout.transform(utf8.decoder).forEach((String output) {
-        outputs.value = [...outputs.value, output];
+        List<String>? regex;
+        if (startProcesses != null) {
+          regex = startProcesses![index].regex;
+        } else {
+          regex = startProcessesConda![index].regex;
+        }
+        addOutput(output, regex);
         if (startProcessesConda != null &&
             startProcessesConda![index].getAnswer != null) {
           String? answer = startProcessesConda![index].getAnswer!(output);
@@ -68,7 +88,13 @@ class StartProcessWidget extends HookWidget {
         }
       });
       process.stderr.transform(utf8.decoder).forEach((String output) {
-        outputs.value = [...outputs.value, output];
+        List<String>? regex;
+        if (startProcesses != null) {
+          regex = startProcesses![index].regex;
+        } else {
+          regex = startProcessesConda![index].regex;
+        }
+        addOutput(output, regex);
       });
       process.exitCode.then((value) {
         if ((startProcesses != null && index == startProcesses!.length - 1) ||
