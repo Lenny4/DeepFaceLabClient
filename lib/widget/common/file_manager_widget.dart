@@ -371,21 +371,21 @@ class FileManagerWidget extends HookWidget {
       await Clipboard.setData(ClipboardData(
           text: fileSystemEntities.value
               ?.where((element) => element.selected != null)
-              .map((e) => folderPath.value + e.filename)
+              .map((e) => "${folderPath.value}/${e.filename}")
               .join('\n')));
     }
 
     Future<void> copyPath(List<String> froms, String to) async {
       for (var from in froms) {
         var myFile = File(from);
-        to = "$to${Platform.pathSeparator}${p.basename(from)}";
+        String thisTo = "$to${Platform.pathSeparator}${p.basename(from)}";
         if (myFile.statSync().type == FileSystemEntityType.directory) {
-          await Directory(to).create(recursive: true);
+          await Directory(thisTo).create(recursive: true);
           await for (final file in Directory(from).list()) {
-            await copyPath([file.path], to);
+            await copyPath([file.path], thisTo);
           }
         } else {
-          await File(from).copy(to);
+          await File(from).copy(thisTo);
         }
       }
     }
