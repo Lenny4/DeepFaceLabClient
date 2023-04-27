@@ -149,6 +149,8 @@ class FileManagerShortcutWidget extends HookWidget {
 - `f2`: rename
 - `f5`: refresh
 - `Ctrl + A`: Select all
+- `Ctrl + C`: Copy
+- `Ctrl + V`: Paste
 - `del`: Delete
 - `left click`: Select
 - `right click`: Contextual menu
@@ -363,6 +365,39 @@ class FileManagerWidget extends HookWidget {
         }
         return e;
       }).toList();
+    }
+
+    copyClipboard() async {
+      await Clipboard.setData(ClipboardData(
+          text: fileSystemEntities.value
+              ?.where((element) => element.selected != null)
+              .map((e) => folderPath.value + e.filename)
+              .join('\n')));
+    }
+
+    Future<void> copyPath(List<String> froms, String to) async {
+      for (var from in froms) {
+        var myFile = File(from);
+        to = "$to${Platform.pathSeparator}${Path.basename(from)}";
+        if (myFile.statSync().type == FileSystemEntityType.directory) {
+          await Directory(to).create(recursive: true);
+          await for (final file in Directory(from).list()) {
+            await copyPath([file.path], to);
+          }
+        } else {
+          await File(from).copy(to);
+        }
+      }
+    }
+
+    pasteClipboard() async {
+      var data = (await Clipboard.getData(Clipboard.kTextPlain))?.text;
+      if (data != null) {
+        isCopyingDrag.value = true;
+        await copyPath(data.split('\n').toList(), folderPath.value);
+        loadFilesFolders();
+        isCopyingDrag.value = false;
+      }
     }
 
     rename() {
@@ -653,21 +688,6 @@ class FileManagerWidget extends HookWidget {
           0;
     }
 
-    Future<void> copyPath(List<String> froms, String to) async {
-      for (var from in froms) {
-        var myFile = File(from);
-        to = "$to${Platform.pathSeparator}${Path.basename(from)}";
-        if (myFile.statSync().type == FileSystemEntityType.directory) {
-          await Directory(to).create(recursive: true);
-          await for (final file in Directory(from).list()) {
-            await copyPath([file.path], to);
-          }
-        } else {
-          await File(from).copy(to);
-        }
-      }
-    }
-
     controller.updateFromParent = updateFromParent;
 
     useEffect(() {
@@ -709,9 +729,7 @@ class FileManagerWidget extends HookWidget {
                 child: Container(
                   decoration: isDragging.value
                       ? BoxDecoration(
-                          border: Border.all(
-                              color: Colors.white10,
-                              width: 5))
+                          border: Border.all(color: Colors.white10, width: 5))
                       : null,
                   color: isDragging.value ? null : Colors.transparent,
                   // need to add a color otherwise onTapContainer doesn't work properly
@@ -734,6 +752,10 @@ class FileManagerWidget extends HookWidget {
                                 delete,
                             const SingleActivator(LogicalKeyboardKey.f5):
                                 loadFilesFolders,
+                            const SingleActivator(LogicalKeyboardKey.keyC,
+                                control: true): copyClipboard,
+                            const SingleActivator(LogicalKeyboardKey.keyV,
+                                control: true): pasteClipboard,
                           },
                           child: Focus(
                             focusNode: myFocusNode.value,
@@ -872,17 +894,20 @@ class FileManagerWidget extends HookWidget {
                                       }
                                       return child;
                                     }),
-                                if (isCopyingDrag.value == true || isDragging.value == true)
+                                if (isCopyingDrag.value == true ||
+                                    isDragging.value == true)
                                   Positioned(
-                                    child: isDragging.value ? Container(
-                                      color: Colors.white10,
-                                      child: const IconButton(
-                                        icon: Icon(Icons.add),
-                                        splashRadius: 20,
-                                        iconSize: 60,
-                                        onPressed: null,
-                                      ),
-                                    ) : const CircularProgressIndicator(),
+                                    child: isDragging.value
+                                        ? Container(
+                                            color: Colors.white10,
+                                            child: const IconButton(
+                                              icon: Icon(Icons.add),
+                                              splashRadius: 20,
+                                              iconSize: 60,
+                                              onPressed: null,
+                                            ),
+                                          )
+                                        : const CircularProgressIndicator(),
                                   ),
                               ],
                             ),

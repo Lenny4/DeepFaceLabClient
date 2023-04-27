@@ -26,8 +26,8 @@ class DeepfacelabCommandWidget extends HookWidget {
       }
       return [
         WindowCommand(
-            windowTitle: '[${workspace?.name}] Extract image from data src',
-            title: 'Extract image from data src',
+            windowTitle: '[${workspace?.name}] 2 Extract image from data src',
+            title: '2 Extract image from data src',
             command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
 --input-file "${workspace?.path}/data_src.*" \\
@@ -40,8 +40,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
             ],
             regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
         WindowCommand(
-            windowTitle: '[${workspace?.name}] Extract image from data dst',
-            title: 'Extract image from data dst',
+            windowTitle: '[${workspace?.name}] 3 Extract image from data dst',
+            title: '3 Extract image from data dst',
             command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
 --input-file "${workspace?.path}/data_dst.*" \\
