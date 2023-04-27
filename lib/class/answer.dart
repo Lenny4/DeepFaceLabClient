@@ -5,11 +5,11 @@ part 'answer.g.dart';
 @JsonSerializable()
 class Answer {
   String value;
-  List<String> outputs;
+  List<String> questions;
 
   Answer({
     required this.value,
-    required this.outputs,
+    required this.questions,
   });
 
   factory Answer.fromJson(Map<String, dynamic> json) => _$AnswerFromJson(json);

@@ -8,11 +8,11 @@ part of 'answer.dart';
 
 Answer _$AnswerFromJson(Map<String, dynamic> json) => Answer(
       value: json['value'] as String,
-      outputs:
-          (json['outputs'] as List<dynamic>).map((e) => e as String).toList(),
+      questions:
+          (json['questions'] as List<dynamic>).map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$AnswerToJson(Answer instance) => <String, dynamic>{
       'value': instance.value,
-      'outputs': instance.outputs,
+      'questions': instance.questions,
     };

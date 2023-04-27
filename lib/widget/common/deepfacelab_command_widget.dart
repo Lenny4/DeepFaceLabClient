@@ -35,8 +35,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
             """,
             loading: false,
             answers: [
-              Answer(value: '0', outputs: ['Enter FPS']),
-              Answer(value: 'png', outputs: ['Output image format']),
+              Answer(value: '0', questions: ['Enter FPS']),
+              Answer(value: 'png', questions: ['Output image format']),
             ],
             regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
         WindowCommand(
@@ -49,8 +49,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
             """,
             loading: false,
             answers: [
-              Answer(value: '0', outputs: ['Enter FPS']),
-              Answer(value: 'png', outputs: ['Output image format']),
+              Answer(value: '0', questions: ['Enter FPS']),
+              Answer(value: 'png', questions: ['Output image format']),
             ],
             regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
       ];
