@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
-import 'package:deepfacelab_client/service/workspaceService.dart';
+import 'package:deepfacelab_client/service/workspace_service.dart';
 import 'package:deepfacelab_client/widget/common/form/checkbox_form_fiel_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';

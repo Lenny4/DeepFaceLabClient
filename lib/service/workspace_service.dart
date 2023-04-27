@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:slugify/slugify.dart';
 

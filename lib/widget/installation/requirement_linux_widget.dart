@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/appState.dart';
-import 'package:deepfacelab_client/class/startProcess.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/start_process.dart';
 import 'package:deepfacelab_client/widget/common/divider_with_text_widget.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
 import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
@@ -15,7 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class RequirementLinuxWidget extends HookWidget {
   RequirementLinuxWidget({Key? key}) : super(key: key);
-  String homeDirectory = (Platform.environment)['HOME'] ?? "/";
+  final String homeDirectory = (Platform.environment)['HOME'] ?? "/";
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +123,7 @@ fi
 
     useEffect(() {
       updateRequirements();
+      return null;
     }, [condaInstallFolder.value]);
 
     return Container(
@@ -266,7 +267,7 @@ You need to install the missing packages, and add it to your `PATH` if necessary
                           label: const Text('Recheck my requirements'),
                         ),
                       ),
-                      DividerWithTextWidget(text: "OR"),
+                      const DividerWithTextWidget(text: "OR"),
                       Container(
                           margin:
                               const EdgeInsets.only(top: 30.0, bottom: 30.0),
@@ -309,7 +310,7 @@ when the installation is done you will need to restart your computer.
                           )),
                       Container(
                           margin: const EdgeInsets.only(top: 10.0),
-                          child: OpenIssueWidget()),
+                          child: const OpenIssueWidget()),
                     ],
                   )
                 : const SizedBox.shrink()

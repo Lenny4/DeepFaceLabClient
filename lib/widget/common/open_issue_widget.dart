@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OpenIssueWidget extends HookWidget {
-  OpenIssueWidget({Key? key}) : super(key: key);
+  const OpenIssueWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class OpenIssueWidget extends HookWidget {
 }
 
 class OpenIssue2Widget extends HookWidget {
-  OpenIssue2Widget({Key? key}) : super(key: key);
+  const OpenIssue2Widget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

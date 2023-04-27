@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'condaEnvList.g.dart';
+part 'conda_env_list.g.dart';
 
 @JsonSerializable()
 class CondaEnvList {

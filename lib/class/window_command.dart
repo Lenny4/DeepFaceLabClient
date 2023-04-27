@@ -1,7 +1,7 @@
 import 'package:deepfacelab_client/class/answer.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'windowCommand.g.dart';
+part 'window_command.g.dart';
 
 @JsonSerializable()
 class WindowCommand {

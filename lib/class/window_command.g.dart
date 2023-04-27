@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'windowCommand.dart';
+part of 'window_command.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

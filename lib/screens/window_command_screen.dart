@@ -1,16 +1,15 @@
 import 'package:collection/collection.dart';
-import 'package:deepfacelab_client/class/appState.dart';
-import 'package:deepfacelab_client/class/startProcess.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/start_process.dart';
 import 'package:deepfacelab_client/class/storage.dart';
+import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
-import 'package:deepfacelab_client/service/localeStorageService.dart';
+import 'package:deepfacelab_client/service/locale_storage_service.dart';
 import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:redux/redux.dart' as redux;
-
-import '../class/windowCommand.dart';
 
 class WindowCommandScreen extends HookWidget {
   final redux.Store<AppState> store;

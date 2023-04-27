@@ -18,9 +18,9 @@ class SettingsScreen extends HookWidget {
             margin: const EdgeInsets.all(10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: const [
                 SelectThemeWidget(),
-                const HasRequirementsWidget(),
+                HasRequirementsWidget(),
                 OpenIssueWidget(),
               ],
             )),

@@ -1,6 +1,6 @@
-import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/device.dart';
-import 'package:deepfacelab_client/service/pythonService.dart';
+import 'package:deepfacelab_client/service/python_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -26,7 +26,7 @@ class DevicesWidget extends HookWidget {
     return ExpansionTile(
       expandedAlignment: Alignment.topLeft,
       title: Text(
-          'Your GPUs ${(devices != null && devices.isNotEmpty ? "(${devices.length})" : "") ?? ""}'),
+          'Your GPUs ${(devices != null && devices.isNotEmpty ? "(${devices.length})" : "")}'),
       tilePadding: const EdgeInsets.all(0.0),
       children: <Widget>[
         devices == null

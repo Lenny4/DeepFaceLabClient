@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/appState.dart';
-import 'package:deepfacelab_client/class/startProcess.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/start_process.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
 import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
@@ -15,7 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class InstallationWidget extends HookWidget {
   InstallationWidget({Key? key}) : super(key: key);
-  String homeDirectory = (Platform.environment)['HOME'] ?? "/";
+  final String homeDirectory = (Platform.environment)['HOME'] ?? "/";
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +56,7 @@ pip install -r $path/requirements-cuda.txt
             StartProcess(executable: 'bash', arguments: [
               '-c',
               """
-rm -rf $thisInstallationPath && \
+rm -rf $thisInstallationPath &&
 git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationPath
             """
             ])
@@ -80,8 +80,8 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
           showCloseIcon: true,
           backgroundColor: Theme.of(context).colorScheme.background,
           content: Row(
-            children: [
-              const SelectableText(
+            children: const [
+              SelectableText(
                 'An error occurred while installing DeepFaceLab.',
                 style: TextStyle(color: Colors.white),
               ),

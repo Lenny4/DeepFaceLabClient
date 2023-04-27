@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 // https://stackoverflow.com/questions/53479942/checkbox-form-validation
 class CheckboxFormField extends FormField<bool> {
   CheckboxFormField(
-      {Widget? title,
+      {super.key,
+      Widget? title,
       FormFieldSetter<bool>? onSaved,
       FormFieldValidator<bool>? validator,
       EdgeInsetsGeometry? contentPadding,

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
-import 'package:deepfacelab_client/service/workspaceService.dart';
+import 'package:deepfacelab_client/service/workspace_service.dart';
 import 'package:deepfacelab_client/widget/common/context_menu_region.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:path/path.dart' as Path;
+import 'package:path/path.dart' as p;
 
 class _PathItem {
   final String text;
@@ -48,14 +48,14 @@ class _FileSystemEntity {
 // /.pub-cache/hosted/pub.dev/filesystem_picker-3.1.0/lib/src/picker_page.dart
 class _FileManagerHeaderWidget extends HookWidget {
   final String rootPath;
-  final String path;
+  final String folderPath;
   final ValueNotifier<String> pathNotifier;
   final void Function() refresh;
 
   const _FileManagerHeaderWidget({
     Key? key,
     required this.rootPath,
-    required this.path,
+    required this.folderPath,
     required this.pathNotifier,
     required this.refresh,
   }) : super(key: key);
@@ -63,27 +63,27 @@ class _FileManagerHeaderWidget extends HookWidget {
   @override
   Widget build(BuildContext context) {
     List<BreadcrumbItem<String?>> getItems() {
-      String currentPath = path;
-      String dirPath = Path.relative(currentPath, from: rootPath);
+      String currentPath = folderPath;
+      String dirPath = p.relative(currentPath, from: rootPath);
       final List<String> items =
           (dirPath != '.') ? dirPath.split(Platform.pathSeparator) : [];
       List<_PathItem> pathItems = [];
 
-      String folderName = Path.basename(rootPath);
+      String folderName = p.basename(rootPath);
       if (items.isNotEmpty) {
         pathItems.add(_PathItem(path: rootPath, text: folderName));
 
-        String path = rootPath;
+        String folderPath = rootPath;
         for (var item in items) {
-          path = Path.join(path, item);
-          pathItems.add(_PathItem(path: path, text: item));
+          folderPath = p.join(folderPath, item);
+          pathItems.add(_PathItem(path: folderPath, text: item));
         }
       } else {
         pathItems.add(_PathItem(path: rootPath, text: folderName));
       }
       return pathItems
-          .map((path) =>
-              BreadcrumbItem<String>(text: path.text, data: path.path))
+          .map((folderPath) => BreadcrumbItem<String>(
+              text: folderPath.text, data: folderPath.path))
           .toList(growable: false);
     }
 
@@ -92,7 +92,7 @@ class _FileManagerHeaderWidget extends HookWidget {
     useEffect(() {
       items.value = getItems();
       return null;
-    }, [path, rootPath]);
+    }, [folderPath, rootPath]);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,7 +100,7 @@ class _FileManagerHeaderWidget extends HookWidget {
         Breadcrumbs<String>(
           items: items.value,
           onSelect: (String? value) {
-            if (value == null || value == path) {
+            if (value == null || value == folderPath) {
               return;
             }
             pathNotifier.value = value;
@@ -233,7 +233,7 @@ class FileManagerMissingFolderWidget extends HookWidget {
                             content: MarkdownBody(selectable: true, data: """
 These folders are missing in your workspaces:
 
-${missingDirectories.value.map((path) => path.replaceFirst(workspace?.path ?? "", "")).join('\n\n')}
+${missingDirectories.value.map((folderPath) => folderPath.replaceFirst(workspace?.path ?? "", "")).join('\n\n')}
                           """),
                           ),
                         ))
@@ -274,7 +274,7 @@ class FileManagerWidget extends HookWidget {
       List<_FileSystemEntity> newFileSystemEntities =
           await (Directory(folderPath.value).list()).map((fileSystemEntity) {
         // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
-        String filename = Path.basename(fileSystemEntity.path);
+        String filename = p.basename(fileSystemEntity.path);
         return _FileSystemEntity(
             filename: filename,
             directory: fileSystemEntity is Directory,
@@ -378,7 +378,7 @@ class FileManagerWidget extends HookWidget {
     Future<void> copyPath(List<String> froms, String to) async {
       for (var from in froms) {
         var myFile = File(from);
-        to = "$to${Platform.pathSeparator}${Path.basename(from)}";
+        to = "$to${Platform.pathSeparator}${p.basename(from)}";
         if (myFile.statSync().type == FileSystemEntityType.directory) {
           await Directory(to).create(recursive: true);
           await for (final file in Directory(from).list()) {
@@ -412,7 +412,7 @@ class FileManagerWidget extends HookWidget {
       }
       final controller =
           TextEditingController(text: fileSystemEntity?.filename);
-      final extension = Path.extension(fileSystemEntity?.filename ?? "");
+      final extension = p.extension(fileSystemEntity?.filename ?? "");
       controller.selection = TextSelection(
         baseOffset: 0,
         extentOffset:
@@ -614,12 +614,12 @@ class FileManagerWidget extends HookWidget {
           if (value == null) {
             return;
           }
-          String filename = Path.basename(value);
+          String filename = p.basename(value);
           File(value)
               .copy(folderPath.value +
                   Platform.pathSeparator +
                   fileSystemEntities.value![index].filename +
-                  Path.extension(filename))
+                  p.extension(filename))
               .then((value) => loadFilesFolders());
         });
         return;
@@ -738,7 +738,7 @@ class FileManagerWidget extends HookWidget {
                     children: [
                       _FileManagerHeaderWidget(
                           pathNotifier: folderPath,
-                          path: folderPath.value,
+                          folderPath: folderPath.value,
                           rootPath: rootPath,
                           refresh: loadFilesFolders),
                       Expanded(

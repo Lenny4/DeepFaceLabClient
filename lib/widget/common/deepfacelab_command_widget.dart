@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:deepfacelab_client/class/answer.dart';
-import 'package:deepfacelab_client/class/appState.dart';
-import 'package:deepfacelab_client/class/windowCommand.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/condaEnvList.dart';
+import 'package:deepfacelab_client/class/conda_env_list.dart';
 import 'package:flutter/cupertino.dart';
 
 class ProcessService {

@@ -1,16 +1,16 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:deepfacelab_client/class/appState.dart';
+import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/storage.dart';
-import 'package:deepfacelab_client/class/windowCommand.dart';
+import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
 import 'package:deepfacelab_client/screens/window_command_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
-import 'package:deepfacelab_client/service/localeStorageService.dart';
+import 'package:deepfacelab_client/service/locale_storage_service.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/gestures.dart';

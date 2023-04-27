@@ -1,4 +1,4 @@
-import 'package:deepfacelab_client/class/action/switchThemeAction.dart';
+import 'package:deepfacelab_client/class/action/switch_theme_action.dart';
 import 'package:deepfacelab_client/class/device.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';

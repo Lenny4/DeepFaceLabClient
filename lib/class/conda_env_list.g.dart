@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'condaEnvList.dart';
+part of 'conda_env_list.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

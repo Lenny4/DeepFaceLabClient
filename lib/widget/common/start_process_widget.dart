@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:deepfacelab_client/class/startProcess.dart';
-import 'package:deepfacelab_client/service/processService.dart';
+import 'package:deepfacelab_client/class/start_process.dart';
+import 'package:deepfacelab_client/service/process_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -40,7 +40,7 @@ class StartProcessWidget extends HookWidget {
     addOutput(String output, [List<String>? regex]) {
       if (regex != null) {
         for (var reg in regex) {
-          String? match = RegExp(r'' + reg + '').firstMatch(output)?.group(0);
+          String? match = RegExp(r'' '$reg' '').firstMatch(output)?.group(0);
           if (match != null) {
             outputs.value[outputs.value.length - 1] = output;
             outputs.value = [...outputs.value];
