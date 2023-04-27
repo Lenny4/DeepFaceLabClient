@@ -348,13 +348,19 @@ class FileManagerWidget extends HookWidget {
       fileSystemEntities.value = newFileSystemEntities;
     }
 
-    onTapContainer() {
+    onTapDownContainer(TapDownDetails tapDownDetails) {
       FocusScope.of(context).requestFocus(myFocusNode.value);
       ContextMenuController.removeAny();
       fileSystemEntities.value = fileSystemEntities.value!.map((e) {
         e.selected = null;
         return e;
       }).toList();
+    }
+
+    onPanEndContainer(DragEndDetails dragEndDetails) {
+      // todo select files with cursor, use Positioned to show selected area
+      // todo https://api.flutter.dev/flutter/widgets/MouseRegion-class.html
+      // print("onPanEndContainer");
     }
 
     selectAll() {
@@ -709,7 +715,9 @@ class FileManagerWidget extends HookWidget {
         ? const Center(child: CircularProgressIndicator())
         : Expanded(
             child: GestureDetector(
-              onTap: onTapContainer,
+              // https://github.com/flutter/flutter/issues/40548#issuecomment-877083943
+              onTapDown: onTapDownContainer,
+              onPanEnd: onPanEndContainer,
               child: DropTarget(
                 onDragDone: (detail) {
                   isCopyingDrag.value = true;
@@ -731,8 +739,6 @@ class FileManagerWidget extends HookWidget {
                       ? BoxDecoration(
                           border: Border.all(color: Colors.white10, width: 5))
                       : null,
-                  color: isDragging.value ? null : Colors.transparent,
-                  // need to add a color otherwise onTapContainer doesn't work properly
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
