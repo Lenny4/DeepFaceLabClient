@@ -781,8 +781,13 @@ class FileManagerWidget extends HookWidget {
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       var child = ContextMenuRegion(
-                                        beforeShow: () =>
-                                            onTapCard(index, rightClick: true),
+                                        beforeShow: () {
+                                          if (fileSystemEntities
+                                                  .value![index].selected ==
+                                              null) {
+                                            onTapCard(index, rightClick: true);
+                                          }
+                                        },
                                         contextMenuBuilder:
                                             (context, primaryAnchor,
                                                 [secondaryAnchor]) {
@@ -799,16 +804,18 @@ class FileManagerWidget extends HookWidget {
                                               if (fileSystemEntities
                                                       .value![index].required ==
                                                   false) ...[
-                                                ContextMenuButtonItem(
-                                                  onPressed: rename,
-                                                  label: 'Rename',
-                                                ),
+                                                if (nbSelectedItems.value == 1)
+                                                  ContextMenuButtonItem(
+                                                    onPressed: rename,
+                                                    label: 'Rename',
+                                                  ),
                                                 ContextMenuButtonItem(
                                                   onPressed: delete,
                                                   label: 'Delete',
                                                 ),
                                               ],
-                                              if (folderPath.value ==
+                                              if (nbSelectedItems.value == 2 &&
+                                                  folderPath.value ==
                                                       rootPath &&
                                                   ((fileSystemEntities
                                                               .value![index]

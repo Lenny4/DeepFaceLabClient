@@ -72,12 +72,16 @@ class _ContextMenuRegionState extends State<ContextMenuRegion> {
 
   void _show(Offset position) {
     widget.beforeShow!();
-    _contextMenuController.show(
-      context: context,
-      contextMenuBuilder: (context) {
-        return widget.contextMenuBuilder(context, position);
-      },
-    );
+    // https://stackoverflow.com/a/18453577/6824121
+    Future.delayed(
+        // todo improve by removing Future.delayed, TEST CASE with no selected element, right click on 1 element and the Rename option must appear
+        const Duration(milliseconds: 50),
+        () => _contextMenuController.show(
+              context: context,
+              contextMenuBuilder: (context) {
+                return widget.contextMenuBuilder(context, position);
+              },
+            ));
   }
 
   void _hide() {
