@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:deepfacelab_client/class/answer.dart';
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
+import 'package:deepfacelab_client/service/window_command_service.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -20,43 +20,9 @@ class DeepfacelabCommandWidget extends HookWidget {
     final deepFaceLabFolder = useSelector<AppState, String?>(
         (state) => state.storage?.deepFaceLabFolder);
 
-    List<WindowCommand> getWindowCommands() {
-      if (workspace == null) {
-        return [];
-      }
-      return [
-        WindowCommand(
-            windowTitle: '[${workspace?.name}] 2 Extract image from data src',
-            title: '2 Extract image from data src',
-            command: """
-python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace?.path}/data_src.*" \\
---output-dir "${workspace?.path}/data_src"
-            """,
-            loading: false,
-            answers: [
-              Answer(value: '0', questions: ['Enter FPS']),
-              Answer(value: 'png', questions: ['Output image format']),
-            ],
-            regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
-        WindowCommand(
-            windowTitle: '[${workspace?.name}] 3 Extract image from data dst',
-            title: '3 Extract image from data dst',
-            command: """
-python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace?.path}/data_dst.*" \\
---output-dir "${workspace?.path}/data_dst"
-            """,
-            loading: false,
-            answers: [
-              Answer(value: '0', questions: ['Enter FPS']),
-              Answer(value: 'png', questions: ['Output image format']),
-            ],
-            regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
-      ];
-    }
-
-    var windowCommands = useState<List<WindowCommand>>(getWindowCommands());
+    var windowCommands = useState<List<WindowCommand>>(WindowCommandService()
+        .getWindowCommands(
+            deepFaceLabFolder: deepFaceLabFolder, workspace: workspace));
 
     onWindowCommandUpdate() async {
       bool hasUpdate = false;
@@ -79,7 +45,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
     }
 
     useEffect(() {
-      windowCommands.value = getWindowCommands();
+      windowCommands.value = WindowCommandService().getWindowCommands(
+          deepFaceLabFolder: deepFaceLabFolder, workspace: workspace);
       return null;
     }, [workspace]);
 
