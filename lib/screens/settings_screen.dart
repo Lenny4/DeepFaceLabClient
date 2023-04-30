@@ -1,4 +1,3 @@
-import 'package:deepfacelab_client/widget/common/deepfacelab_command_config_widget.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
 import 'package:deepfacelab_client/widget/common/select_theme_widget.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +19,8 @@ class SettingsScreen extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 SelectThemeWidget(),
-                DeepfacelabCommandConfigWidget(),
+                // todo remove ?
+                // DeepfacelabCommandConfigWidget(),
                 OpenIssueWidget(),
               ],
             )),

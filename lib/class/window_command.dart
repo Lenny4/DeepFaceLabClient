@@ -1,4 +1,4 @@
-import 'package:deepfacelab_client/class/answer.dart';
+import 'package:deepfacelab_client/class/question.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'window_command.g.dart';
@@ -9,7 +9,7 @@ class WindowCommand {
   String title;
   String command;
   bool loading;
-  List<Answer> answers;
+  List<Question> questions;
   List<String>? regex;
 
   WindowCommand({
@@ -17,7 +17,7 @@ class WindowCommand {
     required this.title,
     required this.command,
     required this.loading,
-    required this.answers,
+    required this.questions,
     this.regex,
   });
 

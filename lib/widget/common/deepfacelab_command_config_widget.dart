@@ -3,6 +3,7 @@ import 'package:deepfacelab_client/service/window_command_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+// todo remove ?
 class DeepfacelabCommandConfigWidget extends HookWidget {
   const DeepfacelabCommandConfigWidget({Key? key}) : super(key: key);
 
@@ -22,11 +23,10 @@ class DeepfacelabCommandConfigWidget extends HookWidget {
                       expandedAlignment: Alignment.topLeft,
                       expandedCrossAxisAlignment: CrossAxisAlignment.start,
                       title: Text(windowCommand.title),
-                      children: windowCommand.answers
-                          .map((answer) =>
-                              Padding(
+                      children: windowCommand.questions
+                          .map((question) => Padding(
                                 padding: const EdgeInsets.only(left: 30.0),
-                                child: Text("- ${answer.value} ${answer.question}"),
+                                child: Text("- ${question.text}"),
                               ))
                           .toList(),
                     ))

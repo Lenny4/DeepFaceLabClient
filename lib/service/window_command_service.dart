@@ -1,6 +1,16 @@
-import 'package:deepfacelab_client/class/answer.dart';
+import 'package:deepfacelab_client/class/question.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
+
+class _Questions {
+  static Question enterFps = Question(
+      text: 'Enter FPS', validAnswerRegex: '', answer: '', defaultAnswer: '0');
+  static Question outputImageFormat = Question(
+      text: 'Output image format',
+      validAnswerRegex: '',
+      answer: '',
+      defaultAnswer: 'png');
+}
 
 class WindowCommandService {
   List<WindowCommand> getWindowCommands(
@@ -15,9 +25,9 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
 --output-dir "${workspace?.path}/data_src"
             """,
           loading: false,
-          answers: [
-            Answer(value: '0', question: 'Enter FPS'),
-            Answer(value: 'png', question: 'Output image format'),
+          questions: [
+            _Questions.enterFps,
+            _Questions.outputImageFormat,
           ],
           regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
       WindowCommand(
@@ -29,9 +39,9 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
 --output-dir "${workspace?.path}/data_dst"
             """,
           loading: false,
-          answers: [
-            Answer(value: '0', question: 'Enter FPS'),
-            Answer(value: 'png', question: 'Output image format'),
+          questions: [
+            _Questions.enterFps,
+            _Questions.outputImageFormat,
           ],
           regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
     ];
