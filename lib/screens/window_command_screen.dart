@@ -71,9 +71,7 @@ class WindowCommand2Screen extends HookWidget {
                         getAnswer: (String question) {
                           return windowCommand.answers
                               .firstWhereOrNull((answer) =>
-                                  answer.questions.firstWhereOrNull(
-                                      (search) => question.contains(search)) !=
-                                  null)
+                                  question.contains(answer.question))
                               ?.value;
                         })
                   ],

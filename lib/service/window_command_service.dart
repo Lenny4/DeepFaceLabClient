@@ -4,37 +4,34 @@ import 'package:deepfacelab_client/class/workspace.dart';
 
 class WindowCommandService {
   List<WindowCommand> getWindowCommands(
-      {required Workspace? workspace, required String? deepFaceLabFolder}) {
-    if (workspace == null) {
-      return [];
-    }
+      {Workspace? workspace, String? deepFaceLabFolder}) {
     return [
       WindowCommand(
-          windowTitle: '[${workspace.name}] 2 Extract image from data src',
+          windowTitle: '[${workspace?.name}] 2 Extract image from data src',
           title: '2 Extract image from data src',
           command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace.path}/data_src.*" \\
---output-dir "${workspace.path}/data_src"
+--input-file "${workspace?.path}/data_src.*" \\
+--output-dir "${workspace?.path}/data_src"
             """,
           loading: false,
           answers: [
-            Answer(value: '0', questions: ['Enter FPS']),
-            Answer(value: 'png', questions: ['Output image format']),
+            Answer(value: '0', question: 'Enter FPS'),
+            Answer(value: 'png', question: 'Output image format'),
           ],
           regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
       WindowCommand(
-          windowTitle: '[${workspace.name}] 3 Extract image from data dst',
+          windowTitle: '[${workspace?.name}] 3 Extract image from data dst',
           title: '3 Extract image from data dst',
           command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace.path}/data_dst.*" \\
---output-dir "${workspace.path}/data_dst"
+--input-file "${workspace?.path}/data_dst.*" \\
+--output-dir "${workspace?.path}/data_dst"
             """,
           loading: false,
           answers: [
-            Answer(value: '0', questions: ['Enter FPS']),
-            Answer(value: 'png', questions: ['Output image format']),
+            Answer(value: '0', question: 'Enter FPS'),
+            Answer(value: 'png', question: 'Output image format'),
           ],
           regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
     ];
