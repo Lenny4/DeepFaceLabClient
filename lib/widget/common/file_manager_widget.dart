@@ -49,6 +49,8 @@ class _FileSystemEntity {
 class _FileManagerHeaderWidget extends HookWidget {
   final String rootPath;
   final String folderPath;
+  final bool focusSearchField;
+  final ValueNotifier<String> search;
   final ValueNotifier<String> pathNotifier;
   final void Function() refresh;
 
@@ -56,6 +58,8 @@ class _FileManagerHeaderWidget extends HookWidget {
     Key? key,
     required this.rootPath,
     required this.folderPath,
+    required this.focusSearchField,
+    required this.search,
     required this.pathNotifier,
     required this.refresh,
   }) : super(key: key);
@@ -88,11 +92,33 @@ class _FileManagerHeaderWidget extends HookWidget {
     }
 
     var items = useState<List<BreadcrumbItem<String?>>>([]);
+    var searchController =
+        useState<TextEditingController>(TextEditingController(text: ""));
+    var searchFocusNode = useState<FocusNode>(FocusNode());
 
     useEffect(() {
       items.value = getItems();
+      searchController.value.text = "";
+      Future.delayed(
+          // todo improve by removing Future.delayed
+          const Duration(milliseconds: 50), () {
+        search.value = "";
+      });
       return null;
     }, [folderPath, rootPath]);
+
+    useEffect(() {
+      Future.delayed(
+          // todo improve by removing Future.delayed
+          const Duration(milliseconds: 50), () {
+        searchController.value.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: searchController.value.text.length,
+        );
+        FocusScope.of(context).requestFocus(searchFocusNode.value);
+      });
+      return null;
+    }, [focusSearchField]);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,12 +132,21 @@ class _FileManagerHeaderWidget extends HookWidget {
             pathNotifier.value = value;
           },
         ),
+        Expanded(
+          child: TextFormField(
+            focusNode: searchFocusNode.value,
+            controller: searchController.value,
+            onChanged: (String? value) {
+              search.value = value ?? "";
+            },
+          ),
+        ),
         IconButton(
           icon: const Icon(Icons.refresh),
           splashRadius: 20,
           tooltip: 'Refresh (f5)',
           onPressed: refresh,
-        )
+        ),
       ],
     );
   }
@@ -151,6 +186,7 @@ class FileManagerShortcutWidget extends HookWidget {
 - `Ctrl + A`: Select all
 - `Ctrl + C`: Copy
 - `Ctrl + V`: Paste
+- `Ctrl + F`: Search
 - `del`: Delete
 - `left click`: Select
 - `right click`: Contextual menu
@@ -265,14 +301,21 @@ class FileManagerWidget extends HookWidget {
     var nbSelectedItems = useState<int>(0);
     var myFocusNode = useState<FocusNode>(FocusNode());
     var isDragging = useState<bool>(false);
+    var focusSearchField = useState<bool>(false);
     var isCopyingDrag = useState<bool>(false);
     var loadingForm = useState<bool>(false);
+    var search = useState<String>("");
     final formRenameKey = GlobalKey<FormState>();
 
     loadFilesFolders() async {
       fileSystemEntities.value = null;
+      var thisFiles = Directory(folderPath.value).list();
+      if (search.value != "") {
+        thisFiles = thisFiles.where(
+            (thisFile) => p.basename(thisFile.path).contains(search.value));
+      }
       List<_FileSystemEntity> newFileSystemEntities =
-          await (Directory(folderPath.value).list()).map((fileSystemEntity) {
+          await thisFiles.map((fileSystemEntity) {
         // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
         String filename = p.basename(fileSystemEntity.path);
         return _FileSystemEntity(
@@ -330,7 +373,7 @@ class FileManagerWidget extends HookWidget {
         }
         return a.filename.compareTo(b.filename);
       });
-      if (folderPath.value == rootPath) {
+      if (folderPath.value == rootPath && search.value == "") {
         for (var video in ["data_src", "data_dst"]) {
           if (newFileSystemEntities.indexWhere(
                   (element) => element.filename.contains("$video.")) ==
@@ -404,6 +447,10 @@ class FileManagerWidget extends HookWidget {
         loadFilesFolders();
         isCopyingDrag.value = false;
       }
+    }
+
+    handleFocusSearchField() {
+      focusSearchField.value = !focusSearchField.value;
     }
 
     rename() {
@@ -712,230 +759,230 @@ class FileManagerWidget extends HookWidget {
       return null;
     }, [fileSystemEntities.value]);
 
-    return fileSystemEntities.value == null
-        ? const Center(child: CircularProgressIndicator())
-        : Expanded(
-            child: GestureDetector(
-              // https://github.com/flutter/flutter/issues/40548#issuecomment-877083943
-              onTapDown: onTapDownContainer,
-              onPanEnd: onPanEndContainer,
-              child: DropTarget(
-                onDragDone: (detail) {
-                  isCopyingDrag.value = true;
-                  copyPath(detail.files.map((file) => file.path).toList(),
-                          folderPath.value)
-                      .then((value) {
-                    isCopyingDrag.value = false;
-                    loadFilesFolders();
-                  });
-                },
-                onDragEntered: (detail) {
-                  isDragging.value = true;
-                },
-                onDragExited: (detail) {
-                  isDragging.value = false;
-                },
-                child: Container(
-                  decoration: isDragging.value
-                      ? BoxDecoration(
-                          border: Border.all(color: Colors.white10, width: 5))
-                      : null,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _FileManagerHeaderWidget(
-                          pathNotifier: folderPath,
-                          folderPath: folderPath.value,
-                          rootPath: rootPath,
-                          refresh: loadFilesFolders),
-                      Expanded(
-                        child: CallbackShortcuts(
-                          bindings: {
-                            const SingleActivator(LogicalKeyboardKey.keyA,
-                                control: true): selectAll,
-                            const SingleActivator(LogicalKeyboardKey.f2):
-                                rename,
-                            const SingleActivator(LogicalKeyboardKey.delete):
-                                delete,
-                            const SingleActivator(LogicalKeyboardKey.f5):
-                                loadFilesFolders,
-                            const SingleActivator(LogicalKeyboardKey.keyC,
-                                control: true): copyClipboard,
-                            const SingleActivator(LogicalKeyboardKey.keyV,
-                                control: true): pasteClipboard,
-                          },
-                          child: Focus(
-                            focusNode: myFocusNode.value,
-                            autofocus: true,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                GridView.builder(
-                                    // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
-                                    // https://www.youtube.com/watch?v=0blNt4XIi0g
-                                    gridDelegate:
-                                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                                      maxCrossAxisExtent: 110,
-                                      childAspectRatio: 0.8,
-                                    ),
-                                    itemCount: fileSystemEntities.value!.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      var child = ContextMenuRegion(
-                                        beforeShow: () {
-                                          if (fileSystemEntities
-                                                  .value![index].selected ==
-                                              null) {
-                                            onTapCard(index, rightClick: true);
-                                          }
-                                        },
-                                        contextMenuBuilder:
-                                            (context, primaryAnchor,
-                                                [secondaryAnchor]) {
-                                          return AdaptiveTextSelectionToolbar
-                                              .buttonItems(
-                                            anchors:
-                                                TextSelectionToolbarAnchors(
-                                              primaryAnchor: primaryAnchor,
-                                              secondaryAnchor:
-                                                  secondaryAnchor as Offset?,
-                                            ),
-                                            buttonItems: <
-                                                ContextMenuButtonItem>[
-                                              if (fileSystemEntities
-                                                      .value![index].required ==
-                                                  false) ...[
-                                                if (nbSelectedItems.value == 1)
-                                                  ContextMenuButtonItem(
-                                                    onPressed: rename,
-                                                    label: 'Rename',
-                                                  ),
+    useEffect(() {
+      loadFilesFolders();
+      return null;
+    }, [search.value]);
+
+    return Expanded(
+      child: GestureDetector(
+        // https://github.com/flutter/flutter/issues/40548#issuecomment-877083943
+        onTapDown: onTapDownContainer,
+        onPanEnd: onPanEndContainer,
+        child: DropTarget(
+          onDragDone: (detail) {
+            isCopyingDrag.value = true;
+            copyPath(detail.files.map((file) => file.path).toList(),
+                    folderPath.value)
+                .then((value) {
+              isCopyingDrag.value = false;
+              loadFilesFolders();
+            });
+          },
+          onDragEntered: (detail) {
+            isDragging.value = true;
+          },
+          onDragExited: (detail) {
+            isDragging.value = false;
+          },
+          child: Container(
+            decoration: isDragging.value
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.white10, width: 5))
+                : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _FileManagerHeaderWidget(
+                    pathNotifier: folderPath,
+                    folderPath: folderPath.value,
+                    focusSearchField: focusSearchField.value,
+                    rootPath: rootPath,
+                    search: search,
+                    refresh: loadFilesFolders),
+                Expanded(
+                  child: CallbackShortcuts(
+                    bindings: {
+                      const SingleActivator(LogicalKeyboardKey.keyA,
+                          control: true): selectAll,
+                      const SingleActivator(LogicalKeyboardKey.f2): rename,
+                      const SingleActivator(LogicalKeyboardKey.delete): delete,
+                      const SingleActivator(LogicalKeyboardKey.f5):
+                          loadFilesFolders,
+                      const SingleActivator(LogicalKeyboardKey.keyC,
+                          control: true): copyClipboard,
+                      const SingleActivator(LogicalKeyboardKey.keyV,
+                          control: true): pasteClipboard,
+                      const SingleActivator(LogicalKeyboardKey.keyF,
+                          control: true): handleFocusSearchField,
+                    },
+                    child: Focus(
+                      focusNode: myFocusNode.value,
+                      autofocus: true,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          fileSystemEntities.value == null
+                              ? const Center(child: CircularProgressIndicator())
+                              : GridView.builder(
+                                  // https://stackoverflow.com/questions/53612200/flutter-how-to-give-height-to-the-childrens-of-gridview-builder
+                                  // https://www.youtube.com/watch?v=0blNt4XIi0g
+                                  gridDelegate:
+                                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: 110,
+                                    childAspectRatio: 0.8,
+                                  ),
+                                  itemCount: fileSystemEntities.value!.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    var child = ContextMenuRegion(
+                                      beforeShow: () {
+                                        if (fileSystemEntities
+                                                .value![index].selected ==
+                                            null) {
+                                          onTapCard(index, rightClick: true);
+                                        }
+                                      },
+                                      contextMenuBuilder:
+                                          (context, primaryAnchor,
+                                              [secondaryAnchor]) {
+                                        return AdaptiveTextSelectionToolbar
+                                            .buttonItems(
+                                          anchors: TextSelectionToolbarAnchors(
+                                            primaryAnchor: primaryAnchor,
+                                            secondaryAnchor:
+                                                secondaryAnchor as Offset?,
+                                          ),
+                                          buttonItems: <ContextMenuButtonItem>[
+                                            if (fileSystemEntities
+                                                    .value![index].required ==
+                                                false) ...[
+                                              if (nbSelectedItems.value == 1)
                                                 ContextMenuButtonItem(
-                                                  onPressed: delete,
-                                                  label: 'Delete',
+                                                  onPressed: rename,
+                                                  label: 'Rename',
                                                 ),
-                                              ],
-                                              if (nbSelectedItems.value == 2 &&
-                                                  folderPath.value ==
-                                                      rootPath &&
-                                                  ((fileSystemEntities
-                                                              .value![index]
-                                                              .filename
-                                                              .contains(
-                                                                  "data_dst.") &&
-                                                          fileSystemEntities
-                                                              .value![index]
-                                                              .video) ||
-                                                      (fileSystemEntities
-                                                              .value![index]
-                                                              .filename
-                                                              .contains(
-                                                                  "data_src.") &&
-                                                          fileSystemEntities
-                                                              .value![index]
-                                                              .video))) ...[
-                                                ContextMenuButtonItem(
-                                                  onPressed: swapDstSrcVideos,
-                                                  label:
-                                                      'Swap dst and src videos',
-                                                ),
-                                              ]
+                                              ContextMenuButtonItem(
+                                                onPressed: delete,
+                                                label: 'Delete',
+                                              ),
                                             ],
-                                          );
-                                        },
-                                        child: GestureDetector(
-                                          onTap: () => onTapCard(index,
-                                              keysPressed: RawKeyboard
-                                                  .instance.keysPressed),
-                                          child: Card(
-                                            color: fileSystemEntities
-                                                        .value![index]
-                                                        .selected !=
-                                                    null
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : null,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                fileSystemEntities
-                                                        .value![index].required
-                                                    ? const Icon(Icons.add,
-                                                        size: 50)
-                                                    : fileSystemEntities
+                                            if (nbSelectedItems.value == 2 &&
+                                                folderPath.value == rootPath &&
+                                                ((fileSystemEntities
                                                             .value![index]
-                                                            .directory
-                                                        ? const Icon(
-                                                            Icons.folder,
-                                                            size: 50)
-                                                        : fileSystemEntities
-                                                                .value![index]
-                                                                .video
-                                                            ? const Icon(
-                                                                Icons
-                                                                    .video_file,
-                                                                size: 50)
-                                                            : fileSystemEntities
-                                                                    .value![
-                                                                        index]
-                                                                    .image
-                                                                ? Image.asset(
-                                                                    height: 70,
-                                                                    ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
-                                                                : const Icon(
-                                                                    Icons
-                                                                        .file_open,
-                                                                    size: 50),
-                                                Text(
-                                                    fileSystemEntities
-                                                        .value![index].filename,
-                                                    maxLines: 1),
-                                              ],
-                                            ),
+                                                            .filename
+                                                            .contains(
+                                                                "data_dst.") &&
+                                                        fileSystemEntities
+                                                            .value![index]
+                                                            .video) ||
+                                                    (fileSystemEntities
+                                                            .value![index]
+                                                            .filename
+                                                            .contains(
+                                                                "data_src.") &&
+                                                        fileSystemEntities
+                                                            .value![index]
+                                                            .video))) ...[
+                                              ContextMenuButtonItem(
+                                                onPressed: swapDstSrcVideos,
+                                                label:
+                                                    'Swap dst and src videos',
+                                              ),
+                                            ]
+                                          ],
+                                        );
+                                      },
+                                      child: GestureDetector(
+                                        onTap: () => onTapCard(index,
+                                            keysPressed: RawKeyboard
+                                                .instance.keysPressed),
+                                        child: Card(
+                                          color: fileSystemEntities
+                                                      .value![index].selected !=
+                                                  null
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : null,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              fileSystemEntities
+                                                      .value![index].required
+                                                  ? const Icon(Icons.add,
+                                                      size: 50)
+                                                  : fileSystemEntities
+                                                          .value![index]
+                                                          .directory
+                                                      ? const Icon(Icons.folder,
+                                                          size: 50)
+                                                      : fileSystemEntities
+                                                              .value![index]
+                                                              .video
+                                                          ? const Icon(
+                                                              Icons.video_file,
+                                                              size: 50)
+                                                          : fileSystemEntities
+                                                                  .value![index]
+                                                                  .image
+                                                              ? Image.asset(
+                                                                  height: 70,
+                                                                  ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
+                                                              : const Icon(
+                                                                  Icons
+                                                                      .file_open,
+                                                                  size: 50),
+                                              Text(
+                                                  fileSystemEntities
+                                                      .value![index].filename,
+                                                  maxLines: 1),
+                                            ],
                                           ),
                                         ),
+                                      ),
+                                    );
+                                    if (fileSystemEntities
+                                            .value![index].filename.length >
+                                        13) {
+                                      return Tooltip(
+                                        message: fileSystemEntities
+                                            .value![index].filename,
+                                        child: child,
                                       );
-                                      if (fileSystemEntities
-                                              .value![index].filename.length >
-                                          13) {
-                                        return Tooltip(
-                                          message: fileSystemEntities
-                                              .value![index].filename,
-                                          child: child,
-                                        );
-                                      }
-                                      return child;
-                                    }),
-                                if (isCopyingDrag.value == true ||
-                                    isDragging.value == true)
-                                  Positioned(
-                                    child: isDragging.value
-                                        ? Container(
-                                            color: Colors.white10,
-                                            child: const IconButton(
-                                              icon: Icon(Icons.add),
-                                              splashRadius: 20,
-                                              iconSize: 60,
-                                              onPressed: null,
-                                            ),
-                                          )
-                                        : const CircularProgressIndicator(),
-                                  ),
-                              ],
+                                    }
+                                    return child;
+                                  }),
+                          if (isCopyingDrag.value == true ||
+                              isDragging.value == true)
+                            Positioned(
+                              child: isDragging.value
+                                  ? Container(
+                                      color: Colors.white10,
+                                      child: const IconButton(
+                                        icon: Icon(Icons.add),
+                                        splashRadius: 20,
+                                        iconSize: 60,
+                                        onPressed: null,
+                                      ),
+                                    )
+                                  : const CircularProgressIndicator(),
                             ),
-                          ),
-                        ),
+                        ],
                       ),
-                      _FileManagerFooterWidget(
-                        nbSelectedItems: nbSelectedItems.value,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                _FileManagerFooterWidget(
+                  nbSelectedItems: nbSelectedItems.value,
+                ),
+              ],
             ),
-          );
+          ),
+        ),
+      ),
+    );
   }
 }
