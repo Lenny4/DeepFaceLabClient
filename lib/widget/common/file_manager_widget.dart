@@ -572,6 +572,7 @@ class FileManagerWidget extends HookWidget {
               SelectableText("Do you really want to delete $deleteSentence"),
           actions: <Widget>[
             ElevatedButton.icon(
+              autofocus: true,
               style: const ButtonStyle(
                   backgroundColor: MaterialStatePropertyAll(Colors.red)),
               onPressed: !loadingForm.value

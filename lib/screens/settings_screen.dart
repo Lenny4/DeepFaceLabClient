@@ -19,8 +19,6 @@ class SettingsScreen extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 SelectThemeWidget(),
-                // todo remove ?
-                // DeepfacelabCommandConfigWidget(),
                 OpenIssueWidget(),
               ],
             )),

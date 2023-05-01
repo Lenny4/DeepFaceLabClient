@@ -44,6 +44,7 @@ class DeleteWorkspaceFormWidget extends HookWidget {
                     child: Form(
                       key: formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SelectableText(
                               'Do you really want to delete the workspace `${workspace?.name}` ?'),

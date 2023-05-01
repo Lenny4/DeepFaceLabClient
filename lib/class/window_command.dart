@@ -7,6 +7,8 @@ part 'window_command.g.dart';
 class WindowCommand {
   String windowTitle;
   String title;
+  String key;
+  String documentationLink;
   String command;
   bool loading;
   List<Question> questions;
@@ -15,6 +17,8 @@ class WindowCommand {
   WindowCommand({
     required this.windowTitle,
     required this.title,
+    required this.key,
+    required this.documentationLink,
     required this.command,
     required this.loading,
     required this.questions,
