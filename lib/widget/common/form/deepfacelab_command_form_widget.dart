@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 class _QuestionController {
-  TextEditingController controller;
+  TextEditingController? controller;
+  String? selectValue;
   Question question;
 
-  _QuestionController({required this.controller, required this.question});
+  _QuestionController(
+      {required this.question, this.controller, this.selectValue});
 }
 
 class DeepfacelabCommandFormWidget extends HookWidget {
@@ -48,6 +50,13 @@ class DeepfacelabCommandFormWidget extends HookWidget {
             localeStorageAnswer = q.answer;
           }
         }
+        if (question.options != null) {
+          return _QuestionController(
+              selectValue: question.answer != ""
+                  ? question.answer
+                  : question.defaultAnswer,
+              question: question);
+        }
         return _QuestionController(
             controller: TextEditingController(
                 text: localeStorageAnswer ??
@@ -71,7 +80,10 @@ class DeepfacelabCommandFormWidget extends HookWidget {
       for (var questionController in questionControllers.value) {
         localeStorageQuestion.questions.add(LocaleStorageQuestionChild(
             text: questionController.question.text,
-            answer: questionController.controller.value.text));
+            answer: (questionController.controller != null
+                    ? questionController.controller!.value.text
+                    : questionController.selectValue) ??
+                ""));
       }
       return await WindowCommandService().saveAndGetLocaleStorageQuestion(
           localeStorageQuestion: localeStorageQuestion,
@@ -91,34 +103,60 @@ class DeepfacelabCommandFormWidget extends HookWidget {
       key: formKey.value,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: questionControllers.value.map((questionController) {
+        children: questionControllers.value
+            .mapIndexed((indexQuestionController, questionController) {
           String label =
               "${questionController.question.text} [${questionController.question.defaultAnswer}]";
-          return (TextFormField(
-            onFieldSubmitted: (value) {
-              onLaunch();
-            },
-            decoration: InputDecoration(
-                hintText: label,
-                labelText: label,
-                suffixIcon: Tooltip(
-                  message: questionController.question.help,
-                  child: const Icon(Icons.help),
-                )),
-            controller: questionController.controller,
-            validator: (value) {
-              for (var validAnswerRegex
-                  in questionController.question.validAnswerRegex) {
-                String regex = validAnswerRegex.regex;
-                String? match =
-                    RegExp(r'' '$regex' '').firstMatch(value!)?.group(0);
-                if (match == null) {
-                  return validAnswerRegex.errorMessage;
-                }
-              }
-              return null;
-            },
-          ));
+          var inputDecoration = InputDecoration(
+              hintText: label,
+              labelText: label,
+              suffixIcon: Tooltip(
+                message: questionController.question.help,
+                child: const Icon(Icons.help),
+              ));
+          return (questionController.question.options != null
+              ? Column(
+                  children: [
+                    (DropdownButtonFormField<String>(
+                      decoration: inputDecoration,
+                      value: questionController.selectValue,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_downward),
+                      onChanged: (String? value) {
+                        questionControllers
+                            .value[indexQuestionController].selectValue = value;
+                        questionControllers.value =
+                            questionControllers.value.toList();
+                      },
+                      items: questionController.question.options
+                          ?.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    )),
+                  ],
+                )
+              : TextFormField(
+                  onFieldSubmitted: (value) {
+                    onLaunch();
+                  },
+                  decoration: inputDecoration,
+                  controller: questionController.controller,
+                  validator: (value) {
+                    for (var validAnswerRegex
+                        in questionController.question.validAnswerRegex) {
+                      String regex = validAnswerRegex.regex;
+                      String? match =
+                          RegExp(r'' '$regex' '').firstMatch(value!)?.group(0);
+                      if (match == null) {
+                        return validAnswerRegex.errorMessage;
+                      }
+                    }
+                    return null;
+                  },
+                ));
         }).toList(),
       ),
     );

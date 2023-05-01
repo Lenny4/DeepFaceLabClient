@@ -21,16 +21,18 @@ If your clip has high variety or unique frames then you can extract all frames b
       answer: '',
       defaultAnswer: '0');
   static Question outputImageFormat = Question(
-      text: 'Output image format',
-      help: """Select compressed JPEG or uncompressed PNG.
+    text: 'Output image format',
+    help: """Select compressed JPEG or uncompressed PNG.
 Choose png for the best image quality.""",
-      validAnswerRegex: [
-        ValidAnswerRegex(
-            regex: '^\$|^png\$|^jpg\$',
-            errorMessage: 'Choose one these values [png|jpg]')
-      ],
-      answer: '',
-      defaultAnswer: 'png');
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          regex: '^\$|^png\$|^jpg\$',
+          errorMessage: 'Choose one these values [png|jpg]')
+    ],
+    answer: '',
+    defaultAnswer: 'png',
+    options: ['png', 'jpg'],
+  );
 }
 
 class WindowCommandService {

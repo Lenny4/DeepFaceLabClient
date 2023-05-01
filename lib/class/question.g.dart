@@ -13,7 +13,9 @@ Question _$QuestionFromJson(Map<String, dynamic> json) => Question(
           .map((e) => ValidAnswerRegex.fromJson(e as Map<String, dynamic>))
           .toList(),
       answer: json['answer'] as String?,
-      defaultAnswer: json['defaultAnswer'] as String?,
+      defaultAnswer: json['defaultAnswer'] as String,
+      options:
+          (json['options'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
@@ -22,4 +24,5 @@ Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
       'validAnswerRegex': instance.validAnswerRegex,
       'answer': instance.answer,
       'defaultAnswer': instance.defaultAnswer,
+      'options': instance.options,
     };

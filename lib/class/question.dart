@@ -9,14 +9,16 @@ class Question {
   String help;
   List<ValidAnswerRegex> validAnswerRegex;
   String? answer;
-  String? defaultAnswer;
+  String defaultAnswer;
+  List<String>? options;
 
   Question({
     required this.text,
     required this.help,
     required this.validAnswerRegex,
     this.answer,
-    this.defaultAnswer,
+    required this.defaultAnswer,
+    this.options,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) =>
