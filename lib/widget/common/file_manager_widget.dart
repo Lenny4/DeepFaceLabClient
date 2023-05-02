@@ -421,7 +421,7 @@ class FileManagerWidget extends HookWidget {
           text: fileSystemEntities.value
               ?.where((element) => element.selected != null)
               .map((e) => "${folderPath.value}/${e.filename}")
-              .join('\n')));
+              .join('\n') ?? ""));
     }
 
     Future<void> copyPath(List<String> froms, String to) async {
