@@ -1,9 +1,12 @@
 class StartProcess {
   String executable;
   List<String> arguments;
-  List<String>? regex;
+  List<String>? similarMessageRegex;
 
-  StartProcess({required this.executable, required this.arguments, this.regex});
+  StartProcess(
+      {required this.executable,
+      required this.arguments,
+      this.similarMessageRegex});
 
   @override
   String toString() {
@@ -14,9 +17,10 @@ class StartProcess {
 class StartProcessConda {
   String command;
   String? Function(String)? getAnswer;
-  List<String>? regex;
+  List<String>? similarMessageRegex;
 
-  StartProcessConda({required this.command, this.getAnswer, this.regex});
+  StartProcessConda(
+      {required this.command, this.getAnswer, this.similarMessageRegex});
 
   @override
   String toString() {

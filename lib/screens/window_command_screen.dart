@@ -67,11 +67,11 @@ class WindowCommand2Screen extends HookWidget {
                   startProcessesConda: [
                     StartProcessConda(
                         command: windowCommand.command,
-                        regex: windowCommand.regex,
+                        similarMessageRegex: windowCommand.similarMessageRegex,
                         getAnswer: (String questionString) {
                           return windowCommand.questions
                               .firstWhereOrNull((question) =>
-                                  questionString.contains(question.text))
+                                  questionString.contains(question.question))
                               ?.answer;
                         })
                   ],

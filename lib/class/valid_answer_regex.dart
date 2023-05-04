@@ -4,11 +4,15 @@ part 'valid_answer_regex.g.dart';
 
 @JsonSerializable()
 class ValidAnswerRegex {
-  String regex;
+  String? regex;
+  int? min;
+  int? max;
   String errorMessage;
 
   ValidAnswerRegex({
-    required this.regex,
+    this.regex,
+    this.min,
+    this.max,
     required this.errorMessage,
   });
 

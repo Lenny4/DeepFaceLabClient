@@ -45,24 +45,19 @@ class DeepfacelabCommandFormWidget extends HookWidget {
         String? localeStorageAnswer;
         if (localeStorageQuestion != null) {
           var q = localeStorageQuestion.questions
-              .firstWhereOrNull((q) => q.text == question.text);
+              .firstWhereOrNull((q) => q.question == question.question);
           if (q != null) {
             localeStorageAnswer = q.answer;
           }
         }
+        var thisAnswer = localeStorageAnswer ??
+            (question.answer == "" ? question.defaultAnswer : question.answer);
         if (question.options != null) {
           return _QuestionController(
-              selectValue: question.answer != ""
-                  ? question.answer
-                  : question.defaultAnswer,
-              question: question);
+              selectValue: thisAnswer, question: question);
         }
         return _QuestionController(
-            controller: TextEditingController(
-                text: localeStorageAnswer ??
-                    (question.answer == ""
-                        ? question.defaultAnswer
-                        : question.answer)),
+            controller: TextEditingController(text: thisAnswer),
             question: question);
       }).toList();
     }
@@ -79,7 +74,7 @@ class DeepfacelabCommandFormWidget extends HookWidget {
           LocaleStorageQuestion(key: windowCommand.key, questions: []);
       for (var questionController in questionControllers.value) {
         localeStorageQuestion.questions.add(LocaleStorageQuestionChild(
-            text: questionController.question.text,
+            question: questionController.question.question,
             answer: (questionController.controller != null
                     ? questionController.controller!.value.text
                     : questionController.selectValue) ??
@@ -88,6 +83,24 @@ class DeepfacelabCommandFormWidget extends HookWidget {
       return await WindowCommandService().saveAndGetLocaleStorageQuestion(
           localeStorageQuestion: localeStorageQuestion,
           workspacePath: workspace.path);
+    }
+
+    bool isNumeric(String s) {
+      return double.tryParse(s) != null;
+    }
+
+    int? getInteger(String? s) {
+      if (s == null) {
+        return null;
+      }
+      if (!isNumeric(s)) {
+        return null;
+      }
+      num value = num.parse(s);
+      if (value is! int) {
+        return null;
+      }
+      return value;
     }
 
     useEffect(() {
@@ -147,11 +160,23 @@ class DeepfacelabCommandFormWidget extends HookWidget {
                   validator: (value) {
                     for (var validAnswerRegex
                         in questionController.question.validAnswerRegex) {
-                      String regex = validAnswerRegex.regex;
-                      String? match =
-                          RegExp(r'' '$regex' '').firstMatch(value!)?.group(0);
-                      if (match == null) {
-                        return validAnswerRegex.errorMessage;
+                      if (validAnswerRegex.regex != null) {
+                        String regex = validAnswerRegex.regex!;
+                        String? match = RegExp(r'' '$regex' '')
+                            .firstMatch(value!)
+                            ?.group(0);
+                        if (match == null) {
+                          return validAnswerRegex.errorMessage;
+                        }
+                      } else {
+                        var number = getInteger(value);
+                        if (number == null ||
+                            (validAnswerRegex.min != null &&
+                                number < validAnswerRegex.min!) ||
+                            (validAnswerRegex.max != null &&
+                                number > validAnswerRegex.max!)) {
+                          return validAnswerRegex.errorMessage;
+                        }
                       }
                     }
                     return null;

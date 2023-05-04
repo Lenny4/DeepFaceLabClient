@@ -72,13 +72,13 @@ class StartProcessWidget extends HookWidget {
         addOutput("\$ ${startProcessesConda![index]}");
       }
       process.stdout.transform(utf8.decoder).forEach((String output) {
-        List<String>? regex;
+        List<String>? similarMessageRegex;
         if (startProcesses != null) {
-          regex = startProcesses![index].regex;
+          similarMessageRegex = startProcesses![index].similarMessageRegex;
         } else {
-          regex = startProcessesConda![index].regex;
+          similarMessageRegex = startProcessesConda![index].similarMessageRegex;
         }
-        addOutput(output, regex);
+        addOutput(output, similarMessageRegex);
         if (startProcessesConda != null &&
             startProcessesConda![index].getAnswer != null) {
           String? answer = startProcessesConda![index].getAnswer!(output);
@@ -88,13 +88,13 @@ class StartProcessWidget extends HookWidget {
         }
       });
       process.stderr.transform(utf8.decoder).forEach((String output) {
-        List<String>? regex;
+        List<String>? similarMessageRegex;
         if (startProcesses != null) {
-          regex = startProcesses![index].regex;
+          similarMessageRegex = startProcesses![index].similarMessageRegex;
         } else {
-          regex = startProcessesConda![index].regex;
+          similarMessageRegex = startProcessesConda![index].similarMessageRegex;
         }
-        addOutput(output, regex);
+        addOutput(output, similarMessageRegex);
       });
       process.exitCode.then((value) {
         if ((startProcesses != null && index == startProcesses!.length - 1) ||

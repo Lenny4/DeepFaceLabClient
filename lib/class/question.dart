@@ -6,6 +6,7 @@ part 'question.g.dart';
 @JsonSerializable()
 class Question {
   String text;
+  String question;
   String help;
   List<ValidAnswerRegex> validAnswerRegex;
   String? answer;
@@ -14,6 +15,7 @@ class Question {
 
   Question({
     required this.text,
+    required this.question,
     required this.help,
     required this.validAnswerRegex,
     this.answer,

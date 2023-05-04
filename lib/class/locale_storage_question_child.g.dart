@@ -9,13 +9,13 @@ part of 'locale_storage_question_child.dart';
 LocaleStorageQuestionChild _$LocaleStorageQuestionChildFromJson(
         Map<String, dynamic> json) =>
     LocaleStorageQuestionChild(
-      text: json['text'] as String,
+      question: json['question'] as String,
       answer: json['answer'] as String,
     );
 
 Map<String, dynamic> _$LocaleStorageQuestionChildToJson(
         LocaleStorageQuestionChild instance) =>
     <String, dynamic>{
-      'text': instance.text,
+      'question': instance.question,
       'answer': instance.answer,
     };

@@ -147,7 +147,8 @@ class DeepfacelabCommandWidget extends HookWidget {
               for (var y = 0; y < windowCommand.questions.length; y++) {
                 var localeStorageQuestionChild = localeStorageQuestion.questions
                     .firstWhereOrNull((LocaleStorageQuestionChild question) =>
-                        question.text == windowCommand.questions[y].text);
+                        question.question ==
+                        windowCommand.questions[y].question);
                 if (localeStorageQuestionChild != null) {
                   windowCommand.questions[y].answer =
                       localeStorageQuestionChild.answer;

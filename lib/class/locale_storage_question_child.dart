@@ -4,11 +4,11 @@ part 'locale_storage_question_child.g.dart';
 
 @JsonSerializable()
 class LocaleStorageQuestionChild {
-  String text;
+  String question;
   String answer;
 
   LocaleStorageQuestionChild({
-    required this.text,
+    required this.question,
     required this.answer,
   });
 
