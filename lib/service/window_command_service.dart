@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/app_state.dart';
+import 'package:deepfacelab_client/class/deepfacelab_command_group.dart';
 import 'package:deepfacelab_client/class/locale_storage_question.dart';
 import 'package:deepfacelab_client/class/question.dart';
 import 'package:deepfacelab_client/class/storage.dart';
@@ -7,6 +8,7 @@ import 'package:deepfacelab_client/class/valid_answer_regex.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
+import 'package:flutter/material.dart';
 
 class _Questions {
   static Question enterFps = Question(
@@ -36,6 +38,10 @@ Choose png for the best image quality.""",
 }
 
 class WindowCommandService {
+  static String extractImageFromDataSrc = 'extract_image_from_data_src';
+  static String extractImageFromDataDst = 'extract_image_from_data_dst';
+  static String xsegDataDstMaskEdit = '5_XSeg_data_dst_mask_edit';
+
   List<WindowCommand> getWindowCommands(
       {Workspace? workspace, String? deepFaceLabFolder}) {
     return [
@@ -44,7 +50,7 @@ class WindowCommandService {
           title: '2 Extract image from data src',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-2-extract-source-frame-images-from-video",
-          key: 'extract_image_from_data_src',
+          key: WindowCommandService.extractImageFromDataSrc,
           command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
 --input-file "${workspace?.path}/data_src.*" \\
@@ -61,7 +67,7 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
           title: '3 Extract image from data dst',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-3-extract-destination-frame-images-from-video",
-          key: 'extract_image_from_data_dst',
+          key: WindowCommandService.extractImageFromDataDst,
           command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
 --input-file "${workspace?.path}/data_dst.*" \\
@@ -73,6 +79,45 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
             _Questions.outputImageFormat,
           ],
           regex: ['frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=']),
+      WindowCommand(
+        windowTitle: '[${workspace?.name}] 5 XSeg data dst mask edit',
+        title: '5 XSeg data dst mask edit',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+        key: WindowCommandService.xsegDataDstMaskEdit,
+        command: """
+python $deepFaceLabFolder/main.py xseg editor \\
+--input-dir "${workspace?.path}/data_dst/aligned"
+            """,
+        loading: false,
+        questions: [],
+        regex: [],
+      ),
+    ];
+  }
+
+  List<DeepfacelabCommandGroup> getGroupsDeepfacelabCommand(
+      {Workspace? workspace, String? deepFaceLabFolder}) {
+    var windowCommands = WindowCommandService().getWindowCommands(
+        workspace: workspace, deepFaceLabFolder: deepFaceLabFolder);
+    return [
+      DeepfacelabCommandGroup(
+          name: 'Extract images',
+          icon: const Icon(Icons.video_camera_back),
+          windowCommands: windowCommands
+              .where((wc) => [
+                    WindowCommandService.extractImageFromDataSrc,
+                    WindowCommandService.extractImageFromDataDst,
+                  ].contains(wc.key))
+              .toList()),
+      DeepfacelabCommandGroup(
+          name: 'XSeg',
+          icon: const Icon(Icons.draw),
+          windowCommands: windowCommands
+              .where((wc) => [
+                    WindowCommandService.xsegDataDstMaskEdit,
+                  ].contains(wc.key))
+              .toList()),
     ];
   }
 

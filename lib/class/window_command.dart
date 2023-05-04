@@ -12,7 +12,7 @@ class WindowCommand {
   String command;
   bool loading;
   List<Question> questions;
-  List<String>? regex;
+  List<String> regex;
 
   WindowCommand({
     required this.windowTitle,
@@ -22,7 +22,7 @@ class WindowCommand {
     required this.command,
     required this.loading,
     required this.questions,
-    this.regex,
+    required this.regex,
   });
 
   factory WindowCommand.fromJson(Map<String, dynamic> json) =>
