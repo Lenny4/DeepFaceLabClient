@@ -248,36 +248,28 @@ python $deepFaceLabFolder/main.py xseg editor \\
           name: 'Extract images',
           icon: const Icon(Icons.video_camera_back),
           windowCommands: windowCommands
-              .where((wc) => Source.types
-                  .map((type) =>
-                      "${WindowCommandService.extractImageFromData}_$type")
-                  .contains(wc.key))
+              .where((wc) =>
+                  wc.key.contains(WindowCommandService.extractImageFromData))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'Extract faces',
           icon: const Icon(Icons.face),
           windowCommands: windowCommands
-              .where((wc) => Source.types
-                  .map((type) =>
-                      "${WindowCommandService.dataExtractFacesS3FD}_$type")
-                  .contains(wc.key))
+              .where((wc) =>
+                  wc.key.contains(WindowCommandService.dataExtractFacesS3FD))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'Sort images',
           icon: const Icon(Icons.sort),
           windowCommands: windowCommands
-              .where((wc) => Source.types
-                  .map((type) => "${WindowCommandService.dataSort}_$type")
-                  .contains(wc.key))
+              .where((wc) => wc.key.contains(WindowCommandService.dataSort))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'XSeg',
           icon: const Icon(Icons.draw),
           windowCommands: windowCommands
-              .where((wc) => Source.types
-                  .map((type) =>
-                      "${WindowCommandService.xsegDataMaskEdit}_$type")
-                  .contains(wc.key))
+              .where((wc) =>
+                  wc.key.contains(WindowCommandService.xsegDataMaskEdit))
               .toList()),
     ];
   }
