@@ -158,8 +158,11 @@ class DeepfacelabCommandFormWidget extends HookWidget {
                   decoration: inputDecoration,
                   controller: questionController.controller,
                   validator: (value) {
+                    if (questionController.question.validAnswerRegex == null) {
+                      return null;
+                    }
                     for (var validAnswerRegex
-                        in questionController.question.validAnswerRegex) {
+                        in questionController.question.validAnswerRegex!) {
                       if (validAnswerRegex.regex != null) {
                         String regex = validAnswerRegex.regex!;
                         String? match = RegExp(r'' '$regex' '')

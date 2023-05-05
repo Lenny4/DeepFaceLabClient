@@ -3,6 +3,7 @@ import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/deepfacelab_command_group.dart';
 import 'package:deepfacelab_client/class/locale_storage_question.dart';
 import 'package:deepfacelab_client/class/question.dart';
+import 'package:deepfacelab_client/class/source.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:deepfacelab_client/class/valid_answer_regex.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
@@ -142,6 +143,16 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
     answer: '',
     defaultAnswer: '90',
   );
+  static Question writeDebugImagesToAlignedDebug = Question(
+    text: 'Write debug images to aligned_debug',
+    question: 'Write debug images to aligned_debug',
+    help: """Choose whether or not to write debug images.
+- [n]: No
+- [y]: Yes""",
+    answer: '',
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
 }
 
 class WindowCommandService {
@@ -151,21 +162,26 @@ class WindowCommandService {
   static String dataDstExtractFacesS3FD = 'data_dst_extract_faces_S3FD';
   static String dataSrcSort = 'data_src_sort';
   static String dataDstSort = 'data_dst_sort';
+  static String xsegDataSrcMaskEdit = 'xseg_data_src_mask_edit';
   static String xsegDataDstMaskEdit = 'xseg_data_dst_mask_edit';
 
   List<WindowCommand> getWindowCommands(
       {Workspace? workspace, String? deepFaceLabFolder}) {
     return [
-      WindowCommand(
-          windowTitle: '[${workspace?.name}] Extract image from data SRC',
-          title: 'Extract image from data SRC',
+      ...[
+        Source(type: 'src', key: WindowCommandService.extractImageFromDataSrc),
+        Source(type: 'dst', key: WindowCommandService.extractImageFromDataDst)
+      ].map((source) => WindowCommand(
+          windowTitle:
+              '[${workspace?.name}] Extract image from data ${source.type.toUpperCase()}',
+          title: 'Extract image from data ${source.type.toUpperCase()}',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-2-extract-source-frame-images-from-video",
-          key: WindowCommandService.extractImageFromDataSrc,
+          key: source.key,
           command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace?.path}/data_src.*" \\
---output-dir "${workspace?.path}/data_src"
+--input-file "${workspace?.path}/data_${source.type}.*" \\
+--output-dir "${workspace?.path}/data_${source.type}"
             """,
           loading: false,
           questions: [
@@ -174,36 +190,21 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
           ],
           similarMessageRegex: [
             'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed='
-          ]),
-      WindowCommand(
-          windowTitle: '[${workspace?.name}] Extract image from data DST',
-          title: 'Extract image from data DST',
-          documentationLink:
-              "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-3-extract-destination-frame-images-from-video",
-          key: WindowCommandService.extractImageFromDataDst,
-          command: """
-python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace?.path}/data_dst.*" \\
---output-dir "${workspace?.path}/data_dst"
-            """,
-          loading: false,
-          questions: [
-            _Questions.enterFps,
-            _Questions.outputImageFormat,
-          ],
-          similarMessageRegex: [
-            'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed='
-          ]),
-      WindowCommand(
-          windowTitle: '[${workspace?.name}] Extract face from data SRC S3FD',
-          title: 'Extract face from data SRC S3FD',
+          ])),
+      ...[
+        Source(type: 'src', key: WindowCommandService.dataSrcExtractFacesS3FD),
+        Source(type: 'dst', key: WindowCommandService.dataDstExtractFacesS3FD)
+      ].map((source) => WindowCommand(
+          windowTitle:
+              '[${workspace?.name}] Extract face from data ${source.type.toUpperCase()} S3FD',
+          title: 'Extract face from data ${source.type.toUpperCase()} S3FD',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-extract-source-faceset",
-          key: WindowCommandService.dataSrcExtractFacesS3FD,
+          key: source.key,
           command: """
 python $deepFaceLabFolder/main.py extract \\
---input-dir "${workspace?.path}/data_src" \\
---output-dir "${workspace?.path}/data_src/aligned" \\
+--input-dir "${workspace?.path}/data_${source.type}" \\
+--output-dir "${workspace?.path}/data_${source.type}/aligned" \\
 --detector s3fd
             """,
           loading: false,
@@ -212,52 +213,46 @@ python $deepFaceLabFolder/main.py extract \\
             _Questions.maxNumberOfFacesFromImage,
             _Questions.imageSize,
             _Questions.jpegQuality,
+            _Questions.writeDebugImagesToAlignedDebug,
           ],
-          similarMessageRegex: []),
-      WindowCommand(
-          windowTitle: '[${workspace?.name}] Data SRC sort',
-          title: 'Data SRC sort',
+          similarMessageRegex: ['\\d+%\\|.*\\| \\d+\\/\\d+ \\[.*\\]'])),
+      ...[
+        Source(type: 'src', key: WindowCommandService.dataSrcSort),
+        Source(type: 'dst', key: WindowCommandService.dataDstSort)
+      ].map((source) => WindowCommand(
+          windowTitle:
+              '[${workspace?.name}] Data ${source.type.toUpperCase()} sort',
+          title: 'Data ${source.type.toUpperCase()} sort',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-2-source-faceset-sortin-cleanup",
-          key: WindowCommandService.dataSrcSort,
+          key: source.key,
           command: """
 python $deepFaceLabFolder/main.py sort \\
---input-dir "${workspace?.path}/data_src/aligned"
+--input-dir "${workspace?.path}/data_${source.type}/aligned"
             """,
           loading: false,
           questions: [
             _Questions.chooseSortingMethod,
           ],
-          similarMessageRegex: []),
-      WindowCommand(
-          windowTitle: '[${workspace?.name}] Data DST sort',
-          title: 'Data DST sort',
-          documentationLink:
-              "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-2-source-faceset-sortin-cleanup",
-          key: WindowCommandService.dataDstSort,
-          command: """
-python $deepFaceLabFolder/main.py sort \\
---input-dir "${workspace?.path}/data_dst/aligned"
-            """,
-          loading: false,
-          questions: [
-            _Questions.chooseSortingMethod,
-          ],
-          similarMessageRegex: []),
-      WindowCommand(
-        windowTitle: '[${workspace?.name}] XSeg data DST mask edit',
-        title: 'XSeg data DST mask edit',
-        documentationLink:
-            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
-        key: WindowCommandService.xsegDataDstMaskEdit,
-        command: """
+          similarMessageRegex: [])),
+      ...[
+        Source(type: 'src', key: WindowCommandService.xsegDataSrcMaskEdit),
+        Source(type: 'dst', key: WindowCommandService.xsegDataDstMaskEdit)
+      ].map((source) => WindowCommand(
+            windowTitle:
+                '[${workspace?.name}] XSeg data ${source.type.toUpperCase()} mask edit',
+            title: 'XSeg data ${source.type.toUpperCase()} mask edit',
+            documentationLink:
+                "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+            key: source.key,
+            command: """
 python $deepFaceLabFolder/main.py xseg editor \\
---input-dir "${workspace?.path}/data_dst/aligned"
+--input-dir "${workspace?.path}/data_${source.type}/aligned"
             """,
-        loading: false,
-        questions: [],
-        similarMessageRegex: [],
-      ),
+            loading: false,
+            questions: [],
+            similarMessageRegex: [],
+          )),
     ];
   }
 
@@ -298,6 +293,7 @@ python $deepFaceLabFolder/main.py xseg editor \\
           icon: const Icon(Icons.draw),
           windowCommands: windowCommands
               .where((wc) => [
+                    WindowCommandService.xsegDataSrcMaskEdit,
                     WindowCommandService.xsegDataDstMaskEdit,
                   ].contains(wc.key))
               .toList()),

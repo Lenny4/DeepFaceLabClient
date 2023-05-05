@@ -10,8 +10,8 @@ Question _$QuestionFromJson(Map<String, dynamic> json) => Question(
       text: json['text'] as String,
       question: json['question'] as String,
       help: json['help'] as String,
-      validAnswerRegex: (json['validAnswerRegex'] as List<dynamic>)
-          .map((e) => ValidAnswerRegex.fromJson(e as Map<String, dynamic>))
+      validAnswerRegex: (json['validAnswerRegex'] as List<dynamic>?)
+          ?.map((e) => ValidAnswerRegex.fromJson(e as Map<String, dynamic>))
           .toList(),
       answer: json['answer'] as String?,
       defaultAnswer: json['defaultAnswer'] as String,

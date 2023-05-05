@@ -8,7 +8,7 @@ class Question {
   String text;
   String question;
   String help;
-  List<ValidAnswerRegex> validAnswerRegex;
+  List<ValidAnswerRegex>? validAnswerRegex;
   String? answer;
   String defaultAnswer;
   List<String>? options;
@@ -17,7 +17,7 @@ class Question {
     required this.text,
     required this.question,
     required this.help,
-    required this.validAnswerRegex,
+    this.validAnswerRegex,
     this.answer,
     required this.defaultAnswer,
     this.options,

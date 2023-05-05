@@ -419,9 +419,10 @@ class FileManagerWidget extends HookWidget {
     copyClipboard() async {
       await Clipboard.setData(ClipboardData(
           text: fileSystemEntities.value
-              ?.where((element) => element.selected != null)
-              .map((e) => "${folderPath.value}/${e.filename}")
-              .join('\n') ?? ""));
+                  ?.where((element) => element.selected != null)
+                  .map((e) => "${folderPath.value}/${e.filename}")
+                  .join('\n') ??
+              ""));
     }
 
     Future<void> copyPath(List<String> froms, String to) async {
