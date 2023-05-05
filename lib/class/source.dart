@@ -1,6 +1,3 @@
 class Source {
-  String type;
-  String key;
-
-  Source({required this.type, required this.key});
+  static List<String> types = ['src', 'dst'];
 }

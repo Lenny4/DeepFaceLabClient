@@ -156,32 +156,25 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
 }
 
 class WindowCommandService {
-  static String extractImageFromDataSrc = 'extract_image_from_data_src';
-  static String extractImageFromDataDst = 'extract_image_from_data_dst';
-  static String dataSrcExtractFacesS3FD = 'data_src_extract_faces_S3FD';
-  static String dataDstExtractFacesS3FD = 'data_dst_extract_faces_S3FD';
-  static String dataSrcSort = 'data_src_sort';
-  static String dataDstSort = 'data_dst_sort';
-  static String xsegDataSrcMaskEdit = 'xseg_data_src_mask_edit';
-  static String xsegDataDstMaskEdit = 'xseg_data_dst_mask_edit';
+  static String extractImageFromData = 'extract_image_from_data';
+  static String dataExtractFacesS3FD = 'data_extract_faces_S3FD';
+  static String dataSort = 'data_sort';
+  static String xsegDataMaskEdit = 'xseg_data_mask_edit';
 
   List<WindowCommand> getWindowCommands(
       {Workspace? workspace, String? deepFaceLabFolder}) {
     return [
-      ...[
-        Source(type: 'src', key: WindowCommandService.extractImageFromDataSrc),
-        Source(type: 'dst', key: WindowCommandService.extractImageFromDataDst)
-      ].map((source) => WindowCommand(
+      ...Source.types.map((type) => WindowCommand(
           windowTitle:
-              '[${workspace?.name}] Extract image from data ${source.type.toUpperCase()}',
-          title: 'Extract image from data ${source.type.toUpperCase()}',
+              '[${workspace?.name}] Extract image from data ${type.toUpperCase()}',
+          title: 'Extract image from data ${type.toUpperCase()}',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-2-extract-source-frame-images-from-video",
-          key: source.key,
+          key: "${extractImageFromData}_$type",
           command: """
 python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace?.path}/data_${source.type}.*" \\
---output-dir "${workspace?.path}/data_${source.type}"
+--input-file "${workspace?.path}/data_$type.*" \\
+--output-dir "${workspace?.path}/data_$type"
             """,
           loading: false,
           questions: [
@@ -191,20 +184,17 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
           similarMessageRegex: [
             'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed='
           ])),
-      ...[
-        Source(type: 'src', key: WindowCommandService.dataSrcExtractFacesS3FD),
-        Source(type: 'dst', key: WindowCommandService.dataDstExtractFacesS3FD)
-      ].map((source) => WindowCommand(
+      ...Source.types.map((type) => WindowCommand(
           windowTitle:
-              '[${workspace?.name}] Extract face from data ${source.type.toUpperCase()} S3FD',
-          title: 'Extract face from data ${source.type.toUpperCase()} S3FD',
+              '[${workspace?.name}] Extract face from data ${type.toUpperCase()} S3FD',
+          title: 'Extract face from data ${type.toUpperCase()} S3FD',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-extract-source-faceset",
-          key: source.key,
+          key: "${WindowCommandService.dataExtractFacesS3FD}_$type",
           command: """
 python $deepFaceLabFolder/main.py extract \\
---input-dir "${workspace?.path}/data_${source.type}" \\
---output-dir "${workspace?.path}/data_${source.type}/aligned" \\
+--input-dir "${workspace?.path}/data_$type" \\
+--output-dir "${workspace?.path}/data_$type/aligned" \\
 --detector s3fd
             """,
           loading: false,
@@ -216,38 +206,31 @@ python $deepFaceLabFolder/main.py extract \\
             _Questions.writeDebugImagesToAlignedDebug,
           ],
           similarMessageRegex: ['\\d+%\\|.*\\| \\d+\\/\\d+ \\[.*\\]'])),
-      ...[
-        Source(type: 'src', key: WindowCommandService.dataSrcSort),
-        Source(type: 'dst', key: WindowCommandService.dataDstSort)
-      ].map((source) => WindowCommand(
-          windowTitle:
-              '[${workspace?.name}] Data ${source.type.toUpperCase()} sort',
-          title: 'Data ${source.type.toUpperCase()} sort',
+      ...Source.types.map((type) => WindowCommand(
+          windowTitle: '[${workspace?.name}] Data ${type.toUpperCase()} sort',
+          title: 'Data ${type.toUpperCase()} sort',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-2-source-faceset-sortin-cleanup",
-          key: source.key,
+          key: "${WindowCommandService.dataSort}_$type",
           command: """
 python $deepFaceLabFolder/main.py sort \\
---input-dir "${workspace?.path}/data_${source.type}/aligned"
+--input-dir "${workspace?.path}/data_$type/aligned"
             """,
           loading: false,
           questions: [
             _Questions.chooseSortingMethod,
           ],
           similarMessageRegex: [])),
-      ...[
-        Source(type: 'src', key: WindowCommandService.xsegDataSrcMaskEdit),
-        Source(type: 'dst', key: WindowCommandService.xsegDataDstMaskEdit)
-      ].map((source) => WindowCommand(
+      ...Source.types.map((type) => WindowCommand(
             windowTitle:
-                '[${workspace?.name}] XSeg data ${source.type.toUpperCase()} mask edit',
-            title: 'XSeg data ${source.type.toUpperCase()} mask edit',
+                '[${workspace?.name}] XSeg data ${type.toUpperCase()} mask edit',
+            title: 'XSeg data ${type.toUpperCase()} mask edit',
             documentationLink:
                 "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
-            key: source.key,
+            key: "${WindowCommandService.xsegDataMaskEdit}_$type",
             command: """
 python $deepFaceLabFolder/main.py xseg editor \\
---input-dir "${workspace?.path}/data_${source.type}/aligned"
+--input-dir "${workspace?.path}/data_$type/aligned"
             """,
             loading: false,
             questions: [],
@@ -265,37 +248,36 @@ python $deepFaceLabFolder/main.py xseg editor \\
           name: 'Extract images',
           icon: const Icon(Icons.video_camera_back),
           windowCommands: windowCommands
-              .where((wc) => [
-                    WindowCommandService.extractImageFromDataSrc,
-                    WindowCommandService.extractImageFromDataDst,
-                  ].contains(wc.key))
+              .where((wc) => Source.types
+                  .map((type) =>
+                      "${WindowCommandService.extractImageFromData}_$type")
+                  .contains(wc.key))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'Extract faces',
           icon: const Icon(Icons.face),
           windowCommands: windowCommands
-              .where((wc) => [
-                    WindowCommandService.dataSrcExtractFacesS3FD,
-                    WindowCommandService.dataDstExtractFacesS3FD,
-                  ].contains(wc.key))
+              .where((wc) => Source.types
+                  .map((type) =>
+                      "${WindowCommandService.dataExtractFacesS3FD}_$type")
+                  .contains(wc.key))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'Sort images',
           icon: const Icon(Icons.sort),
           windowCommands: windowCommands
-              .where((wc) => [
-                    WindowCommandService.dataSrcSort,
-                    WindowCommandService.dataDstSort,
-                  ].contains(wc.key))
+              .where((wc) => Source.types
+                  .map((type) => "${WindowCommandService.dataSort}_$type")
+                  .contains(wc.key))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'XSeg',
           icon: const Icon(Icons.draw),
           windowCommands: windowCommands
-              .where((wc) => [
-                    WindowCommandService.xsegDataSrcMaskEdit,
-                    WindowCommandService.xsegDataDstMaskEdit,
-                  ].contains(wc.key))
+              .where((wc) => Source.types
+                  .map((type) =>
+                      "${WindowCommandService.xsegDataMaskEdit}_$type")
+                  .contains(wc.key))
               .toList()),
     ];
   }
