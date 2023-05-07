@@ -11,6 +11,8 @@ class WindowCommand {
   String documentationLink;
   String command;
   bool loading;
+  String source;
+  bool multipleSource;
   List<Question> questions;
   List<String> similarMessageRegex;
 
@@ -21,6 +23,8 @@ class WindowCommand {
     required this.documentationLink,
     required this.command,
     required this.loading,
+    this.source = "",
+    required this.multipleSource, // if command can be launch on src and dst (display src and dst buttons)
     required this.questions,
     required this.similarMessageRegex,
   });

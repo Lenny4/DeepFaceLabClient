@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/locale_storage_question.dart';
 import 'package:deepfacelab_client/class/locale_storage_question_child.dart';
 import 'package:deepfacelab_client/class/question.dart';
+import 'package:deepfacelab_client/class/source.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/window_command_service.dart';
@@ -20,14 +21,16 @@ class _QuestionController {
 class DeepfacelabCommandFormWidget extends HookWidget {
   final Workspace workspace;
   final WindowCommand windowCommand;
+  final String source;
   final ValueNotifier<Future<LocaleStorageQuestion?> Function()?>
       saveAndGetLocaleStorageQuestion;
-  final void Function() onLaunch;
+  final void Function({required String source}) onLaunch;
 
   const DeepfacelabCommandFormWidget(
       {Key? key,
       required this.workspace,
       required this.windowCommand,
+      required this.source,
       required this.saveAndGetLocaleStorageQuestion,
       required this.onLaunch})
       : super(key: key);
@@ -40,7 +43,8 @@ class DeepfacelabCommandFormWidget extends HookWidget {
       LocaleStorageQuestion? localeStorageQuestion = workspace
           .localeStorageQuestions
           ?.firstWhereOrNull((LocaleStorageQuestion localeStorageQuestion) =>
-              localeStorageQuestion.key == windowCommand.key);
+              localeStorageQuestion.key ==
+              windowCommand.key.replaceAll(Source.replace, source));
       return windowCommand.questions.map((question) {
         String? localeStorageAnswer;
         if (localeStorageQuestion != null) {
@@ -70,8 +74,8 @@ class DeepfacelabCommandFormWidget extends HookWidget {
         return null;
       }
       formKey.value.currentState?.save();
-      LocaleStorageQuestion localeStorageQuestion =
-          LocaleStorageQuestion(key: windowCommand.key, questions: []);
+      LocaleStorageQuestion localeStorageQuestion = LocaleStorageQuestion(
+          key: windowCommand.key.replaceAll(Source.replace, source), questions: []);
       for (var questionController in questionControllers.value) {
         localeStorageQuestion.questions.add(LocaleStorageQuestionChild(
             question: questionController.question.question,
@@ -153,7 +157,7 @@ class DeepfacelabCommandFormWidget extends HookWidget {
                 )
               : TextFormField(
                   onFieldSubmitted: (value) {
-                    onLaunch();
+                    onLaunch(source: source);
                   },
                   decoration: inputDecoration,
                   controller: questionController.controller,

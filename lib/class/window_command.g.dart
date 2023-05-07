@@ -14,6 +14,8 @@ WindowCommand _$WindowCommandFromJson(Map<String, dynamic> json) =>
       documentationLink: json['documentationLink'] as String,
       command: json['command'] as String,
       loading: json['loading'] as bool,
+      source: json['source'] as String? ?? "",
+      multipleSource: json['multipleSource'] as bool,
       questions: (json['questions'] as List<dynamic>)
           .map((e) => Question.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -30,6 +32,8 @@ Map<String, dynamic> _$WindowCommandToJson(WindowCommand instance) =>
       'documentationLink': instance.documentationLink,
       'command': instance.command,
       'loading': instance.loading,
+      'source': instance.source,
+      'multipleSource': instance.multipleSource,
       'questions': instance.questions,
       'similarMessageRegex': instance.similarMessageRegex,
     };

@@ -5,6 +5,7 @@ import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/deepfacelab_command_group.dart';
 import 'package:deepfacelab_client/class/locale_storage_question.dart';
 import 'package:deepfacelab_client/class/locale_storage_question_child.dart';
+import 'package:deepfacelab_client/class/source.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/window_command_service.dart';
@@ -21,7 +22,7 @@ class _SingleDeepfacelabCommandWidget extends HookWidget {
   final WindowCommand windowCommand;
   final ValueNotifier<Future<LocaleStorageQuestion?> Function()?>
       saveAndGetLocaleStorageQuestion;
-  final void Function() onLaunch;
+  final void Function({required String source}) onLaunch;
 
   const _SingleDeepfacelabCommandWidget(
       {Key? key,
@@ -33,60 +34,84 @@ class _SingleDeepfacelabCommandWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () => windowCommand.loading == false
-          ? showDialog<String>(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: SelectableText(windowCommand.title),
-                content: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    thisShowDialog({String source = ""}) {
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: SelectableText(
+              windowCommand.title.replaceAll(Source.replace, source)),
+          content: IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SelectableText.rich(
+                  TextSpan(
                     children: [
-                      SelectableText.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "Documentation",
-                              style: const TextStyle(color: Colors.blue),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  launchUrl(
-                                      Uri.parse(
-                                          windowCommand.documentationLink),
-                                      mode: LaunchMode.platformDefault);
-                                },
-                            ),
-                          ],
-                        ),
+                      TextSpan(
+                        text: "Documentation",
+                        style: const TextStyle(color: Colors.blue),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            launchUrl(
+                                Uri.parse(windowCommand.documentationLink),
+                                mode: LaunchMode.platformDefault);
+                          },
                       ),
-                      if (workspace != null)
-                        DeepfacelabCommandFormWidget(
-                            workspace: workspace!,
-                            saveAndGetLocaleStorageQuestion:
-                                saveAndGetLocaleStorageQuestion,
-                            windowCommand: windowCommand,
-                            onLaunch: onLaunch),
                     ],
                   ),
                 ),
-                actionsAlignment: MainAxisAlignment.spaceBetween,
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton.icon(
-                    autofocus: true,
-                    onPressed: onLaunch,
-                    icon: const SizedBox.shrink(),
-                    label: const Text("Start"),
-                  ),
-                ],
-              ),
-            )
+                if (workspace != null)
+                  DeepfacelabCommandFormWidget(
+                      workspace: workspace!,
+                      source: source,
+                      saveAndGetLocaleStorageQuestion:
+                          saveAndGetLocaleStorageQuestion,
+                      windowCommand: windowCommand,
+                      onLaunch: onLaunch),
+              ],
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              autofocus: true,
+              onPressed: () => onLaunch(source: source),
+              icon: const SizedBox.shrink(),
+              label: const Text("Start"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListTile(
+      onTap: () => !windowCommand.loading && !windowCommand.multipleSource
+          ? thisShowDialog()
           : null,
-      title: Text(windowCommand.title),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(windowCommand.title.replaceAll(Source.replace, "")),
+          if (windowCommand.multipleSource)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: Source.types
+                  .map((type) => ElevatedButton(
+                        onPressed: !windowCommand.loading
+                            ? () {
+                                thisShowDialog(source: type);
+                              }
+                            : null,
+                        child: Text(type),
+                      ))
+                  .toList(),
+            ),
+        ],
+      ),
       trailing:
           windowCommand.loading ? const CircularProgressIndicator() : null,
     );
@@ -115,12 +140,15 @@ class DeepfacelabCommandWidget extends HookWidget {
         for (var windowCommand in deepfacelabCommandGroup.windowCommands) {
           if (windowCommand.loading) {
             hasUpdate = true;
+            windowCommand.command = windowCommand.command
+                .replaceAll(Source.replace, windowCommand.source);
             var window = await DesktopMultiWindow.createWindow(
                 jsonEncode(windowCommand.toJson()));
             window
               ..setFrame(const Offset(0, 0) & const Size(1280, 720))
               ..center()
-              ..setTitle(windowCommand.windowTitle)
+              ..setTitle(windowCommand.windowTitle
+                  .replaceAll(Source.replace, windowCommand.source))
               ..show();
             windowCommand.loading = false;
           }
@@ -132,7 +160,7 @@ class DeepfacelabCommandWidget extends HookWidget {
       }
     }
 
-    onLaunch() {
+    onLaunch({required String source}) {
       if (saveAndGetLocaleStorageQuestion.value == null) {
         return;
       }
@@ -143,7 +171,8 @@ class DeepfacelabCommandWidget extends HookWidget {
         }
         for (var deepfacelabCommandGroup in deepfacelabCommandGroups.value) {
           for (var windowCommand in deepfacelabCommandGroup.windowCommands) {
-            if (localeStorageQuestion.key == windowCommand.key) {
+            if (localeStorageQuestion.key ==
+                windowCommand.key.replaceAll(Source.replace, source)) {
               for (var y = 0; y < windowCommand.questions.length; y++) {
                 var localeStorageQuestionChild = localeStorageQuestion.questions
                     .firstWhereOrNull((LocaleStorageQuestionChild question) =>
@@ -154,6 +183,7 @@ class DeepfacelabCommandWidget extends HookWidget {
                       localeStorageQuestionChild.answer;
                 }
               }
+              windowCommand.source = source;
               windowCommand.loading = true;
               break;
             }
