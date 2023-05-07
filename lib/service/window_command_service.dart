@@ -173,13 +173,24 @@ class WindowCommandService {
   static String facesetPack = 'faceset_pack';
   static String facesetUnpack = 'faceset_unpack';
   static String xsegDataMaskEdit = 'xseg_data_mask_edit';
+  static String xsegDataMaskApply = 'xseg_data_mask_apply';
+  static String xsegDataMaskFetch = 'xseg_data_mask_fetch';
+  static String xsegDataMaskRemove = 'xseg_data_mask_remove';
+  static String xsegDataTrainedMaskRemove = 'xseg_data_trained_mask_remove';
   static String trainSaehd = 'train_SAEHD';
+  static String trainQuick96 = 'train_Quick96';
+  static String mergeSaehd = 'merge_SAEHD';
+  static String mergeQuick96 = 'merge_Quick96';
+  static String mergeMp4 = 'merge_mp4';
+  static String mergeAvi = 'merge_avi';
 
   List<WindowCommand> getWindowCommands(
       {Workspace? workspace, String? deepFaceLabFolder}) {
     return [
+      // region extract images
       WindowCommand(
-          windowTitle: '[${workspace?.name}] Extract image from data ${Source.replace}',
+          windowTitle:
+              '[${workspace?.name}] Extract image from data ${Source.replace}',
           title: 'Extract image from data ${Source.replace}',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-2-extract-source-frame-images-from-video",
@@ -198,6 +209,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
           similarMessageRegex: [
             'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed='
           ]),
+      // endregion
+      // region extract faces
       WindowCommand(
           windowTitle:
               '[${workspace?.name}] Extract face from data ${Source.replace} S3FD',
@@ -227,7 +240,8 @@ python $deepFaceLabFolder/main.py extract \\
           title: 'Extract face from data ${Source.replace} manual',
           documentationLink:
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-extract-source-faceset",
-          key: "${WindowCommandService.dataExtractFacesManual}_${Source.replace}",
+          key:
+              "${WindowCommandService.dataExtractFacesManual}_${Source.replace}",
           command: """
 python $deepFaceLabFolder/main.py extract \\
 --input-dir "${workspace?.path}/data_${Source.replace}" \\
@@ -244,6 +258,8 @@ python $deepFaceLabFolder/main.py extract \\
             _Questions.writeDebugImagesToAlignedDebug,
           ],
           similarMessageRegex: ['\\d+%\\|.*\\| \\d+\\/\\d+ \\[.*\\]']),
+      // endregion
+      // region sort
       WindowCommand(
           windowTitle: '[${workspace?.name}] Data ${Source.replace} sort',
           title: 'Data ${Source.replace} sort',
@@ -260,6 +276,8 @@ python $deepFaceLabFolder/main.py sort \\
             _Questions.chooseSortingMethod,
           ],
           similarMessageRegex: []),
+      // endregion
+      // region pack and unpack
       WindowCommand(
           windowTitle: '[${workspace?.name}] Pack ${Source.replace}',
           title: 'Pack ${Source.replace}',
@@ -299,11 +317,14 @@ python $deepFaceLabFolder/main.py util \\
           similarMessageRegex: [
             'Unpacking.*\\d+%.*',
           ]),
+      // endregion
+      // region XSeg
       WindowCommand(
-        windowTitle: '[${workspace?.name}] XSeg data ${Source.replace} mask edit',
+        windowTitle:
+            '[${workspace?.name}] XSeg data ${Source.replace} mask edit',
         title: 'XSeg data ${Source.replace} mask edit',
         documentationLink:
-        "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
         key: "${WindowCommandService.xsegDataMaskEdit}_${Source.replace}",
         command: """
 python $deepFaceLabFolder/main.py xseg editor \\
@@ -315,16 +336,83 @@ python $deepFaceLabFolder/main.py xseg editor \\
         similarMessageRegex: [],
       ),
       WindowCommand(
+        windowTitle:
+            '[${workspace?.name}] XSeg data ${Source.replace} mask apply',
+        title: 'XSeg data ${Source.replace} mask apply',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+        key: "${WindowCommandService.xsegDataMaskApply}_${Source.replace}",
+        command: """
+python $deepFaceLabFolder/main.py xseg apply \\
+--input-dir "${workspace?.path}/data_${Source.replace}/aligned" \\
+--model-dir "${workspace?.path}/model"
+            """,
+        loading: false,
+        multipleSource: true,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      WindowCommand(
+        windowTitle:
+            '[${workspace?.name}] XSeg data ${Source.replace} mask fetch',
+        title: 'XSeg data ${Source.replace} mask fetch',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+        key: "${WindowCommandService.xsegDataMaskFetch}_${Source.replace}",
+        command: """
+python $deepFaceLabFolder/main.py xseg fetch \\
+--input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+            """,
+        loading: false,
+        multipleSource: true,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      WindowCommand(
+        windowTitle:
+            '[${workspace?.name}] XSeg data ${Source.replace} mask remove',
+        title: 'XSeg data ${Source.replace} mask remove',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+        key: "${WindowCommandService.xsegDataMaskRemove}_${Source.replace}",
+        command: """
+python $deepFaceLabFolder/main.py xseg remove_labels \\
+--input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+            """,
+        loading: false,
+        multipleSource: true,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      WindowCommand(
+        windowTitle:
+            '[${workspace?.name}] XSeg data ${Source.replace} trained mask remove',
+        title: 'XSeg data ${Source.replace} trained mask remove',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+        key:
+            "${WindowCommandService.xsegDataTrainedMaskRemove}_${Source.replace}",
+        command: """
+python $deepFaceLabFolder/main.py xseg remove \\
+--input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+            """,
+        loading: false,
+        multipleSource: true,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      // endregion
+      // region train
+      WindowCommand(
         windowTitle: '[${workspace?.name}] Train SAEHD',
         title: 'Train SAEHD',
         documentationLink:
-        "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-6-deepfake-model-training",
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-6-deepfake-model-training",
         key: WindowCommandService.trainSaehd,
         command: """
 python $deepFaceLabFolder/main.py train \\
 --training-data-src-dir "${workspace?.path}/data_src/aligned" \\
 --training-data-dst-dir "${workspace?.path}/data_dst/aligned" \\
---pretraining-data-dir "${workspace?.path}/pretrain_CelebA" \\
 --model-dir "${workspace?.path}/model" \\
 --model SAEHD""",
         loading: false,
@@ -332,6 +420,112 @@ python $deepFaceLabFolder/main.py train \\
         questions: [],
         similarMessageRegex: [],
       ),
+      WindowCommand(
+        windowTitle: '[${workspace?.name}] Train Quick96',
+        title: 'Train Quick96',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-6-deepfake-model-training",
+        key: WindowCommandService.trainQuick96,
+        command: """
+python $deepFaceLabFolder/main.py train \\
+--training-data-src-dir "${workspace?.path}/data_src/aligned" \\
+--training-data-dst-dir "${workspace?.path}/data_dst/aligned" \\
+--model-dir "${workspace?.path}/model" \\
+--model Quick96""",
+        loading: false,
+        multipleSource: false,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      // endregion
+      // region merge
+      WindowCommand(
+        windowTitle: '[${workspace?.name}] Merge SAEHD',
+        title: 'Merge SAEHD',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-7-merge-deepfake-model-to-frame-images",
+        key: WindowCommandService.mergeSaehd,
+        command: """
+python $deepFaceLabFolder/main.py merge \\
+--input-dir "${workspace?.path}/data_dst" \\
+--output-dir "${workspace?.path}/data_dst/merged" \\
+--output-mask-dir "${workspace?.path}/data_dst/merged_mask" \\
+--aligned-dir "${workspace?.path}/data_dst/aligned" \\
+--model-dir "${workspace?.path}/model" \\
+--model SAEHD""",
+        loading: false,
+        multipleSource: false,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      WindowCommand(
+        windowTitle: '[${workspace?.name}] Merge Quick96',
+        title: 'Merge Quick96',
+        documentationLink:
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-7-merge-deepfake-model-to-frame-images",
+        key: WindowCommandService.mergeQuick96,
+        command: """
+python $deepFaceLabFolder/main.py merge \\
+--input-dir "${workspace?.path}/data_dst" \\
+--output-dir "${workspace?.path}/data_dst/merged" \\
+--output-mask-dir "${workspace?.path}/data_dst/merged_mask" \\
+--aligned-dir "${workspace?.path}/data_dst/aligned" \\
+--model-dir "${workspace?.path}/model" \\
+--model Quick96""",
+        loading: false,
+        multipleSource: false,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      // endregion
+      // region to video
+      WindowCommand(
+        windowTitle: '[${workspace?.name}] Create mp4',
+        title: 'Create mp4',
+        documentationLink:
+        "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-8-merge-frame-images-to-video",
+        key: WindowCommandService.mergeMp4,
+        command: """
+python $deepFaceLabFolder/main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}/data_dst/merged" \\
+--output-file "${workspace?.path}/result.mp4" \\
+--reference-file "${workspace?.path}/data_dst.*" \\
+--include-audio
+
+python $deepFaceLabFolder/main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}/data_dst/merged_mask" \\
+--output-file "${workspace?.path}/result_mask.mp4" \\
+--reference-file "${workspace?.path}/data_dst.*" \\
+--lossless""",
+        loading: false,
+        multipleSource: false,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      WindowCommand(
+        windowTitle: '[${workspace?.name}] Create avi',
+        title: 'Create avi',
+        documentationLink:
+        "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-8-merge-frame-images-to-video",
+        key: WindowCommandService.mergeAvi,
+        command: """
+python $deepFaceLabFolder/main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}/data_dst/merged" \\
+--output-file "${workspace?.path}/result.avi" \\
+--reference-file "${workspace?.path}/data_dst.*" \\
+--include-audio
+
+python $deepFaceLabFolder/main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}/data_dst/merged_mask" \\
+--output-file "${workspace?.path}/result_mask.avi" \\
+--reference-file "${workspace?.path}/data_dst.*" \\
+--lossless""",
+        loading: false,
+        multipleSource: false,
+        questions: [],
+        similarMessageRegex: [],
+      ),
+      // endregion
     ];
   }
 
@@ -374,14 +568,36 @@ python $deepFaceLabFolder/main.py train \\
           icon: const Icon(Icons.draw),
           windowCommands: windowCommands
               .where((wc) =>
-              wc.key.contains(WindowCommandService.xsegDataMaskEdit))
+                  wc.key.contains(WindowCommandService.xsegDataMaskEdit) ||
+                  wc.key.contains(WindowCommandService.xsegDataMaskApply) ||
+                  wc.key.contains(WindowCommandService.xsegDataMaskRemove) ||
+                  wc.key.contains(WindowCommandService.xsegDataMaskFetch) ||
+                  wc.key
+                      .contains(WindowCommandService.xsegDataTrainedMaskRemove))
               .toList()),
       DeepfacelabCommandGroup(
           name: 'Train',
           icon: const Icon(Icons.model_training),
           windowCommands: windowCommands
               .where((wc) =>
-              wc.key.contains(WindowCommandService.trainSaehd))
+                  wc.key.contains(WindowCommandService.trainSaehd) ||
+                  wc.key.contains(WindowCommandService.trainQuick96))
+              .toList()),
+      DeepfacelabCommandGroup(
+          name: 'Merge',
+          icon: const Icon(Icons.merge),
+          windowCommands: windowCommands
+              .where((wc) =>
+                  wc.key.contains(WindowCommandService.mergeSaehd) ||
+                  wc.key.contains(WindowCommandService.mergeQuick96))
+              .toList()),
+      DeepfacelabCommandGroup(
+          name: 'To video',
+          icon: const Icon(Icons.video_collection),
+          windowCommands: windowCommands
+              .where((wc) =>
+                  wc.key.contains(WindowCommandService.mergeMp4) ||
+                  wc.key.contains(WindowCommandService.mergeAvi))
               .toList()),
     ];
   }
