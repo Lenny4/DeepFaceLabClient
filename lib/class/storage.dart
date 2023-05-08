@@ -5,12 +5,12 @@ part 'storage.g.dart';
 
 @JsonSerializable()
 class Storage {
-  Storage({this.deepFaceLabFolder, this.workspaceDefaultPath, this.workspaces});
-
   String? deepFaceLabFolder;
   String? workspaceDefaultPath;
   List<Workspace>? workspaces;
   bool? darkMode;
+
+  Storage({this.deepFaceLabFolder, this.workspaceDefaultPath, this.workspaces, this.darkMode});
 
   factory Storage.fromJson(Map<String, dynamic> json) =>
       _$StorageFromJson(json);

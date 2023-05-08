@@ -45,6 +45,8 @@ class WorkspaceService {
     if (index != null) {
       storage?.workspaces![index] = newWorkspace;
     }
+    storage?.workspaces =
+        storage.workspaces?.map((w) => Workspace.fromJson(w.toJson())).toList();
     store.dispatch({'storage': storage});
   }
 
