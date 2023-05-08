@@ -64,6 +64,7 @@ class WindowCommand2Screen extends HookWidget {
                   autoStart: true,
                   closeIcon: false,
                   usePrototypeItem: false,
+                  forceScrollDown: true,
                   startProcessesConda: [
                     StartProcessConda(
                         command: windowCommand.command,

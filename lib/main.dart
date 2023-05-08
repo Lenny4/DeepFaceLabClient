@@ -8,6 +8,7 @@ import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
+import 'package:deepfacelab_client/screens/tutorial_screen.dart';
 import 'package:deepfacelab_client/screens/window_command_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
@@ -124,6 +125,15 @@ class Root extends HookWidget {
               label: Text('Settings'),
             ),
             widget: const SettingsScreen()),
+      );
+      result.add(
+        NavigationRailElement(
+            destination: const NavigationRailDestination(
+              icon: Icon(Icons.lightbulb),
+              selectedIcon: Icon(Icons.lightbulb),
+              label: Text('Tutorials'),
+            ),
+            widget: const TutorialScreen()),
       );
       return result;
     }

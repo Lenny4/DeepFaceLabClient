@@ -140,7 +140,8 @@ class DeepfacelabCommandWidget extends HookWidget {
         for (var windowCommand in deepfacelabCommandGroup.windowCommands) {
           if (windowCommand.loading) {
             hasUpdate = true;
-            windowCommand.command = windowCommand.command
+            var originalCommand = windowCommand.command;
+            windowCommand.command = originalCommand
                 .replaceAll(Source.replace, windowCommand.source);
             var window = await DesktopMultiWindow.createWindow(
                 jsonEncode(windowCommand.toJson()));
@@ -151,6 +152,7 @@ class DeepfacelabCommandWidget extends HookWidget {
                   .replaceAll(Source.replace, windowCommand.source))
               ..show();
             windowCommand.loading = false;
+            windowCommand.command = originalCommand;
           }
         }
       }

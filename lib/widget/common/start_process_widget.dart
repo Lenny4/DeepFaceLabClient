@@ -14,6 +14,7 @@ class StartProcessWidget extends HookWidget {
   final bool? closeIcon;
   final double? height;
   final bool? usePrototypeItem;
+  final bool? forceScrollDown;
   final List<StartProcess>? startProcesses;
   final List<StartProcessConda>? startProcessesConda;
   final Function? callback;
@@ -28,6 +29,7 @@ class StartProcessWidget extends HookWidget {
       this.startProcesses,
       this.startProcessesConda,
       this.usePrototypeItem,
+      this.forceScrollDown,
       this.callback})
       : super(key: key);
 
@@ -124,7 +126,7 @@ class StartProcessWidget extends HookWidget {
         double currentPosition = scrollController.position.pixels;
         double maxScrollExtent = scrollController.position.maxScrollExtent;
         double delta = 100.0;
-        if (currentPosition >= maxScrollExtent - delta) {
+        if (forceScrollDown == true || currentPosition >= maxScrollExtent - delta) {
           scrollController.jumpTo(maxScrollExtent);
         }
       }
