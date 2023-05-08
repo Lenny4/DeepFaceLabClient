@@ -163,6 +163,39 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
     defaultAnswer: 'y',
     options: ['y', 'n'],
   );
+  static Question batchSizeXSeg = Question(
+    text: 'Batch size',
+    question: 'Batch_size',
+    help:
+    """Select the batch size for XSeg training""",
+    answer: '',
+    defaultAnswer: '4',
+    options: [
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15',
+      '16',
+    ],
+  );
+  static Question enablePretrainingModeXSeg = Question(
+    text: 'Enable pretraining mode',
+    question: 'Enable pretraining mode',
+    help: """Choose to use the _internal/pretrain_faces faceset for XSeg training""",
+    answer: '',
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
 }
 
 class WindowCommandService {
@@ -330,7 +363,7 @@ python $deepFaceLabFolder/main.py xseg remove_labels \\
         windowTitle: '[${workspace?.name}] XSeg train ${Source.replace}',
         title: 'XSeg train ${Source.replace}',
         documentationLink:
-            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#xseg-model-training",
         key: "${WindowCommandService.xsegTrain}_${Source.replace}",
         command: """
 python $deepFaceLabFolder/main.py train \\
@@ -341,8 +374,17 @@ python $deepFaceLabFolder/main.py train \\
             """,
         loading: false,
         multipleSource: true,
-        questions: [],
-        similarMessageRegex: [],
+        questions: [
+          _Questions.faceType,
+          _Questions.batchSizeXSeg,
+          _Questions.enablePretrainingModeXSeg,
+        ],
+        similarMessageRegex: [
+          'Loading samples.*\\d+.*',
+          'Filtering:.*\\d+%.*',
+          'Saving:.*\\d+%.*',
+          '\\[\\d+:\\d+:\\d+\\]\\[\\#\\d+\\].*',
+        ],
       ),
       WindowCommand(
         windowTitle:

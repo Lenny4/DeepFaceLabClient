@@ -70,6 +70,12 @@ class WindowCommand2Screen extends HookWidget {
                         command: windowCommand.command,
                         similarMessageRegex: windowCommand.similarMessageRegex,
                         getAnswer: (String questionString) {
+                          String? match = RegExp(r'Press enter.*to override.*')
+                              .firstMatch(questionString)
+                              ?.group(0);
+                          if (match != null) {
+                            return "\n";
+                          }
                           return windowCommand.questions
                               .firstWhereOrNull((question) =>
                                   questionString.contains(question.question))
