@@ -6,6 +6,7 @@ class CheckboxFormField extends FormField<bool> {
       {super.key,
       Widget? title,
       FormFieldSetter<bool>? onSaved,
+      void Function(bool?)? onChanged,
       FormFieldValidator<bool>? validator,
       EdgeInsetsGeometry? contentPadding,
       bool initialValue = false,
@@ -20,7 +21,7 @@ class CheckboxFormField extends FormField<bool> {
                 contentPadding: contentPadding ?? const EdgeInsets.all(0.0),
                 title: title,
                 value: state.value,
-                onChanged: state.didChange,
+                onChanged: onChanged,
                 subtitle: state.hasError
                     ? Builder(
                         builder: (BuildContext context) => Text(

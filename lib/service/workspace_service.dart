@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
+import 'package:path/path.dart' as p;
 import 'package:slugify/slugify.dart';
 
 class WorkspaceService {
@@ -68,6 +69,11 @@ class WorkspaceService {
     } else {
       await _updateWorkspace(oldWorkspace, newWorkspace);
     }
+  }
+
+  importWorkspace({required String path}) async {
+    String folderName = p.basename(path);
+    await _createWorkspace(Workspace(name: folderName, path: path), false);
   }
 
   deleteWorkspace(

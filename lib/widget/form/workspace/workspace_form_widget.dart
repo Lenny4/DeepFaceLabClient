@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/workspace_service.dart';
+import 'package:deepfacelab_client/widget/common/divider_with_text_widget.dart';
 import 'package:deepfacelab_client/widget/common/form/checkbox_form_fiel_widget.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,8 @@ class WorkspaceFormWidget extends HookWidget {
     String? homeDirectory = (Platform.environment)['HOME'];
     final workspaceDefaultPath = useSelector<AppState, String?>(
         (state) => state.storage?.workspaceDefaultPath);
-    final formKey = GlobalKey<FormState>();
+    final createFormKey = GlobalKey<FormState>();
+    final importFormKey = GlobalKey<FormState>();
 
     getWorkspacePath() {
       return initWorkspace?.path ??
@@ -40,45 +42,56 @@ class WorkspaceFormWidget extends HookWidget {
     var workspaceCreateFolder = useState<bool>(true);
     var loading = useState<bool>(false);
     var edit = useState<bool>(getWorkspaceEdit());
-    final workspaceNameController = useState<TextEditingController>(
+    final createWorkspaceNameController = useState<TextEditingController>(
         TextEditingController(text: getWorkspaceName()));
-    final workspacePathController = useState<TextEditingController>(
+    final createWorkspacePathController = useState<TextEditingController>(
+        TextEditingController(text: getWorkspacePath()));
+    final importWorkspacePathController = useState<TextEditingController>(
         TextEditingController(text: getWorkspacePath()));
 
-    selectFolder() async {
+    selectFolder(ValueNotifier<TextEditingController> controller) async {
       var value = await FilesystemPicker.openDialog(
         title: 'Workspace path',
         context: context,
         rootDirectory: Directory(Platform.pathSeparator),
-        directory: Directory(workspacePathController.value.text),
+        directory: Directory(controller.value.text),
         fsType: FilesystemType.folder,
         pickText: 'Validate',
       );
       if (value == null) {
         return;
       }
-      workspacePathController.value = TextEditingController(text: value);
+      controller.value = TextEditingController(text: value);
     }
 
-    save() async {
+    createWorkspace() async {
       loading.value = true;
-      formKey.currentState?.save();
+      createFormKey.currentState?.save();
       await WorkspaceService().createUpdateWorkspace(
         oldWorkspace: initWorkspace,
         newWorkspace: Workspace(
-            name: workspaceNameController.value.text,
-            path: workspacePathController.value.text),
+            name: createWorkspaceNameController.value.text,
+            path: createWorkspacePathController.value.text),
         createFolder: workspaceCreateFolder.value,
       );
       loading.value = false;
       edit.value = false;
     }
 
+    importWorkspace() async {
+      loading.value = true;
+      importFormKey.currentState?.save();
+      await WorkspaceService()
+          .importWorkspace(path: importWorkspacePathController.value.text);
+      loading.value = false;
+      edit.value = false;
+    }
+
     onChangeInitWorkspace() {
       edit.value = getWorkspaceEdit();
-      workspaceNameController.value =
+      createWorkspaceNameController.value =
           TextEditingController(text: getWorkspaceName());
-      workspacePathController.value =
+      createWorkspacePathController.value =
           TextEditingController(text: getWorkspacePath());
     }
 
@@ -97,14 +110,14 @@ class WorkspaceFormWidget extends HookWidget {
                 "# ${initWorkspace == null ? "Create a workspace" : edit.value == true ? "Edit workspace" : ""}"),
         if (edit.value == true) ...[
           Form(
-            key: formKey,
+            key: createFormKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
                   decoration: const InputDecoration(
                       hintText: 'Workspace name', labelText: 'Workspace name'),
-                  controller: workspaceNameController.value,
+                  controller: createWorkspaceNameController.value,
                   keyboardType: TextInputType.text,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -115,7 +128,7 @@ class WorkspaceFormWidget extends HookWidget {
                 ),
                 TextFormField(
                   readOnly: true,
-                  controller: workspacePathController.value,
+                  controller: createWorkspacePathController.value,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     hintText: 'Workspace path',
@@ -123,7 +136,8 @@ class WorkspaceFormWidget extends HookWidget {
                     prefixIcon: IconButton(
                       icon: const Icon(Icons.folder),
                       splashRadius: 20,
-                      onPressed: selectFolder,
+                      onPressed: () =>
+                          selectFolder(createWorkspacePathController),
                     ),
                   ),
                   validator: (value) {
@@ -138,7 +152,9 @@ class WorkspaceFormWidget extends HookWidget {
                         title: const MarkdownBody(
                             selectable: true,
                             data: "Create a new folder for the workspace"),
-                        initialValue: true,
+                        initialValue: workspaceCreateFolder.value,
+                        onChanged: (bool? value) =>
+                            workspaceCreateFolder.value = (value ?? true),
                         onSaved: (bool? value) =>
                             workspaceCreateFolder.value = (value ?? true),
                       )
@@ -166,8 +182,8 @@ class WorkspaceFormWidget extends HookWidget {
                       ElevatedButton.icon(
                         onPressed: !loading.value
                             ? () {
-                                if (formKey.currentState!.validate()) {
-                                  save();
+                                if (createFormKey.currentState!.validate()) {
+                                  createWorkspace();
                                 }
                               }
                             : null,
@@ -186,6 +202,65 @@ class WorkspaceFormWidget extends HookWidget {
               ],
             ),
           ),
+          if (initWorkspace == null) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.0),
+              child: DividerWithTextWidget(text: "OR"),
+            ),
+            const MarkdownBody(selectable: true, data: "# Import a workspace"),
+            Form(
+              key: importFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  TextFormField(
+                    readOnly: true,
+                    controller: importWorkspacePathController.value,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      hintText: 'Workspace path',
+                      labelText: 'Workspace path',
+                      prefixIcon: IconButton(
+                        icon: const Icon(Icons.folder),
+                        splashRadius: 20,
+                        onPressed: () =>
+                            selectFolder(importWorkspacePathController),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select the path of your workspace';
+                      }
+                      return null;
+                    },
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: !loading.value
+                              ? () {
+                                  if (importFormKey.currentState!.validate()) {
+                                    importWorkspace();
+                                  }
+                                }
+                              : null,
+                          icon: loading.value
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const SizedBox.shrink(),
+                          label: const Text('Import workspace'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ]
         ] else ...[
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,

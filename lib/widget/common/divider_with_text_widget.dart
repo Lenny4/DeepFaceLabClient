@@ -10,7 +10,10 @@ class DividerWithTextWidget extends HookWidget {
   Widget build(BuildContext context) {
     return Row(children: <Widget>[
       const Expanded(child: Divider()),
-      Text(text),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Text(text),
+      ),
       const Expanded(child: Divider()),
     ]);
   }
