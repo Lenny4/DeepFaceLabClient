@@ -10,8 +10,9 @@ import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:slugify/slugify.dart';
 
-class _Questions {
+class Questions {
   static Question enterFps = Question(
       text: 'Enter FPS',
       question: 'Enter FPS',
@@ -22,7 +23,6 @@ If your clip has high variety or unique frames then you can extract all frames b
         ValidAnswerRegex(
             regex: '^(\\s*|\\d+)\$', errorMessage: 'You must enter a number')
       ],
-      answer: '',
       defaultAnswer: '0');
   static Question outputImageFormat = Question(
     text: 'Output image format',
@@ -34,7 +34,6 @@ Choose png for the best image quality.""",
           regex: '^\$|^png\$|^jpg\$',
           errorMessage: 'Choose one these values [png|jpg]')
     ],
-    answer: '',
     defaultAnswer: 'png',
     options: ['png', 'jpg'],
   );
@@ -64,7 +63,6 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
           errorMessage:
               'Choose one these values [0|1|2|3|4|5|6|7|8|9|10|11|12|13|14]')
     ],
-    answer: '',
     defaultAnswer: '2',
     options: [
       '0',
@@ -96,7 +94,6 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
           regex: '^(head|wf|f)\$',
           errorMessage: 'Choose one these values [head|wf|f]')
     ],
-    answer: '',
     defaultAnswer: 'wf',
     options: [
       'head',
@@ -113,7 +110,6 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
     validAnswerRegex: [
       ValidAnswerRegex(min: 0, errorMessage: 'Enter a positive number or 0')
     ],
-    answer: '',
     defaultAnswer: '0',
   );
   static Question imageSize = Question(
@@ -127,7 +123,6 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
           max: 2048,
           errorMessage: 'Enter number between 256 and 2048')
     ],
-    answer: '',
     defaultAnswer: '512',
   );
   static Question jpegQuality = Question(
@@ -140,7 +135,6 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
       ValidAnswerRegex(
           min: 1, max: 100, errorMessage: 'Enter number between 1 and 100')
     ],
-    answer: '',
     defaultAnswer: '90',
   );
   static Question writeDebugImagesToAlignedDebug = Question(
@@ -149,7 +143,6 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
     help: """Choose whether or not to write debug images.
 - [n]: No
 - [y]: Yes""",
-    answer: '',
     defaultAnswer: 'n',
     options: ['y', 'n'],
   );
@@ -159,40 +152,402 @@ Select target number of face images to keep. Discarded faces moved to data_src/a
     help: """Choose to deleted original files after packing.
 - [n]: No
 - [y]: Yes""",
-    answer: '',
     defaultAnswer: 'y',
     options: ['y', 'n'],
   );
-  static Question batchSizeXSeg = Question(
+  static Question batchSize = Question(
     text: 'Batch size',
     question: 'Batch_size',
-    help:
-    """Select the batch size for XSeg training""",
-    answer: '',
+    help: """Select the batch size for XSeg training""",
     defaultAnswer: '4',
-    options: [
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15',
-      '16',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 2, errorMessage: 'Enter a number greater or equal than 2')
     ],
   );
   static Question enablePretrainingModeXSeg = Question(
     text: 'Enable pretraining mode',
     question: 'Enable pretraining mode',
-    help: """Choose to use the _internal/pretrain_faces faceset for XSeg training""",
-    answer: '',
+    help:
+        """Choose to use the _internal/pretrain_faces faceset for XSeg training""",
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
+  static Question chooseOneOrSeveralGpuIdxs = Question(
+    text: 'Choose one or several GPU idxs (separated by comma)',
+    question: 'Choose one or several GPU idxs',
+    help: """Select one or more GPU indexes from the list to run extraction.
+Recommend using identical devices when choosing multiple GPU indexes.""",
+    defaultAnswer: 'CPU',
+  );
+  static Question whichGpuIndexesToChoose = Question(
+    text: 'Which GPU indexes to choose (separated by comma)',
+    question: 'Which GPU indexes to choose',
+    help: """Select one or more GPU indexes from the list to run extraction.
+Recommend using identical devices when choosing multiple GPU indexes.""",
+    defaultAnswer: 'CPU',
+  );
+  static Question noSavedModelsFound = Question(
+    text: 'Enter the name of the model',
+    question: 'No saved models found',
+    help: """Name your model.""",
+    defaultAnswer: '',
+  );
+  static Question autobackupEveryNHour = Question(
+      text: 'Autobackup every N hour',
+      question: 'Autobackup every N hour',
+      help: """Set the autobackup interval.
+Autobackup model files with preview every N hour.
+Latest backup located in model/<>_autobackups/01""",
+      defaultAnswer: '0',
+      options: [
+        '0',
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        '10',
+        '11',
+        '12',
+        '13',
+        '14',
+        '15',
+        '16',
+        '17',
+        '18',
+        '19',
+        '20',
+        '21',
+        '22',
+        '23',
+        '24',
+      ]);
+  static Question writePreviewHistory = Question(
+      text: 'Write preview history',
+      question: 'Write preview history',
+      help: """Choose to write preview image history (every 30 iterations).
+[Tooltip: Preview history will be writed to _history folder.]""",
+      defaultAnswer: 'n',
+      options: ['n', 'y']);
+  static Question chooseImageForThePreviewHistory = Question(
+      text: 'Choose image for the preview history',
+      question: 'Choose image for the preview history',
+      help: """(Conditional: Write preview history)
+When training begins you will be prompted to choose the preview image for history generation.""",
+      defaultAnswer: 'n',
+      options: ['n', 'y']);
+  static Question targetIteration = Question(
+    text: 'Target iteration',
+    question: 'Target iteration',
+    help: """Set the target iteration to end and save training.
+Set to 0 for uninterrupted training.""",
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 0, errorMessage: 'Enter a number greater or equal than 0')
+    ],
+    defaultAnswer: '0',
+  );
+  static Question flipSrcFacesRandomly = Question(
+    text: 'Flip SRC faces randomly',
+    question: 'Flip SRC faces randomly',
+    help: """Random horizontal flip SRC faceset.
+Covers more angles, but the face may look less naturally.""",
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
+  static Question flipDstFacesRandomly = Question(
+    text: 'Flip DST faces randomly',
+    question: 'Flip DST faces randomly',
+    help: """Random horizontal flip DST faceset.
+Makes generalization of src->dst better, if src random flip is not enabled.""",
+    defaultAnswer: 'y',
+    options: ['y', 'n'],
+  );
+  static Question resolution = Question(
+    text: 'Resolution (64 – 640)',
+    question: 'Resolution',
+    help: """More resolution requires more VRAM and time to train.
+Value will be adjusted to multiple of 16 and 32 for -d archi.""",
+    defaultAnswer: '128',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 64, max: 640, errorMessage: 'Enter a number between 64 and 640')
+    ],
+  );
+  static Question aeArchitecture = Question(
+    text: 'AE architecture',
+    question: 'AE architecture',
+    help: """‘df’ keeps more identity-preserved face.
+‘liae’ can fix overly different face shapes.
+‘-u’ increased likeness of the face.
+‘-d’ doubling the resolution using the same computation cost.
+‘-t’ Increases similarity to source face.
+Examples: df, liae, df-d, df-ud, liae-ud, …]""",
+    defaultAnswer: 'liae-udt',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          regex: '^(liae|dt)-?(u|d|t)?(u|d|t)?(u|d|t)?\$',
+          errorMessage: 'Architecture is invalid')
+    ],
+  );
+  static Question autoEncoderDimensions = Question(
+    text: 'AutoEncoder dimensions',
+    question: 'AutoEncoder dimensions',
+    help: """All face information will packed to AE dims.
+If amount of AE dims are not enough, then for example closed eyes will not be recognized.
+More dims are better, but require more VRAM.
+You can fine-tune model size to fit your GPU.""",
+    defaultAnswer: '256',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 32, max: 1024, errorMessage: 'Enter number between 32 and 1024')
+    ],
+  );
+  static Question encoderDimensions = Question(
+    text: 'Encoder dimensions',
+    question: 'Encoder dimensions',
+    help:
+        """More dims help to recognize more facial features and achieve sharper result, but require more VRAM.
+You can fine-tune model size to fit your GPU.""",
+    defaultAnswer: '64',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 16, max: 256, errorMessage: 'Enter number between 16 and 256')
+    ],
+  );
+  static Question decoderDimensions = Question(
+    text: 'Decoder dimensions',
+    question: 'Decoder dimensions',
+    help:
+        """: More dims help to recognize more facial features and achieve sharper result, but require more VRAM.
+You can fine-tune model size to fit your GPU.""",
+    defaultAnswer: '64',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 16, max: 256, errorMessage: 'Enter number between 16 and 256')
+    ],
+  );
+  static Question decoderMaskDimensions = Question(
+    text: 'Decoder mask dimensions',
+    question: 'Decoder mask dimensions',
+    help: """: Typical mask dimensions = decoder dimensions / 3.
+If you manually cut out obstacles from the dst mask, you can increase this parameter to achieve better quality.""",
+    defaultAnswer: '22',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 16, max: 256, errorMessage: 'Enter number between 16 and 256')
+    ],
+  );
+  static Question maskedTraining = Question(
+    text: 'Masked training',
+    question: 'Masked training',
+    help: """(Conditional: Face type wf or head)
+This option is available only for ‘whole_face’ or ‘head’ type.
+Masked training clips training area to full_face mask or XSeg mask, thus network will train the faces properly.""",
+    defaultAnswer: 'y',
+    options: ['y', 'n'],
+  );
+  static Question eyesAndMouthPriority = Question(
+    text: 'Eyes and mouth priority',
+    question: 'Eyes and mouth priority',
+    help:
+        """Helps to fix eye problems during training like “alien eyes” and wrong eyes direction.
+Also makes the detail of the teeth higher.""",
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
+  static Question uniformYawDistributionOfSamples = Question(
+    text: 'Uniform yaw distribution of samples',
+    question: 'Uniform yaw distribution of samples',
+    help:
+        """Helps to fix blurry side faces due to small amount of them in the faceset.""",
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
+  static Question blurOutMask = Question(
+    text: 'Blur out mask',
+    question: 'Blur out mask',
+    help: """Blurs nearby area outside of applied face mask of training samples.
+The result is the background near the face is smoothed and less noticeable on swapped face.
+The exact xseg mask in src and dst faceset is required.""",
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
+  static Question placeModelsAndOptimizerOnGpu = Question(
+    text: 'Place models and optimizer on GPU',
+    question: 'Place models and optimizer on GPU',
+    help:
+        """When you train on one GPU, by default model and optimizer weights are placed on GPU to accelerate the process.
+You can place they on CPU to free up extra VRAM, thus set bigger dimensions.""",
+    defaultAnswer: 'y',
+    options: ['y', 'n'],
+  );
+  static Question useAdaBeliefOptimizer = Question(
+    text: 'Use AdaBelief optimizer',
+    question: 'Use AdaBelief optimizer',
+    help: """Use AdaBelief optimizer.
+It requires more VRAM, but the accuracy and the generalization of the model is higher.""",
+    defaultAnswer: 'y',
+    options: ['y', 'n'],
+  );
+  static Question useLearningRateDropout = Question(
+    text: 'Use learning rate dropout ( n / y / cpu )',
+    question: 'Use learning rate dropout',
+    help:
+        """When the face is trained enough, you can enable this option to get extra sharpness and reduce subpixel shake for less amount of iterations.
+Enabled it before disable random warp and before GAN.
+n – disabled.
+y – enabled
+cpu – enabled on CPU. This allows not to use extra VRAM, sacrificing 20% time of iteration.""",
+    defaultAnswer: 'n',
+    options: ['y', 'n', 'cpu'],
+  );
+  static Question enableRandomWarpOfSamples = Question(
+    text: 'Enable random warp of samples',
+    question: 'Enable random warp of samples',
+    help:
+        """Random warp is required to generalize facial expressions of both faces.
+When the face is trained enough, you can disable it to get extra sharpness and reduce subpixel shake for less amount of iterations.""",
+    defaultAnswer: 'y',
+    options: ['y', 'n'],
+  );
+  static Question randomHueSaturationLightIntensity = Question(
+    text: 'Random hue/saturation/light intensity',
+    question: 'Random hue/saturation/light intensity',
+    help:
+        """Random hue/saturation/light intensity applied to the src face set only at the input of the neural network.
+Stabilizes color perturbations during face swapping.
+Reduces the quality of the color transfer by selecting the closest one in the src faceset.
+Thus the src faceset must be diverse enough.
+Typical fine value is 0.05""",
+    defaultAnswer: '0.0',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 0, max: 0.3, errorMessage: 'Enter number between 0.0 and 0.3')
+    ],
+  );
+  static Question ganPower = Question(
+    text: 'GAN power',
+    question: 'GAN power',
+    help: """Forces the neural network to learn small details of the face.
+Enable it only when the face is trained enough with lr_dropout(on) and random_warp(off), and don’t disable.
+The higher the value, the higher the chances of artifacts. Typical fine value is 0.1""",
+    defaultAnswer: '0.0',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 0, max: 5, errorMessage: 'Enter number between 0.0 and 5.0')
+    ],
+  );
+  static Question ganPatchSize = Question(
+    text: 'GAN patch size',
+    question: 'GAN patch size',
+    help:
+        """The higher patch size, the higher the quality, the more VRAM is required.
+You can get sharper edges even at the lowest setting.
+Typical fine value is resolution / 8.""",
+    defaultAnswer: '16',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 3, max: 640, errorMessage: 'Enter number between 3 and 640')
+    ],
+  );
+  static Question ganDimensions = Question(
+    text: 'GAN dimensions',
+    question: 'GAN dimensions',
+    help: """The dimensions of the GAN network.
+The higher dimensions, the more VRAM is required.
+You can get sharper edges even at the lowest setting.
+Typical fine value is 16.""",
+    defaultAnswer: '16',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 4, max: 512, errorMessage: 'Enter number between 3 and 640')
+    ],
+  );
+  static Question trueFacePower = Question(
+    text: '‘True face’ power',
+    question: '‘True face’ power',
+    help: """Experimental option.
+Discriminates result face to be more like src face.
+Higher value – stronger discrimination.
+Typical value is 0.01.""",
+    defaultAnswer: '0.01',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 0, max: 1, errorMessage: 'Enter number between 0.0000 and 1.0')
+    ],
+  );
+  static Question faceStylePower = Question(
+    text: 'Face style power',
+    question: 'Face style power',
+    help:
+        """Learn the color of the predicted face to be the same as dst inside mask.
+If you want to use this option with ‘whole_face’ you have to use XSeg trained mask.
+Warning: Enable it only after 10k iters, when predicted face is clear enough to start learn style.
+Start from 0.001 value and check history changes.
+Enabling this option increases the chance of model collapse.""",
+    defaultAnswer: '0.0',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 0, max: 100, errorMessage: 'Enter number between 0.0 and 100.0')
+    ],
+  );
+  static Question backgroundStylePower = Question(
+    text: 'Background style power',
+    question: 'Background style power',
+    help:
+        """Learn the area outside mask of the predicted face to be the same as dst.
+If you want to use this option with ‘whole_face’ you have to use XSeg trained mask.
+For whole_face you have to use XSeg trained mask.
+This can make face more like dst. Enabling this option increases the chance of model collapse.
+Typical value is 2.0""",
+    defaultAnswer: '2.0',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 0, max: 100, errorMessage: 'Enter number between 0.0 and 100.0')
+    ],
+  );
+  static Question colorTransferForSrcFaceset = Question(
+    text:
+        'Color transfer for src faceset ( none / rct / lct / mkl / idt / sot )',
+    question: 'Color transfer for src faceset',
+    help: """Change color distribution of src samples close to dst samples.
+Try all modes to find the best.
+
+- rct (reinhard color transfer)
+- lct (linear color transfer): Matches the color distribution of the target image to that of the source image using a linear transform.
+- mkl (Monge-Kantorovitch linear)
+- idt (Iterative Distribution Transfer)
+- sot (sliced optimal transfer)""",
+    defaultAnswer: 'none',
+    options: [
+      'none',
+      'rct',
+      'lct',
+      'mkl',
+      'idt',
+      'sot',
+    ],
+  );
+  static Question enableGradientClipping = Question(
+    text: 'Enable gradient clipping',
+    question: 'Enable gradient clipping',
+    help:
+        """Gradient clipping reduces chance of model collapse, sacrificing speed of training.""",
+    defaultAnswer: 'n',
+    options: ['y', 'n'],
+  );
+  static Question enablePretrainingMode = Question(
+    text: 'Enable pretraining mode',
+    question: 'Enable pretraining mode',
+    help: """Pretrain the model with large amount of various faces.
+After that, model can be used to train the fakes more quickly.
+Forces random_warp=N, random_flips=Y, gan_power=0.0, lr_dropout=N, styles=0.0, uniform_yaw=Y""",
     defaultAnswer: 'n',
     options: ['y', 'n'],
   );
@@ -237,8 +592,8 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
           loading: false,
           multipleSource: true,
           questions: [
-            _Questions.enterFps,
-            _Questions.outputImageFormat,
+            Questions.enterFps,
+            Questions.outputImageFormat,
           ],
           similarMessageRegex: [
             'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed='
@@ -261,11 +616,12 @@ python $deepFaceLabFolder/main.py extract \\
           loading: false,
           multipleSource: true,
           questions: [
-            _Questions.faceType,
-            _Questions.maxNumberOfFacesFromImage,
-            _Questions.imageSize,
-            _Questions.jpegQuality,
-            _Questions.writeDebugImagesToAlignedDebug,
+            Questions.whichGpuIndexesToChoose,
+            Questions.faceType,
+            Questions.maxNumberOfFacesFromImage,
+            Questions.imageSize,
+            Questions.jpegQuality,
+            Questions.writeDebugImagesToAlignedDebug,
           ],
           similarMessageRegex: ['\\d+%\\|.*\\| \\d+\\/\\d+ \\[.*\\]']),
       WindowCommand(
@@ -285,11 +641,12 @@ python $deepFaceLabFolder/main.py extract \\
           loading: false,
           multipleSource: true,
           questions: [
-            _Questions.faceType,
-            _Questions.maxNumberOfFacesFromImage,
-            _Questions.imageSize,
-            _Questions.jpegQuality,
-            _Questions.writeDebugImagesToAlignedDebug,
+            Questions.whichGpuIndexesToChoose,
+            Questions.faceType,
+            Questions.maxNumberOfFacesFromImage,
+            Questions.imageSize,
+            Questions.jpegQuality,
+            Questions.writeDebugImagesToAlignedDebug,
           ],
           similarMessageRegex: ['\\d+%\\|.*\\| \\d+\\/\\d+ \\[.*\\]']),
       // endregion
@@ -324,7 +681,9 @@ python $deepFaceLabFolder/main.py xseg apply \\
             """,
         loading: false,
         multipleSource: true,
-        questions: [],
+        questions: [
+          Questions.whichGpuIndexesToChoose,
+        ],
         similarMessageRegex: [],
       ),
       WindowCommand(
@@ -375,9 +734,10 @@ python $deepFaceLabFolder/main.py train \\
         loading: false,
         multipleSource: true,
         questions: [
-          _Questions.faceType,
-          _Questions.batchSizeXSeg,
-          _Questions.enablePretrainingModeXSeg,
+          Questions.chooseOneOrSeveralGpuIdxs,
+          Questions.faceType,
+          Questions.batchSize,
+          Questions.enablePretrainingModeXSeg,
         ],
         similarMessageRegex: [
           'Loading samples.*\\d+.*',
@@ -388,12 +748,12 @@ python $deepFaceLabFolder/main.py train \\
       ),
       WindowCommand(
         windowTitle:
-        '[${workspace?.name}] XSeg data ${Source.replace} trained mask remove',
+            '[${workspace?.name}] XSeg data ${Source.replace} trained mask remove',
         title: 'XSeg data ${Source.replace} trained mask remove',
         documentationLink:
-        "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
+            "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
         key:
-        "${WindowCommandService.xsegDataTrainedMaskRemove}_${Source.replace}",
+            "${WindowCommandService.xsegDataTrainedMaskRemove}_${Source.replace}",
         command: """
 python $deepFaceLabFolder/main.py xseg remove \\
 --input-dir "${workspace?.path}/data_${Source.replace}/aligned"
@@ -418,7 +778,7 @@ python $deepFaceLabFolder/main.py sort \\
           loading: false,
           multipleSource: true,
           questions: [
-            _Questions.chooseSortingMethod,
+            Questions.chooseSortingMethod,
           ],
           similarMessageRegex: [
             'Loading:.*\\d+%.*',
@@ -440,7 +800,7 @@ python $deepFaceLabFolder/main.py util \\
           loading: false,
           multipleSource: true,
           questions: [
-            _Questions.deleteOriginalFiles,
+            Questions.deleteOriginalFiles,
           ],
           similarMessageRegex: [
             'Loading samples.*\\d+%.*',
@@ -481,8 +841,48 @@ python $deepFaceLabFolder/main.py train \\
 --model SAEHD""",
         loading: false,
         multipleSource: false,
-        questions: [],
-        similarMessageRegex: [],
+        questions: [
+          Questions.chooseOneOrSeveralGpuIdxs,
+          Questions.noSavedModelsFound,
+          Questions.autobackupEveryNHour,
+          Questions.writePreviewHistory,
+          Questions.chooseImageForThePreviewHistory,
+          Questions.targetIteration,
+          Questions.flipSrcFacesRandomly,
+          Questions.flipDstFacesRandomly,
+          Questions.batchSize,
+          Questions.resolution,
+          Questions.faceType,
+          Questions.aeArchitecture,
+          Questions.autoEncoderDimensions,
+          Questions.encoderDimensions,
+          Questions.decoderDimensions,
+          Questions.decoderMaskDimensions,
+          Questions.maskedTraining,
+          Questions.eyesAndMouthPriority,
+          Questions.uniformYawDistributionOfSamples,
+          Questions.blurOutMask,
+          Questions.placeModelsAndOptimizerOnGpu,
+          Questions.useAdaBeliefOptimizer,
+          Questions.useLearningRateDropout,
+          Questions.enableRandomWarpOfSamples,
+          Questions.randomHueSaturationLightIntensity,
+          Questions.ganPower,
+          Questions.ganPatchSize,
+          Questions.ganDimensions,
+          Questions.trueFacePower,
+          Questions.faceStylePower,
+          Questions.backgroundStylePower,
+          Questions.colorTransferForSrcFaceset,
+          Questions.enableGradientClipping,
+          Questions.enablePretrainingMode,
+        ],
+        similarMessageRegex: [
+          'Loading samples.*\\d+.*',
+          'Initializing models.*\\d+.*',
+          'Saving:.*\\d+%.*',
+          '\\[\\d+:\\d+:\\d+\\]\\[\\#\\d+\\].*',
+        ],
       ),
       WindowCommand(
         windowTitle: '[${workspace?.name}] Train Quick96',
@@ -498,7 +898,10 @@ python $deepFaceLabFolder/main.py train \\
 --model Quick96""",
         loading: false,
         multipleSource: false,
-        questions: [],
+        questions: [
+          Questions.chooseOneOrSeveralGpuIdxs,
+          Questions.noSavedModelsFound,
+        ],
         similarMessageRegex: [],
       ),
       // endregion
@@ -519,7 +922,9 @@ python $deepFaceLabFolder/main.py merge \\
 --model SAEHD""",
         loading: false,
         multipleSource: false,
-        questions: [],
+        questions: [
+          Questions.chooseOneOrSeveralGpuIdxs,
+        ],
         similarMessageRegex: [],
       ),
       WindowCommand(
@@ -538,7 +943,9 @@ python $deepFaceLabFolder/main.py merge \\
 --model Quick96""",
         loading: false,
         multipleSource: false,
-        questions: [],
+        questions: [
+          Questions.chooseOneOrSeveralGpuIdxs,
+        ],
         similarMessageRegex: [],
       ),
       // endregion
@@ -688,5 +1095,27 @@ python $deepFaceLabFolder/main.py videoed video-from-sequence \\
     }
     store.dispatch({'storage': storage});
     return localeStorageQuestion;
+  }
+
+  String getDefaultAnswer(
+      {required Question question, required Workspace workspace}) {
+    if (question.question == Questions.chooseOneOrSeveralGpuIdxs.question ||
+        question.question == Questions.whichGpuIndexesToChoose.question) {
+      var devices = store.state.devices;
+      if (devices != null) {
+        var indexes = [];
+        for (int i = 0; i < devices.length; i++) {
+          indexes.add(i);
+        }
+        if (indexes.isNotEmpty) {
+          return indexes.join(",");
+        }
+      }
+      return "CPU";
+    }
+    if (question.question == Questions.noSavedModelsFound.question) {
+      return "${slugify(workspace.name)}_model";
+    }
+    return question.defaultAnswer;
   }
 }

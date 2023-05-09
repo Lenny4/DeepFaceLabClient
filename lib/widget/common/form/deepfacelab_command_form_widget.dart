@@ -55,7 +55,10 @@ class DeepfacelabCommandFormWidget extends HookWidget {
           }
         }
         var thisAnswer = localeStorageAnswer ??
-            (question.answer == "" ? question.defaultAnswer : question.answer);
+            (question.answer == ""
+                ? WindowCommandService()
+                    .getDefaultAnswer(question: question, workspace: workspace)
+                : question.answer);
         if (question.options != null) {
           return _QuestionController(
               selectValue: thisAnswer, question: question);
@@ -75,7 +78,8 @@ class DeepfacelabCommandFormWidget extends HookWidget {
       }
       formKey.value.currentState?.save();
       LocaleStorageQuestion localeStorageQuestion = LocaleStorageQuestion(
-          key: windowCommand.key.replaceAll(Source.replace, source), questions: []);
+          key: windowCommand.key.replaceAll(Source.replace, source),
+          questions: []);
       for (var questionController in questionControllers.value) {
         localeStorageQuestion.questions.add(LocaleStorageQuestionChild(
             question: questionController.question.question,
@@ -93,18 +97,14 @@ class DeepfacelabCommandFormWidget extends HookWidget {
       return double.tryParse(s) != null;
     }
 
-    int? getInteger(String? s) {
+    num? getNum(String? s) {
       if (s == null) {
         return null;
       }
       if (!isNumeric(s)) {
         return null;
       }
-      num value = num.parse(s);
-      if (value is! int) {
-        return null;
-      }
-      return value;
+      return num.parse(s);
     }
 
     useEffect(() {
@@ -123,7 +123,7 @@ class DeepfacelabCommandFormWidget extends HookWidget {
         children: questionControllers.value
             .mapIndexed((indexQuestionController, questionController) {
           String label =
-              "${questionController.question.text} [${questionController.question.defaultAnswer}]";
+              "${questionController.question.text} [${WindowCommandService().getDefaultAnswer(question: questionController.question, workspace: workspace)}]";
           var inputDecoration = InputDecoration(
               hintText: label,
               labelText: label,
@@ -176,7 +176,7 @@ class DeepfacelabCommandFormWidget extends HookWidget {
                           return validAnswerRegex.errorMessage;
                         }
                       } else {
-                        var number = getInteger(value);
+                        var number = getNum(value);
                         if (number == null ||
                             (validAnswerRegex.min != null &&
                                 number < validAnswerRegex.min!) ||

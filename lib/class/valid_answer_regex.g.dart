@@ -9,8 +9,8 @@ part of 'valid_answer_regex.dart';
 ValidAnswerRegex _$ValidAnswerRegexFromJson(Map<String, dynamic> json) =>
     ValidAnswerRegex(
       regex: json['regex'] as String?,
-      min: json['min'] as int?,
-      max: json['max'] as int?,
+      min: (json['min'] as num?)?.toDouble(),
+      max: (json['max'] as num?)?.toDouble(),
       errorMessage: json['errorMessage'] as String,
     );
 

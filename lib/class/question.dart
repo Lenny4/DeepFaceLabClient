@@ -18,7 +18,7 @@ class Question {
     required this.question,
     required this.help,
     this.validAnswerRegex,
-    this.answer,
+    this.answer = '',
     required this.defaultAnswer,
     this.options,
   });

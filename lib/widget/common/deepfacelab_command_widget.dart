@@ -41,34 +41,36 @@ class _SingleDeepfacelabCommandWidget extends HookWidget {
           title: SelectableText(
               windowCommand.title.replaceAll(Source.replace, source)),
           content: IntrinsicHeight(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SelectableText.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: "Documentation",
-                        style: const TextStyle(color: Colors.blue),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            launchUrl(
-                                Uri.parse(windowCommand.documentationLink),
-                                mode: LaunchMode.platformDefault);
-                          },
-                      ),
-                    ],
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SelectableText.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "Documentation",
+                          style: const TextStyle(color: Colors.blue),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              launchUrl(
+                                  Uri.parse(windowCommand.documentationLink),
+                                  mode: LaunchMode.platformDefault);
+                            },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                if (workspace != null)
-                  DeepfacelabCommandFormWidget(
-                      workspace: workspace!,
-                      source: source,
-                      saveAndGetLocaleStorageQuestion:
-                          saveAndGetLocaleStorageQuestion,
-                      windowCommand: windowCommand,
-                      onLaunch: onLaunch),
-              ],
+                  if (workspace != null)
+                    DeepfacelabCommandFormWidget(
+                        workspace: workspace!,
+                        source: source,
+                        saveAndGetLocaleStorageQuestion:
+                            saveAndGetLocaleStorageQuestion,
+                        windowCommand: windowCommand,
+                        onLaunch: onLaunch),
+                ],
+              ),
             ),
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -141,8 +143,8 @@ class DeepfacelabCommandWidget extends HookWidget {
           if (windowCommand.loading) {
             hasUpdate = true;
             var originalCommand = windowCommand.command;
-            windowCommand.command = originalCommand
-                .replaceAll(Source.replace, windowCommand.source);
+            windowCommand.command = originalCommand.replaceAll(
+                Source.replace, windowCommand.source);
             var window = await DesktopMultiWindow.createWindow(
                 jsonEncode(windowCommand.toJson()));
             window
