@@ -902,7 +902,12 @@ python $deepFaceLabFolder/main.py train \\
           Questions.chooseOneOrSeveralGpuIdxs,
           Questions.noSavedModelsFound,
         ],
-        similarMessageRegex: [],
+        similarMessageRegex: [
+          'Loading samples.*\\d+.*',
+          'Initializing models.*\\d+.*',
+          'Saving:.*\\d+%.*',
+          '\\[\\d+:\\d+:\\d+\\]\\[\\#\\d+\\].*',
+        ],
       ),
       // endregion
       // region merge
