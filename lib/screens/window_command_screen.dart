@@ -5,6 +5,7 @@ import 'package:deepfacelab_client/class/storage.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
+import 'package:deepfacelab_client/service/window_command_service.dart';
 import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -70,8 +71,8 @@ class WindowCommand2Screen extends HookWidget {
                         command: windowCommand.command,
                         similarMessageRegex: windowCommand.similarMessageRegex,
                         getAnswer: (String questionString) {
-                          String? match = RegExp(
-                                  r'Press enter.*to override.*|Choose one of saved models.*')
+                          String regex = Questions.autoEnterQuestions;
+                          String? match = RegExp(r'' '$regex' '')
                               .firstMatch(questionString)
                               ?.group(0);
                           if (match != null) {

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:slugify/slugify.dart';
 
 class Questions {
+  static String autoEnterQuestions = 'Press enter.*to override.*|Choose one of saved models.*|Use interactive merger.*';
   static Question enterFps = Question(
       text: 'Enter FPS',
       question: 'Enter FPS',
@@ -551,6 +552,16 @@ Forces random_warp=N, random_flips=Y, gan_power=0.0, lr_dropout=N, styles=0.0, u
     defaultAnswer: 'n',
     options: ['y', 'n'],
   );
+  static Question bitrateOfOutputFile = Question(
+    text: 'Bitrate of output file in MB/s',
+    question: 'Bitrate of output file',
+    help: """Select the video bitrate""",
+    defaultAnswer: '16',
+    validAnswerRegex: [
+      ValidAnswerRegex(
+          min: 1, errorMessage: 'Enter a number greater or equal than 1')
+    ],
+  );
 }
 
 class WindowCommandService {
@@ -930,7 +941,13 @@ python $deepFaceLabFolder/main.py merge \\
         questions: [
           Questions.chooseOneOrSeveralGpuIdxs,
         ],
-        similarMessageRegex: [],
+        similarMessageRegex: [
+          'Initializing models.*\\d+.*',
+          'Collecting alignments.*\\d+.*',
+          'Computing motion vectors.*\\d+.*',
+          'Merging.*\\d+.*',
+          'MergerConfig.*',
+        ],
       ),
       WindowCommand(
         windowTitle: '[${workspace?.name}] Merge Quick96',
@@ -951,7 +968,13 @@ python $deepFaceLabFolder/main.py merge \\
         questions: [
           Questions.chooseOneOrSeveralGpuIdxs,
         ],
-        similarMessageRegex: [],
+        similarMessageRegex: [
+          'Initializing models.*\\d+.*',
+          'Collecting alignments.*\\d+.*',
+          'Computing motion vectors.*\\d+.*',
+          'Merging.*\\d+.*',
+          'MergerConfig.*',
+        ],
       ),
       // endregion
       // region to video
@@ -975,8 +998,12 @@ python $deepFaceLabFolder/main.py videoed video-from-sequence \\
 --lossless""",
         loading: false,
         multipleSource: false,
-        questions: [],
-        similarMessageRegex: [],
+        questions: [
+          Questions.bitrateOfOutputFile,
+        ],
+        similarMessageRegex: [
+          'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=',
+        ],
       ),
       WindowCommand(
         windowTitle: '[${workspace?.name}] Create avi',
@@ -998,8 +1025,12 @@ python $deepFaceLabFolder/main.py videoed video-from-sequence \\
 --lossless""",
         loading: false,
         multipleSource: false,
-        questions: [],
-        similarMessageRegex: [],
+        questions: [
+          Questions.bitrateOfOutputFile,
+        ],
+        similarMessageRegex: [
+          'frame=.*fps=.*q=.*size=.*time=.*bitrate=.*speed=',
+        ],
       ),
       // endregion
     ];
