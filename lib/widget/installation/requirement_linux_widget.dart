@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/start_process.dart';
+import 'package:deepfacelab_client/service/platform_service.dart';
 import 'package:deepfacelab_client/widget/common/divider_with_text_widget.dart';
 import 'package:deepfacelab_client/widget/common/open_issue_widget.dart';
 import 'package:deepfacelab_client/widget/common/start_process_widget.dart';
@@ -15,7 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class RequirementLinuxWidget extends HookWidget {
   RequirementLinuxWidget({Key? key}) : super(key: key);
-  final String homeDirectory = (Platform.environment)['HOME'] ?? "/";
+  final String homeDirectory = PlatformService.getHomeDirectory();
 
   @override
   Widget build(BuildContext context) {

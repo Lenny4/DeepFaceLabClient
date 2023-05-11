@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
+import 'package:deepfacelab_client/service/platform_service.dart';
 import 'package:deepfacelab_client/service/workspace_service.dart';
 import 'package:deepfacelab_client/widget/common/context_menu_region.dart';
 import 'package:desktop_drop/desktop_drop.dart';
@@ -294,7 +295,7 @@ class FileManagerWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? homeDirectory = (Platform.environment)['HOME'];
+    String homeDirectory = PlatformService.getHomeDirectory();
 
     var folderPath = useState<String>(rootPath);
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
@@ -661,7 +662,7 @@ class FileManagerWidget extends HookWidget {
           title: 'Select ${fileSystemEntities.value![index].filename} file',
           context: context,
           rootDirectory: Directory(Platform.pathSeparator),
-          directory: Directory(homeDirectory ?? Platform.pathSeparator),
+          directory: Directory(homeDirectory),
           fsType: FilesystemType.file,
           fileTileSelectMode: FileTileSelectMode.wholeTile,
           pickText: 'Validate',

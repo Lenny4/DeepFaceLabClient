@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
+import 'package:deepfacelab_client/service/platform_service.dart';
 import 'package:deepfacelab_client/service/workspace_service.dart';
 import 'package:deepfacelab_client/widget/common/divider_with_text_widget.dart';
 import 'package:deepfacelab_client/widget/common/form/checkbox_form_fiel_widget.dart';
@@ -18,17 +19,14 @@ class WorkspaceFormWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? homeDirectory = (Platform.environment)['HOME'];
+    String homeDirectory = PlatformService.getHomeDirectory();
     final workspaceDefaultPath = useSelector<AppState, String?>(
         (state) => state.storage?.workspaceDefaultPath);
     final createFormKey = GlobalKey<FormState>();
     final importFormKey = GlobalKey<FormState>();
 
     getWorkspacePath() {
-      return initWorkspace?.path ??
-          workspaceDefaultPath ??
-          homeDirectory ??
-          "/";
+      return initWorkspace?.path ?? workspaceDefaultPath ?? homeDirectory;
     }
 
     getWorkspaceName() {

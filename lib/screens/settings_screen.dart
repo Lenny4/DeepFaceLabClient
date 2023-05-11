@@ -15,9 +15,9 @@ class SettingsScreen extends HookWidget {
       body: SingleChildScrollView(
         child: Container(
             margin: const EdgeInsets.all(10.0),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 SelectThemeWidget(),
                 OpenIssueWidget(),
               ],
