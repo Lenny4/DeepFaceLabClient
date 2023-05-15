@@ -7,9 +7,15 @@ import 'package:path_provider/path_provider.dart';
 // https://docs.flutter.dev/cookbook/persistence/reading-writing-files#complete-example
 class LocaleStorageService {
   Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path;
+    if (Platform.isWindows) {
+      var directory = Directory(
+          "${Platform.pathSeparator}ProgramData${Platform.pathSeparator}DeepFaceLabClient");
+      if (!(await directory.exists())) {
+        await directory.create(recursive: true);
+      }
+      return directory.path;
+    }
+    return (await getApplicationDocumentsDirectory()).path;
   }
 
   Future<File> get _localFile async {
@@ -17,23 +23,23 @@ class LocaleStorageService {
     return File('$path${Platform.pathSeparator}.deepfacelab_client_data.json');
   }
 
-  void createFile(File file) {
-    file.create();
-    file.writeAsString('{}');
+  createFile(File file) async {
+    await file.create();
+    await file.writeAsString('{}');
   }
 
   Future<Map<String, dynamic>> readStorage() async {
     final file = await _localFile;
 
-    if (!file.existsSync()) {
-      createFile(file);
+    if (!(await file.exists())) {
+      await createFile(file);
     }
     // Read the file
     try {
       return json.decode(await file.readAsString());
     } catch (e) {
-      file.delete();
-      createFile(file);
+      await file.delete();
+      await createFile(file);
       return json.decode(await file.readAsString());
     }
   }
@@ -42,6 +48,6 @@ class LocaleStorageService {
     final file = await _localFile;
 
     // Write the file
-    return file.writeAsString(json.encode(data));
+    return await file.writeAsString(json.encode(data));
   }
 }

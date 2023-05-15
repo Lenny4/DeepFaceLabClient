@@ -40,16 +40,18 @@ class StartProcessWidget extends HookWidget {
     var outputs = useState<List<String>>([]);
 
     addOutput(String output, [List<String>? regex]) {
-      var lastOutput = outputs.value[outputs.value.length - 1];
-      if (regex != null) {
-        for (var reg in regex) {
-          String? match = RegExp(r'' '$reg' '').firstMatch(output)?.group(0);
-          String? match2 =
-              RegExp(r'' '$reg' '').firstMatch(lastOutput)?.group(0);
-          if (match != null && match2 != null) {
-            outputs.value[outputs.value.length - 1] = output;
-            outputs.value = [...outputs.value];
-            return;
+      if (outputs.value.isNotEmpty) {
+        var lastOutput = outputs.value[outputs.value.length - 1];
+        if (regex != null) {
+          for (var reg in regex) {
+            String? match = RegExp(r'' '$reg' '').firstMatch(output)?.group(0);
+            String? match2 =
+                RegExp(r'' '$reg' '').firstMatch(lastOutput)?.group(0);
+            if (match != null && match2 != null) {
+              outputs.value[outputs.value.length - 1] = output;
+              outputs.value = [...outputs.value];
+              return;
+            }
           }
         }
       }

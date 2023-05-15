@@ -29,51 +29,6 @@ class InstallationWidget extends HookWidget {
     var startProcessesConda = useState<List<StartProcessConda>>([]);
     final dispatch = useDispatch<AppState>();
 
-    afterFolderSelected(String path) {
-      startProcessesConda.value = [
-        StartProcessConda(command: """
-pip install -r $path/requirements-cuda.txt
-            """)
-      ];
-    }
-
-    selectFolder(String title, String pickText, bool install) {
-      FilesystemPicker.openDialog(
-        title: title,
-        context: context,
-        rootDirectory: Directory(Platform.pathSeparator),
-        directory: Directory(homeDirectory),
-        fsType: FilesystemType.folder,
-        pickText: pickText,
-      ).then((value) {
-        if (value == null) {
-          return;
-        }
-        if (install) {
-          loading.value = true;
-          String thisInstallationPath = "$value/DeepFaceLab";
-          installationPath.value = thisInstallationPath;
-          startProcesses.value = [
-            StartProcess(executable: 'bash', arguments: [
-              '-c',
-              """
-rm -rf $thisInstallationPath &&
-git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationPath
-            """
-            ])
-          ];
-          startProcessesConda.value = [];
-        } else {
-          installationPath.value = value;
-          afterFolderSelected(value);
-        }
-      });
-    }
-
-    onDownloadDone(int code) {
-      afterFolderSelected(installationPath.value ?? Platform.pathSeparator);
-    }
-
     onInstallationDone(int code) {
       if (code != 0) {
         loading.value = false;
@@ -104,6 +59,73 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
           duration: const Duration(minutes: 1),
         ));
       }
+    }
+
+    afterFolderSelected(String path) {
+      if (Platform.isLinux) {
+        startProcessesConda.value = [
+          StartProcessConda(command: """
+pip install -r $path/requirements-cuda.txt
+            """)
+        ];
+      } else if (Platform.isWindows) {
+        onInstallationDone(0);
+      }
+    }
+
+    selectFolder(String title, String pickText, bool install) {
+      FilesystemPicker.openDialog(
+        title: title,
+        context: context,
+        rootDirectory: Directory(Platform.pathSeparator),
+        directory: Directory(homeDirectory),
+        fsType: FilesystemType.folder,
+        pickText: pickText,
+      ).then((value) {
+        if (value == null) {
+          return;
+        }
+        if (install) {
+          loading.value = true;
+          if (Platform.isLinux) {
+            String thisInstallationPath = "$value${Platform.pathSeparator}DeepFaceLab";
+            installationPath.value = thisInstallationPath;
+            startProcesses.value = [
+              StartProcess(executable: 'bash', arguments: [
+                '-c',
+                """
+rm -rf $thisInstallationPath &&
+git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationPath
+            """
+              ])
+            ];
+          } else if (Platform.isWindows) {
+            String thisInstallationPath = value;
+            installationPath.value = '$thisInstallationPath${Platform.pathSeparator}_internal';
+            startProcesses.value = [
+              StartProcess(executable: 'curl', arguments: [
+                '--output',
+                '$thisInstallationPath${Platform.pathSeparator}_internal.zip',
+                '--url',
+                'https://deepfacelab-internal.s3.amazonaws.com/_internal_directX12.zip',
+              ], similarMessageRegex: [
+                '\\d+.*\\d+.*\\d+.*\\d+.*\\d+.*\\d+.*\\d+:\\d+:\\d+:*\\d+.*\\d+.*\\d+.*\\d+.*\\d+.*'
+              ])
+            ];
+          }
+          startProcessesConda.value = [];
+        } else {
+          installationPath.value = value;
+          afterFolderSelected(value);
+        }
+      });
+    }
+
+    onDownloadDone(int code) {
+      if (Platform.isWindows) {
+
+      }
+      afterFolderSelected(installationPath.value ?? Platform.pathSeparator);
     }
 
     return hasRequirements == true
@@ -165,7 +187,9 @@ Please download it and specify where it is with the folder icon.
                                   splashRadius: 20,
                                   onPressed: () {
                                     selectFolder(
-                                        "Select you DeepFaceLab folder (it should contains a main.py file)",
+                                        Platform.isLinux
+                                            ? "Select you DeepFaceLab folder (it should contains a main.py file)"
+                                            : "Select you DeepFaceLab folder (it should be named _internal)",
                                         "Validate",
                                         false);
                                   },
