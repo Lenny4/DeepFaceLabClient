@@ -14,6 +14,16 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+class _VersionUrl {
+  String label;
+  String url;
+
+  _VersionUrl({
+    required this.label,
+    required this.url,
+  });
+}
+
 class InstallationWidget extends HookWidget {
   InstallationWidget({Key? key}) : super(key: key);
   final String homeDirectory = PlatformService.getHomeDirectory();
@@ -73,7 +83,8 @@ pip install -r $path/requirements-cuda.txt
       }
     }
 
-    selectFolder(String title, String pickText, bool install) {
+    selectFolder(String title, String pickText, bool install,
+        [String url = ""]) {
       FilesystemPicker.openDialog(
         title: title,
         context: context,
@@ -88,7 +99,8 @@ pip install -r $path/requirements-cuda.txt
         if (install) {
           loading.value = true;
           if (Platform.isLinux) {
-            String thisInstallationPath = "$value${Platform.pathSeparator}DeepFaceLab";
+            String thisInstallationPath =
+                "$value${Platform.pathSeparator}DeepFaceLab";
             installationPath.value = thisInstallationPath;
             startProcesses.value = [
               StartProcess(executable: 'bash', arguments: [
@@ -100,17 +112,24 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
               ])
             ];
           } else if (Platform.isWindows) {
-            String thisInstallationPath = value;
-            installationPath.value = '$thisInstallationPath${Platform.pathSeparator}_internal';
+            String thisInstallationPath =
+                "$value${Platform.pathSeparator}_internal";
+            installationPath.value = thisInstallationPath;
             startProcesses.value = [
               StartProcess(executable: 'curl', arguments: [
                 '--output',
-                '$thisInstallationPath${Platform.pathSeparator}_internal.zip',
+                '$thisInstallationPath.zip',
                 '--url',
-                'https://deepfacelab-internal.s3.amazonaws.com/_internal_directX12.zip',
+                url,
               ], similarMessageRegex: [
                 '\\d+.*\\d+.*\\d+.*\\d+.*\\d+.*\\d+.*\\d+:\\d+:\\d+:*\\d+.*\\d+.*\\d+.*\\d+.*\\d+.*'
-              ])
+              ]),
+              StartProcess(executable: 'tar', arguments: [
+                '-xf',
+                '$thisInstallationPath.zip',
+                '-C',
+                value,
+              ]),
             ];
           }
           startProcessesConda.value = [];
@@ -121,11 +140,68 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
       });
     }
 
-    onDownloadDone(int code) {
-      if (Platform.isWindows) {
-
+    selectInstallation() {
+      if (Platform.isLinux) {
+        selectFolder("Select the folder where you want to install DeepFaceLab",
+            "Validate", true);
+      } else if (Platform.isWindows) {
+        showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const SelectableText('Select your version'),
+            content: IntrinsicHeight(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _VersionUrl(
+                        label: "DeepFaceLab_DirectX12 (1.51Go)",
+                        url:
+                            "https://deepfacelab-internal.s3.amazonaws.com/_internal_directX12.zip"),
+                    _VersionUrl(
+                        label: "DeepFaceLab_NVIDIA_RTX3000 (5.16Go)",
+                        url:
+                            "https://deepfacelab-internal.s3.amazonaws.com/_internal_NVIDIA_RTX3000.zip"),
+                    _VersionUrl(
+                        label: "DeepFaceLab_NVIDIA_up_to_RTX2080Ti (2.89Go)",
+                        url:
+                            "https://deepfacelab-internal.s3.amazonaws.com/_internal_NVIDIA_up_to_RTX2080Ti.zip"),
+                  ]
+                      .map((versionUrl) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                selectFolder(
+                                    "Select the folder where you want to install DeepFaceLab",
+                                    "Validate",
+                                    true,
+                                    versionUrl.url);
+                              },
+                              icon: const SizedBox.shrink(),
+                              label: Text(versionUrl.label),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ),
+            ),
+            actionsAlignment: MainAxisAlignment.spaceBetween,
+          ),
+        );
       }
-      afterFolderSelected(installationPath.value ?? Platform.pathSeparator);
+    }
+
+    onDownloadDone(int code) async {
+      if (code == 0) {
+        if (Platform.isWindows) {
+          var fileZip = File("${installationPath.value}.zip");
+          if (fileZip.existsSync()) {
+            fileZip.deleteSync();
+          }
+        }
+        afterFolderSelected(installationPath.value ?? Platform.pathSeparator);
+      }
     }
 
     return hasRequirements == true
@@ -210,10 +286,7 @@ Or click on install for me and let DeepFaceLabClient try to download and install
                                     ElevatedButton.icon(
                                       onPressed: !loading.value
                                           ? () {
-                                              selectFolder(
-                                                  "Select the folder where you want to install DeepFaceLab",
-                                                  "Validate",
-                                                  true);
+                                              selectInstallation();
                                             }
                                           : null,
                                       icon: loading.value
