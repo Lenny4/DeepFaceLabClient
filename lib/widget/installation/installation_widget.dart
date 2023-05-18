@@ -34,6 +34,7 @@ class InstallationWidget extends HookWidget {
         useSelector<AppState, bool>((state) => state.hasRequirements);
     final storage = useSelector<AppState, Storage?>((state) => state.storage);
     var loading = useState<bool>(false);
+    var showInstallationMessage = useState<bool>(false);
     var installationPath = useState<String?>(null);
     var startProcesses = useState<List<StartProcess>>([]);
     var startProcessesConda = useState<List<StartProcessConda>>([]);
@@ -81,6 +82,7 @@ pip install -r $path/requirements-cuda.txt
       } else if (Platform.isWindows) {
         onInstallationDone(0);
       }
+      showInstallationMessage.value = false;
     }
 
     selectFolder(String title, String pickText, bool install,
@@ -98,6 +100,7 @@ pip install -r $path/requirements-cuda.txt
         }
         if (install) {
           loading.value = true;
+          showInstallationMessage.value = true;
           if (Platform.isLinux) {
             String thisInstallationPath =
                 "$value${Platform.pathSeparator}DeepFaceLab";
@@ -307,6 +310,11 @@ Or click on install for me and let DeepFaceLabClient try to download and install
                         selectable: true,
                         data:
                             """DeepFaceLab is installed here: `${storage?.deepFaceLabFolder}`"""),
+                if (showInstallationMessage.value)
+                  const MarkdownBody(
+                      selectable: true,
+                      data:
+                          """The installation may take up to 15min according to your computer"""),
                 if (startProcesses.value.isNotEmpty)
                   StartProcessWidget(
                     autoStart: true,
