@@ -301,6 +301,7 @@ when the installation is done you will need to restart your computer.
                               Container(
                                 margin: const EdgeInsets.only(top: 10.0),
                                 child: StartProcessWidget(
+                                  workspace: null,
                                   label: "Install for me",
                                   startProcesses: startProcesses.value,
                                   callback: onInstallationDone,

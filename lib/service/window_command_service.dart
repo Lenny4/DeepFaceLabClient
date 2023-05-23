@@ -13,7 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:slugify/slugify.dart';
 
 class Questions {
-  static String autoEnterQuestions = 'Press enter.*to override.*|Choose one of saved models.*|Use interactive merger.*';
+  static String autoEnterQuestions =
+      'Press enter.*to override.*|Choose one of saved models.*|Use interactive merger.*';
   static Question enterFps = Question(
       text: 'Enter FPS',
       question: 'Enter FPS',
@@ -589,6 +590,7 @@ class WindowCommandService {
     return [
       // region extract images
       WindowCommand(
+          workspace: workspace,
           windowTitle:
               '[${workspace?.name}] Extract image from data ${Source.replace}',
           title: 'Extract image from data ${Source.replace}',
@@ -612,6 +614,7 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
       // endregion
       // region extract faces
       WindowCommand(
+          workspace: workspace,
           windowTitle:
               '[${workspace?.name}] Extract face from data ${Source.replace} S3FD',
           title: 'Extract face from data ${Source.replace} S3FD',
@@ -636,6 +639,7 @@ python $deepFaceLabFolder/main.py extract \\
           ],
           similarMessageRegex: ['\\d+%\\|.*\\| \\d+\\/\\d+ \\[.*\\]']),
       WindowCommand(
+          workspace: workspace,
           windowTitle:
               '[${workspace?.name}] Extract face from data ${Source.replace} manual',
           title: 'Extract face from data ${Source.replace} manual',
@@ -663,6 +667,7 @@ python $deepFaceLabFolder/main.py extract \\
       // endregion
       // region XSeg
       WindowCommand(
+        workspace: workspace,
         windowTitle:
             '[${workspace?.name}] XSeg data ${Source.replace} mask edit',
         title: 'XSeg data ${Source.replace} mask edit',
@@ -679,6 +684,7 @@ python $deepFaceLabFolder/main.py xseg editor \\
         similarMessageRegex: [],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle:
             '[${workspace?.name}] XSeg data ${Source.replace} mask apply',
         title: 'XSeg data ${Source.replace} mask apply',
@@ -698,6 +704,7 @@ python $deepFaceLabFolder/main.py xseg apply \\
         similarMessageRegex: [],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle:
             '[${workspace?.name}] XSeg data ${Source.replace} mask fetch',
         title: 'XSeg data ${Source.replace} mask fetch',
@@ -714,6 +721,7 @@ python $deepFaceLabFolder/main.py xseg fetch \\
         similarMessageRegex: [],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle:
             '[${workspace?.name}] XSeg data ${Source.replace} mask remove',
         title: 'XSeg data ${Source.replace} mask remove',
@@ -730,6 +738,7 @@ python $deepFaceLabFolder/main.py xseg remove_labels \\
         similarMessageRegex: [],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] XSeg train ${Source.replace}',
         title: 'XSeg train ${Source.replace}',
         documentationLink:
@@ -758,6 +767,7 @@ python $deepFaceLabFolder/main.py train \\
         ],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle:
             '[${workspace?.name}] XSeg data ${Source.replace} trained mask remove',
         title: 'XSeg data ${Source.replace} trained mask remove',
@@ -777,6 +787,7 @@ python $deepFaceLabFolder/main.py xseg remove \\
       // endregion
       // region sort
       WindowCommand(
+          workspace: workspace,
           windowTitle: '[${workspace?.name}] Data ${Source.replace} sort',
           title: 'Data ${Source.replace} sort',
           documentationLink:
@@ -798,6 +809,7 @@ python $deepFaceLabFolder/main.py sort \\
       // endregion
       // region pack and unpack
       WindowCommand(
+          workspace: workspace,
           windowTitle: '[${workspace?.name}] Pack ${Source.replace}',
           title: 'Pack ${Source.replace}',
           documentationLink:
@@ -820,6 +832,7 @@ python $deepFaceLabFolder/main.py util \\
             'Deleting files.*\\d+.*',
           ]),
       WindowCommand(
+          workspace: workspace,
           windowTitle: '[${workspace?.name}] Unpack ${Source.replace}',
           title: 'Unpack ${Source.replace}',
           documentationLink:
@@ -839,6 +852,7 @@ python $deepFaceLabFolder/main.py util \\
       // endregion
       // region train
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] Train SAEHD',
         title: 'Train SAEHD',
         documentationLink:
@@ -896,6 +910,7 @@ python $deepFaceLabFolder/main.py train \\
         ],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] Train Quick96',
         title: 'Train Quick96',
         documentationLink:
@@ -923,6 +938,7 @@ python $deepFaceLabFolder/main.py train \\
       // endregion
       // region merge
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] Merge SAEHD',
         title: 'Merge SAEHD',
         documentationLink:
@@ -950,6 +966,7 @@ python $deepFaceLabFolder/main.py merge \\
         ],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] Merge Quick96',
         title: 'Merge Quick96',
         documentationLink:
@@ -979,6 +996,7 @@ python $deepFaceLabFolder/main.py merge \\
       // endregion
       // region to video
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] Create mp4',
         title: 'Create mp4',
         documentationLink:
@@ -1006,6 +1024,7 @@ python $deepFaceLabFolder/main.py videoed video-from-sequence \\
         ],
       ),
       WindowCommand(
+        workspace: workspace,
         windowTitle: '[${workspace?.name}] Create avi',
         title: 'Create avi',
         documentationLink:

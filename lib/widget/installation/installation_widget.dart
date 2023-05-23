@@ -317,6 +317,7 @@ Or click on install for me and let DeepFaceLabClient try to download and install
                           """The installation may take up to 15min according to your computer"""),
                 if (startProcesses.value.isNotEmpty)
                   StartProcessWidget(
+                    workspace: null,
                     autoStart: true,
                     height: 200,
                     closeIcon: true,
@@ -326,6 +327,7 @@ Or click on install for me and let DeepFaceLabClient try to download and install
                   ),
                 if (startProcessesConda.value.isNotEmpty)
                   StartProcessWidget(
+                    workspace: null,
                     autoStart: true,
                     height: 200,
                     closeIcon: true,

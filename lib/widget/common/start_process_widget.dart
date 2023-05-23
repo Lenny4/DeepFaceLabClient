@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:deepfacelab_client/class/start_process.dart';
+import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/process_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +20,7 @@ class StartProcessWidget extends HookWidget {
   final List<StartProcessConda>? startProcessesConda;
   final Function? callback;
   final ScrollController scrollController = ScrollController();
+  final Workspace? workspace;
 
   StartProcessWidget(
       {Key? key,
@@ -30,6 +32,7 @@ class StartProcessWidget extends HookWidget {
       this.startProcessesConda,
       this.usePrototypeItem,
       this.forceScrollDown,
+      required this.workspace,
       this.callback})
       : super(key: key);
 
@@ -69,9 +72,15 @@ class StartProcessWidget extends HookWidget {
             startProcesses![index].arguments);
       } else {
         String condaCommand =
-            """${await ProcessService().getCondaPrefix(outputs)} && \\
-      ${startProcessesConda![index].command}""";
-        process = await Process.start("bash", ['-c', condaCommand.trim()]);
+            """${await ProcessService().getCondaPrefix(workspace, ouputs: outputs)} && \\
+      ${startProcessesConda![index].command}""".trim();
+        if (Platform.isWindows) {
+          // todo powershell "echo 'ok'; echo 'test'"
+          process =
+              await Process.start("powershell", ['"$condaCommand"']);
+        } else {
+          process = await Process.start("bash", ['-c', condaCommand]);
+        }
       }
       if (startProcesses != null) {
         addOutput("\$ ${startProcesses![index]}");

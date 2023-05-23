@@ -22,6 +22,9 @@ WindowCommand _$WindowCommandFromJson(Map<String, dynamic> json) =>
       similarMessageRegex: (json['similarMessageRegex'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
+      workspace: json['workspace'] == null
+          ? null
+          : Workspace.fromJson(json['workspace'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$WindowCommandToJson(WindowCommand instance) =>
@@ -36,4 +39,5 @@ Map<String, dynamic> _$WindowCommandToJson(WindowCommand instance) =>
       'multipleSource': instance.multipleSource,
       'questions': instance.questions,
       'similarMessageRegex': instance.similarMessageRegex,
+      'workspace': instance.workspace,
     };

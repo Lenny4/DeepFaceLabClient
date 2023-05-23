@@ -62,6 +62,7 @@ class WindowCommand2Screen extends HookWidget {
             ? Scaffold(
                 body: SingleChildScrollView(
                 child: StartProcessWidget(
+                  workspace: windowCommand.workspace,
                   autoStart: true,
                   closeIcon: false,
                   usePrototypeItem: false,

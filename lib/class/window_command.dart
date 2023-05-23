@@ -1,4 +1,5 @@
 import 'package:deepfacelab_client/class/question.dart';
+import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'window_command.g.dart';
@@ -15,6 +16,7 @@ class WindowCommand {
   bool multipleSource;
   List<Question> questions;
   List<String> similarMessageRegex;
+  Workspace? workspace;
 
   WindowCommand({
     required this.windowTitle,
@@ -27,6 +29,7 @@ class WindowCommand {
     required this.multipleSource, // if command can be launch on src and dst (display src and dst buttons)
     required this.questions,
     required this.similarMessageRegex,
+    required this.workspace,
   });
 
   factory WindowCommand.fromJson(Map<String, dynamic> json) =>
