@@ -28,6 +28,12 @@ class ProcessService {
       setEnv = setEnv.replaceAll('SET WORKSPACE=%INTERNAL%\\..\\workspace',
           'SET WORKSPACE=${workspace.path}');
     }
+    if (ouputs != null) {
+      ouputs.value = [
+        ...ouputs.value,
+        setEnv
+      ];
+    }
     return setEnv;
   }
 

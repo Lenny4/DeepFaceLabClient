@@ -15,6 +15,14 @@ class PythonService {
         .readAsString());
   }
 
+  String getPythonExec([String? deepFaceLabFolder]) {
+    if (Platform.isWindows) {
+      deepFaceLabFolder ??= store.state.storage?.deepFaceLabFolder ?? Platform.pathSeparator;
+      return "$deepFaceLabFolder\\python-3.6.8\\python.exe";
+    }
+    return 'python';
+  }
+
   updateDevices(Workspace? workspace) async {
     if (store.state.devices != null ||
         store.state.hasRequirements != true ||
@@ -28,24 +36,24 @@ class PythonService {
     if (Platform.isWindows) {
       deepFaceLabFolder = deepFaceLabFolder.replaceAll("\\", "\\\\");
       pythonScript = (await _getPythonScript("getDevices.py"));
-      pythonScript = pythonScript
-          .replaceAll("%deepFaceLabFolder%", "$deepFaceLabFolder\\\\DeepFaceLab");
+      pythonScript = pythonScript.replaceAll(
+          "%deepFaceLabFolder%", "$deepFaceLabFolder\\\\DeepFaceLab");
     } else {
       pythonScript = (await _getPythonScript("getDevices.py"))
           .replaceAll('%deepFaceLabFolder%', deepFaceLabFolder);
     }
     ProcessResult result;
+    var pythonExec = getPythonExec(deepFaceLabFolder);
     if (Platform.isWindows) {
       // https://stackoverflow.com/a/35651859/6824121
-      result = await Process.run(
-          "$deepFaceLabFolder\\python-3.6.8\\python.exe",
+      result = await Process.run(pythonExec,
           ['-c', 'exec(r"""$pythonScript""")']);
     } else {
       // https://stackoverflow.com/a/2043499/6824121
       result = await Process.run("bash", [
         '-c',
         """$condaPrefix && \\
-      echo -e "$pythonScript" | python"""
+      echo -e "$pythonScript" | $pythonExec"""
       ]);
     }
     store.dispatch({

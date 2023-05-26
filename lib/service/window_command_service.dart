@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/deepfacelab_command_group.dart';
@@ -9,6 +11,7 @@ import 'package:deepfacelab_client/class/valid_answer_regex.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
+import 'package:deepfacelab_client/service/python_service.dart';
 import 'package:flutter/material.dart';
 import 'package:slugify/slugify.dart';
 
@@ -56,9 +59,9 @@ Choose png for the best image quality.""",
 - [11] one face in image: Sort by the number of faces in the original video frame image (ascending).
 - [12] absolute pixel difference: Sort by absolute difference.
 - [13] best faces: Sort by multiple methods (w/ blur) and remove similar faces.
-Select target number of face images to keep. Discarded faces moved to data_src/aligned_trash.
+Select target number of face images to keep. Discarded faces moved to data_src${Platform.pathSeparator}aligned_trash.
 - [14] best faces faster: Sort by multiple methods (w/ face rect size) and remove similar faces.
-Select target number of face images to keep. Discarded faces moved to data_src/aligned_trash.""",
+Select target number of face images to keep. Discarded faces moved to data_src${Platform.pathSeparator}aligned_trash.""",
     validAnswerRegex: [
       ValidAnswerRegex(
           regex: '^(0|1|2|3|4|5|6|7|8|9|10|11|12|13|14)\$',
@@ -587,6 +590,10 @@ class WindowCommandService {
 
   List<WindowCommand> getWindowCommands(
       {Workspace? workspace, String? deepFaceLabFolder}) {
+    var pythonExec = PythonService().getPythonExec(deepFaceLabFolder);
+    if(Platform.isWindows) {
+      deepFaceLabFolder = "${deepFaceLabFolder ?? ""}\\DeepFaceLab";
+    }
     return [
       // region extract images
       WindowCommand(
@@ -598,9 +605,9 @@ class WindowCommandService {
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-2-extract-source-frame-images-from-video",
           key: "${extractImageFromData}_${Source.replace}",
           command: """
-python $deepFaceLabFolder/main.py videoed extract-video \\
---input-file "${workspace?.path}/data_${Source.replace}.*" \\
---output-dir "${workspace?.path}/data_${Source.replace}"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py videoed extract-video \\
+--input-file "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}.*" \\
+--output-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}"
             """,
           loading: false,
           multipleSource: true,
@@ -622,9 +629,9 @@ python $deepFaceLabFolder/main.py videoed extract-video \\
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-extract-source-faceset",
           key: "${WindowCommandService.dataExtractFacesS3FD}_${Source.replace}",
           command: """
-python $deepFaceLabFolder/main.py extract \\
---input-dir "${workspace?.path}/data_${Source.replace}" \\
---output-dir "${workspace?.path}/data_${Source.replace}/aligned" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py extract \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}" \\
+--output-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned" \\
 --detector s3fd
             """,
           loading: false,
@@ -648,9 +655,9 @@ python $deepFaceLabFolder/main.py extract \\
           key:
               "${WindowCommandService.dataExtractFacesManual}_${Source.replace}",
           command: """
-python $deepFaceLabFolder/main.py extract \\
---input-dir "${workspace?.path}/data_${Source.replace}" \\
---output-dir "${workspace?.path}/data_${Source.replace}/aligned" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py extract \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}" \\
+--output-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned" \\
 --detector manual
             """,
           loading: false,
@@ -675,8 +682,8 @@ python $deepFaceLabFolder/main.py extract \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
         key: "${WindowCommandService.xsegDataMaskEdit}_${Source.replace}",
         command: """
-python $deepFaceLabFolder/main.py xseg editor \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py xseg editor \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned"
             """,
         loading: false,
         multipleSource: true,
@@ -692,9 +699,9 @@ python $deepFaceLabFolder/main.py xseg editor \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
         key: "${WindowCommandService.xsegDataMaskApply}_${Source.replace}",
         command: """
-python $deepFaceLabFolder/main.py xseg apply \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned" \\
---model-dir "${workspace?.path}/model"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py xseg apply \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned" \\
+--model-dir "${workspace?.path}${Platform.pathSeparator}model"
             """,
         loading: false,
         multipleSource: true,
@@ -712,8 +719,8 @@ python $deepFaceLabFolder/main.py xseg apply \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
         key: "${WindowCommandService.xsegDataMaskFetch}_${Source.replace}",
         command: """
-python $deepFaceLabFolder/main.py xseg fetch \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py xseg fetch \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned"
             """,
         loading: false,
         multipleSource: true,
@@ -729,8 +736,8 @@ python $deepFaceLabFolder/main.py xseg fetch \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-3-xseg-mask-labeling-xseg-model-training",
         key: "${WindowCommandService.xsegDataMaskRemove}_${Source.replace}",
         command: """
-python $deepFaceLabFolder/main.py xseg remove_labels \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py xseg remove_labels \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned"
             """,
         loading: false,
         multipleSource: true,
@@ -745,10 +752,10 @@ python $deepFaceLabFolder/main.py xseg remove_labels \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#xseg-model-training",
         key: "${WindowCommandService.xsegTrain}_${Source.replace}",
         command: """
-python $deepFaceLabFolder/main.py train \\
---training-data-src-dir "${workspace?.path}/data_src/aligned" \\
---training-data-dst-dir "${workspace?.path}/data_dst/aligned" \\
---model-dir "${workspace?.path}/model" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py train \\
+--training-data-src-dir "${workspace?.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned" \\
+--training-data-dst-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned" \\
+--model-dir "${workspace?.path}${Platform.pathSeparator}model" \\
 --model XSeg
             """,
         loading: false,
@@ -776,8 +783,8 @@ python $deepFaceLabFolder/main.py train \\
         key:
             "${WindowCommandService.xsegDataTrainedMaskRemove}_${Source.replace}",
         command: """
-python $deepFaceLabFolder/main.py xseg remove \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py xseg remove \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned"
             """,
         loading: false,
         multipleSource: true,
@@ -794,8 +801,8 @@ python $deepFaceLabFolder/main.py xseg remove \\
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-4-2-source-faceset-sortin-cleanup",
           key: "${WindowCommandService.dataSort}_${Source.replace}",
           command: """
-python $deepFaceLabFolder/main.py sort \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned"
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py sort \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned"
             """,
           loading: false,
           multipleSource: true,
@@ -816,8 +823,8 @@ python $deepFaceLabFolder/main.py sort \\
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-2-destination-faceset-sorting-cleanup-re-extraction",
           key: "${WindowCommandService.facesetPack}_${Source.replace}",
           command: """
-python $deepFaceLabFolder/main.py util \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py util \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned" \\
 --pack-faceset
             """,
           loading: false,
@@ -839,8 +846,8 @@ python $deepFaceLabFolder/main.py util \\
               "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-5-2-destination-faceset-sorting-cleanup-re-extraction",
           key: "${WindowCommandService.facesetUnpack}_${Source.replace}",
           command: """
-python $deepFaceLabFolder/main.py util \\
---input-dir "${workspace?.path}/data_${Source.replace}/aligned" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py util \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_${Source.replace}${Platform.pathSeparator}aligned" \\
 --unpack-faceset
             """,
           loading: false,
@@ -859,10 +866,10 @@ python $deepFaceLabFolder/main.py util \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-6-deepfake-model-training",
         key: WindowCommandService.trainSaehd,
         command: """
-python $deepFaceLabFolder/main.py train \\
---training-data-src-dir "${workspace?.path}/data_src/aligned" \\
---training-data-dst-dir "${workspace?.path}/data_dst/aligned" \\
---model-dir "${workspace?.path}/model" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py train \\
+--training-data-src-dir "${workspace?.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned" \\
+--training-data-dst-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned" \\
+--model-dir "${workspace?.path}${Platform.pathSeparator}model" \\
 --model SAEHD""",
         loading: false,
         multipleSource: false,
@@ -917,10 +924,10 @@ python $deepFaceLabFolder/main.py train \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-6-deepfake-model-training",
         key: WindowCommandService.trainQuick96,
         command: """
-python $deepFaceLabFolder/main.py train \\
---training-data-src-dir "${workspace?.path}/data_src/aligned" \\
---training-data-dst-dir "${workspace?.path}/data_dst/aligned" \\
---model-dir "${workspace?.path}/model" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py train \\
+--training-data-src-dir "${workspace?.path}${Platform.pathSeparator}data_src${Platform.pathSeparator}aligned" \\
+--training-data-dst-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned" \\
+--model-dir "${workspace?.path}${Platform.pathSeparator}model" \\
 --model Quick96""",
         loading: false,
         multipleSource: false,
@@ -945,12 +952,12 @@ python $deepFaceLabFolder/main.py train \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-7-merge-deepfake-model-to-frame-images",
         key: WindowCommandService.mergeSaehd,
         command: """
-python $deepFaceLabFolder/main.py merge \\
---input-dir "${workspace?.path}/data_dst" \\
---output-dir "${workspace?.path}/data_dst/merged" \\
---output-mask-dir "${workspace?.path}/data_dst/merged_mask" \\
---aligned-dir "${workspace?.path}/data_dst/aligned" \\
---model-dir "${workspace?.path}/model" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py merge \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_dst" \\
+--output-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged" \\
+--output-mask-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged_mask" \\
+--aligned-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned" \\
+--model-dir "${workspace?.path}${Platform.pathSeparator}model" \\
 --model SAEHD""",
         loading: false,
         multipleSource: false,
@@ -973,12 +980,12 @@ python $deepFaceLabFolder/main.py merge \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-7-merge-deepfake-model-to-frame-images",
         key: WindowCommandService.mergeQuick96,
         command: """
-python $deepFaceLabFolder/main.py merge \\
---input-dir "${workspace?.path}/data_dst" \\
---output-dir "${workspace?.path}/data_dst/merged" \\
---output-mask-dir "${workspace?.path}/data_dst/merged_mask" \\
---aligned-dir "${workspace?.path}/data_dst/aligned" \\
---model-dir "${workspace?.path}/model" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py merge \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_dst" \\
+--output-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged" \\
+--output-mask-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged_mask" \\
+--aligned-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}aligned" \\
+--model-dir "${workspace?.path}${Platform.pathSeparator}model" \\
 --model Quick96""",
         loading: false,
         multipleSource: false,
@@ -1003,16 +1010,16 @@ python $deepFaceLabFolder/main.py merge \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-8-merge-frame-images-to-video",
         key: WindowCommandService.mergeMp4,
         command: """
-python $deepFaceLabFolder/main.py videoed video-from-sequence \\
---input-dir "${workspace?.path}/data_dst/merged" \\
---output-file "${workspace?.path}/result.mp4" \\
---reference-file "${workspace?.path}/data_dst.*" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged" \\
+--output-file "${workspace?.path}${Platform.pathSeparator}result.mp4" \\
+--reference-file "${workspace?.path}${Platform.pathSeparator}data_dst.*" \\
 --include-audio
 
-python $deepFaceLabFolder/main.py videoed video-from-sequence \\
---input-dir "${workspace?.path}/data_dst/merged_mask" \\
---output-file "${workspace?.path}/result_mask.mp4" \\
---reference-file "${workspace?.path}/data_dst.*" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged_mask" \\
+--output-file "${workspace?.path}${Platform.pathSeparator}result_mask.mp4" \\
+--reference-file "${workspace?.path}${Platform.pathSeparator}data_dst.*" \\
 --lossless""",
         loading: false,
         multipleSource: false,
@@ -1031,16 +1038,16 @@ python $deepFaceLabFolder/main.py videoed video-from-sequence \\
             "https://www.deepfakevfx.com/guides/deepfacelab-2-0-guide/#step-8-merge-frame-images-to-video",
         key: WindowCommandService.mergeAvi,
         command: """
-python $deepFaceLabFolder/main.py videoed video-from-sequence \\
---input-dir "${workspace?.path}/data_dst/merged" \\
---output-file "${workspace?.path}/result.avi" \\
---reference-file "${workspace?.path}/data_dst.*" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged" \\
+--output-file "${workspace?.path}${Platform.pathSeparator}result.avi" \\
+--reference-file "${workspace?.path}${Platform.pathSeparator}data_dst.*" \\
 --include-audio
 
-python $deepFaceLabFolder/main.py videoed video-from-sequence \\
---input-dir "${workspace?.path}/data_dst/merged_mask" \\
---output-file "${workspace?.path}/result_mask.avi" \\
---reference-file "${workspace?.path}/data_dst.*" \\
+$pythonExec $deepFaceLabFolder${Platform.pathSeparator}main.py videoed video-from-sequence \\
+--input-dir "${workspace?.path}${Platform.pathSeparator}data_dst${Platform.pathSeparator}merged_mask" \\
+--output-file "${workspace?.path}${Platform.pathSeparator}result_mask.avi" \\
+--reference-file "${workspace?.path}${Platform.pathSeparator}data_dst.*" \\
 --lossless""",
         loading: false,
         multipleSource: false,

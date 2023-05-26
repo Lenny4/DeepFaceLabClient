@@ -688,15 +688,19 @@ class FileManagerWidget extends HookWidget {
         if (fileSystemEntities.value![index].directory == true) {
           changeDirectory(index);
         } else {
-          String executable = 'xdg-open';
           if (Platform.isWindows) {
-            executable = 'start';
+            Process.run('start', [
+              folderPath.value +
+                  Platform.pathSeparator +
+                  fileSystemEntities.value![index].filename
+            ], runInShell: true);
+          } else {
+            Process.run('xdg-open', [
+              folderPath.value +
+                  Platform.pathSeparator +
+                  fileSystemEntities.value![index].filename
+            ]);
           }
-          Process.run(executable, [
-            folderPath.value +
-                Platform.pathSeparator +
-                fileSystemEntities.value![index].filename
-          ]);
         }
         return;
       }
