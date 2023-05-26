@@ -26,10 +26,10 @@ class PythonService {
         store.state.storage?.deepFaceLabFolder ?? Platform.pathSeparator;
     String pythonScript = "";
     if (Platform.isWindows) {
-      deepFaceLabFolder = "$deepFaceLabFolder\\DeepFaceLab".replaceAll("\\", "\\\\");
+      deepFaceLabFolder = deepFaceLabFolder.replaceAll("\\", "\\\\");
       pythonScript = (await _getPythonScript("getDevices.py"));
       pythonScript = pythonScript
-          .replaceAll("%deepFaceLabFolder%", deepFaceLabFolder);
+          .replaceAll("%deepFaceLabFolder%", "$deepFaceLabFolder\\\\DeepFaceLab");
     } else {
       pythonScript = (await _getPythonScript("getDevices.py"))
           .replaceAll('%deepFaceLabFolder%', deepFaceLabFolder);
@@ -38,7 +38,7 @@ class PythonService {
     if (Platform.isWindows) {
       // https://stackoverflow.com/a/35651859/6824121
       result = await Process.run(
-          "C:\\Users\\alexa\\Downloads\\_internal\\python-3.6.8\\python.exe",
+          "$deepFaceLabFolder\\python-3.6.8\\python.exe",
           ['-c', 'exec(r"""$pythonScript""")']);
     } else {
       // https://stackoverflow.com/a/2043499/6824121
