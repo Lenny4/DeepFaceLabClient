@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/conda_env_list.dart';
@@ -9,36 +10,72 @@ import 'package:flutter/cupertino.dart';
 
 class ProcessService {
   Future<String> getCondaPrefix(Workspace? workspace,
-      {ValueNotifier<List<String>>? ouputs}) async {
+      {ValueNotifier<List<String>>? outputs}) async {
     if (Platform.isWindows) {
-      return _getCondaPrefixWindows(ouputs: ouputs, workspace: workspace);
+      return _getCondaPrefixWindows(outputs: outputs, workspace: workspace);
     }
-    return _getCondaPrefixLinux(ouputs: ouputs, workspace: workspace);
+    return _getCondaPrefixLinux(outputs: outputs, workspace: workspace);
+  }
+
+  Future<Map<String, String>> getCondaEnvironment(Workspace? workspace,
+      {ValueNotifier<List<String>>? outputs}) async {
+    String condaCommand =
+        (await getCondaPrefix(workspace, outputs: outputs)).trim();
+    var r = Random();
+    const chars =
+        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+    var filePath =
+        "${Platform.pathSeparator}ProgramData${Platform.pathSeparator}DeepFaceLabClient${Platform.pathSeparator}${List.generate(15, (index) => chars[r.nextInt(chars.length)]).join()}.bat";
+    File file = await File(filePath).create(recursive: true);
+    await file.writeAsString("""@echo off
+$condaCommand""");
+    var envVars = (await Process.run(filePath, [], runInShell: true))
+        .stdout
+        .toString()
+        .split("\r\n")
+        .map((e) => e.replaceAll(" ", ""))
+        .where((element) => element != "")
+        .toList();
+    await file.delete();
+    Map<String, String> result = {};
+    for (var envVar in envVars) {
+      var envVarSplit = envVar.split("=");
+      result[envVarSplit[0]] = envVarSplit[1];
+    }
+    return result;
   }
 
   Future<String> _getCondaPrefixWindows(
-      {ValueNotifier<List<String>>? ouputs, Workspace? workspace}) async {
+      {ValueNotifier<List<String>>? outputs, Workspace? workspace}) async {
     var setEnv = File("${store.state.storage?.deepFaceLabFolder}/setenv.bat")
         .readAsStringSync()
         .replaceAll('SET INTERNAL=%~dp0',
-        'SET INTERNAL=${store.state.storage?.deepFaceLabFolder}')
-        .replaceAll('SET INTERNAL=%INTERNAL:~0,-1%\n',
-        '');
+            'SET INTERNAL=${store.state.storage?.deepFaceLabFolder}')
+        .replaceAll('SET INTERNAL=%INTERNAL:~0,-1%', '');
     if (workspace != null) {
       setEnv = setEnv.replaceAll('SET WORKSPACE=%INTERNAL%\\..\\workspace',
           'SET WORKSPACE=${workspace.path}');
     }
-    if (ouputs != null) {
-      ouputs.value = [
-        ...ouputs.value,
-        setEnv
-      ];
+    var envArr = setEnv
+        .split("\r\n")
+        .where((element) => element.trim() != '' && !element.startsWith('rem'))
+        .toList();
+    if (outputs != null) {
+      outputs.value = [...outputs.value, envArr.join('\n')];
     }
-    return setEnv;
+    int envArrLength = envArr.length;
+    for (var i = 0; i < envArrLength; i++) {
+      String? match = RegExp(r'SET .*=').firstMatch(envArr[i])?.group(0);
+      if (match != null) {
+        match = match.replaceAll("SET ", "").replaceAll("=", "");
+        envArr.add("echo $match=%$match%");
+      }
+    }
+    return envArr.join('\n');
   }
 
   Future<String> _getCondaPrefixLinux(
-      {ValueNotifier<List<String>>? ouputs, Workspace? workspace}) async {
+      {ValueNotifier<List<String>>? outputs, Workspace? workspace}) async {
     String condaInit =
         (await Process.run('conda', ['init', '--verbose', '-d'])).stdout;
     String? match = RegExp(r'initialize[\s\S]*?initialize', multiLine: true)
@@ -63,11 +100,11 @@ class ProcessService {
     // https://stackoverflow.com/questions/59343470/type-dynamic-dynamic-is-not-a-subtype-of-type-dynamic-bool-of-tes
     // https://stackoverflow.com/questions/52354195/list-firstwhere-bad-state-no-element
     if (condaEnvList.envs.firstWhere((env) => env.contains(condaEnvName),
-        orElse: () => "") ==
+            orElse: () => "") ==
         "") {
-      if (ouputs != null) {
-        ouputs.value = [
-          ...ouputs.value,
+      if (outputs != null) {
+        outputs.value = [
+          ...outputs.value,
           'conda create -n $condaEnvName -c main python=$pythonVersion cudnn=$cudnnVersion cudatoolkit=$cudatoolkitVersion'
         ];
       }
@@ -84,8 +121,8 @@ class ProcessService {
     }
     String result =
         "${results?.join("\n") ?? ""}\nconda activate $condaEnvName";
-    if (ouputs != null) {
-      ouputs.value = [...ouputs.value, result];
+    if (outputs != null) {
+      outputs.value = [...outputs.value, result];
     }
     return result.trim();
   }

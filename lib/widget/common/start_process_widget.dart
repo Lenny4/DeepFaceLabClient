@@ -71,15 +71,19 @@ class StartProcessWidget extends HookWidget {
         process = await Process.start(startProcesses![index].executable,
             startProcesses![index].arguments);
       } else {
-        String condaCommand =
-            """${await ProcessService().getCondaPrefix(workspace, ouputs: outputs)} && \\
-      ${startProcessesConda![index].command}"""
-                .trim();
+        var thisCommand =
+            startProcessesConda![index].command.replaceAll('\\\n', '').trim();
         if (Platform.isWindows) {
           // https://stackoverflow.com/questions/60821479/dartio-process-how-to-run-cmd-start-on-windows
-          process = await Process.start(condaCommand, [], runInShell: true);
+          process = await Process.start(thisCommand, [],
+              environment: await ProcessService()
+                  .getCondaEnvironment(workspace, outputs: outputs));
         } else {
-          process = await Process.start("bash", ['-c', condaCommand]);
+          process = await Process.start("bash", [
+            '-c',
+            """${(await ProcessService().getCondaPrefix(workspace, outputs: outputs)).trim()}  && \\
+$thisCommand"""
+          ]);
         }
       }
       if (startProcesses != null) {
