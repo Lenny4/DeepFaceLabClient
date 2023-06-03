@@ -21,7 +21,10 @@ class CheckboxFormField extends FormField<bool> {
                 contentPadding: contentPadding ?? const EdgeInsets.all(0.0),
                 title: title,
                 value: state.value,
-                onChanged: onChanged,
+                onChanged: (value) {
+                  state.didChange(value);
+                  onChanged!(value);
+                },
                 subtitle: state.hasError
                     ? Builder(
                         builder: (BuildContext context) => Text(

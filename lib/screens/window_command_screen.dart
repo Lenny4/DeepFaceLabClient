@@ -85,10 +85,19 @@ class WindowCommand2Screen extends HookWidget {
                               ?.answer;
                         })
                   ],
-                  // callback: (int code) {
-                  //   // todo
-                  //   print(code);
-                  // },
+                  callback: (int code) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      showCloseIcon: true,
+                      backgroundColor: Theme.of(context).colorScheme.background,
+                      content: SelectableText(
+                        code == 0
+                            ? 'Command finished with success'
+                            : 'Command exit with error code $code',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      duration: const Duration(days: 1),
+                    ));
+                  },
                 ),
               ))
             : const Scaffold(body: LoadingScreen()));

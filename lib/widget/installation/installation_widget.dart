@@ -46,8 +46,8 @@ class InstallationWidget extends HookWidget {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           showCloseIcon: true,
           backgroundColor: Theme.of(context).colorScheme.background,
-          content: Row(
-            children: const [
+          content: const Row(
+            children: [
               SelectableText(
                 'An error occurred while installing DeepFaceLab.',
                 style: TextStyle(color: Colors.white),

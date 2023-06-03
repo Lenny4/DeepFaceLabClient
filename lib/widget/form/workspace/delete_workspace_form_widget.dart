@@ -54,6 +54,8 @@ class DeleteWorkspaceFormWidget extends HookWidget {
                                 data:
                                     "Delete the workspace folder on my computer"),
                             initialValue: deleteFolder.value,
+                            onChanged: (bool? value) =>
+                                deleteFolder.value = (value ?? true),
                             onSaved: (bool? value) =>
                                 deleteFolder.value = (value ?? true),
                           )

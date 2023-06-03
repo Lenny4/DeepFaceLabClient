@@ -421,7 +421,8 @@ class FileManagerWidget extends HookWidget {
       await Clipboard.setData(ClipboardData(
           text: fileSystemEntities.value
                   ?.where((element) => element.selected != null)
-                  .map((e) => "${folderPath.value}/${e.filename}")
+                  .map((e) =>
+                      "${folderPath.value}${Platform.pathSeparator}${e.filename}")
                   .join('\n') ??
               ""));
     }
@@ -689,11 +690,14 @@ class FileManagerWidget extends HookWidget {
           changeDirectory(index);
         } else {
           if (Platform.isWindows) {
-            Process.run('start', [
-              folderPath.value +
-                  Platform.pathSeparator +
-                  fileSystemEntities.value![index].filename
-            ], runInShell: true);
+            Process.run(
+                'start',
+                [
+                  folderPath.value +
+                      Platform.pathSeparator +
+                      fileSystemEntities.value![index].filename
+                ],
+                runInShell: true);
           } else {
             Process.run('xdg-open', [
               folderPath.value +
@@ -934,9 +938,9 @@ class FileManagerWidget extends HookWidget {
                                                           : fileSystemEntities
                                                                   .value![index]
                                                                   .image
-                                                              ? Image.asset(
-                                                                  height: 70,
-                                                                  ("${folderPath.value}/${fileSystemEntities.value![index].filename}"))
+                                                              ? Image.file(
+                                                                  File("${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index].filename}"),
+                                                                  height: 70)
                                                               : const Icon(
                                                                   Icons
                                                                       .file_open,
