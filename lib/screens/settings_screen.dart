@@ -15,11 +15,12 @@ class SettingsScreen extends HookWidget {
       body: SingleChildScrollView(
         child: Container(
             margin: const EdgeInsets.all(10.0),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: const [
                 SelectThemeWidget(),
                 OpenIssueWidget(),
+                // todo allow to change deepfacelab install folder
               ],
             )),
       ),
