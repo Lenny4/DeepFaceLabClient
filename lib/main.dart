@@ -30,17 +30,17 @@ void main(List<String> args) {
       store: store,
       windowCommand: windowCommand,
     ));
-  } else {
-    store.onChange.listen((AppState appState) {
-      if (appState.init == true && appState.storage != null) {
-        LocaleStorageService().writeStorage(appState.storage!.toJson());
-      }
-    });
-
-    runApp(MyApp(
-      store: store,
-    ));
+    return;
   }
+  store.onChange.listen((AppState appState) {
+    if (appState.init == true && appState.storage != null) {
+      LocaleStorageService().writeStorage(appState.storage!.toJson());
+    }
+  });
+
+  runApp(MyApp(
+    store: store,
+  ));
 }
 
 class MyApp extends HookWidget {

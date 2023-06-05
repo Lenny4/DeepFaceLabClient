@@ -208,135 +208,150 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
     }
 
     return hasRequirements == true
-        ? Container(
-            margin: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const MarkdownBody(
-                    selectable: true, data: """# Installation"""),
-                storage?.deepFaceLabFolder == null
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SelectableText.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "We did not find ",
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color,
-                                  ),
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const MarkdownBody(selectable: true, data: """# Installation"""),
+              storage?.deepFaceLabFolder == null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SelectableText.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "We did not find ",
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color,
                                 ),
-                                TextSpan(
-                                  text: ' DeepFaceLab',
-                                  style: const TextStyle(color: Colors.blue),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      launchUrl(
-                                          Uri.parse(
-                                              'https://github.com/iperov/DeepFaceLab'),
-                                          mode: LaunchMode.platformDefault);
-                                    },
-                                ),
-                                TextSpan(
-                                  text: " on your computer.",
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 10.0),
-                            child: Row(
-                              children: [
-                                const MarkdownBody(selectable: true, data: """
-Please download it and specify where it is with the folder icon.
-                                          """),
-                                IconButton(
-                                  icon: const Icon(Icons.folder),
-                                  splashRadius: 20,
-                                  onPressed: () {
-                                    selectFolder(
-                                        Platform.isLinux
-                                            ? "Select you DeepFaceLab folder (it should contains a main.py file)"
-                                            : "Select you DeepFaceLab folder (it should be named _internal)",
-                                        "Validate",
-                                        false);
+                              ),
+                              TextSpan(
+                                text: ' DeepFaceLab',
+                                style: const TextStyle(color: Colors.blue),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launchUrl(
+                                        Uri.parse(
+                                            'https://github.com/iperov/DeepFaceLab'),
+                                        mode: LaunchMode.platformDefault);
                                   },
+                              ),
+                              TextSpan(
+                                text: " on your computer.",
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 10.0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    const MarkdownBody(
-                                        selectable: true, data: """
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 10.0),
+                          child: Row(
+                            children: [
+                              const MarkdownBody(selectable: true, data: """
+Please download it and specify where it is with the folder icon.
+                                      """),
+                              _SelectDeepfacelabFolderWidget(
+                                  selectFolder: selectFolder),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 10.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const MarkdownBody(selectable: true, data: """
 Or click on install for me and let DeepFaceLabClient try to download and install DeepFaceLab
-                                              """),
-                                    ElevatedButton.icon(
-                                      onPressed: !loading.value
-                                          ? () {
-                                              selectInstallation();
-                                            }
-                                          : null,
-                                      icon: loading.value
-                                          ? const CircularProgressIndicator(
-                                              color: Colors.white,
-                                            )
-                                          : const SizedBox.shrink(),
-                                      label: const Text('Install for me'),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                          """),
+                                  ElevatedButton.icon(
+                                    onPressed: !loading.value
+                                        ? () {
+                                            selectInstallation();
+                                          }
+                                        : null,
+                                    icon: loading.value
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white,
+                                          )
+                                        : const SizedBox.shrink(),
+                                    label: const Text('Install for me'),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      )
-                    : MarkdownBody(
-                        selectable: true,
-                        data:
-                            """DeepFaceLab is installed here: `${storage?.deepFaceLabFolder}`"""),
-                if (showInstallationMessage.value)
-                  const MarkdownBody(
-                      selectable: true,
-                      data:
-                          """The installation may take up to 15min according to your computer"""),
-                if (startProcesses.value.isNotEmpty)
-                  StartProcessWidget(
-                    workspace: null,
-                    autoStart: true,
-                    height: 200,
-                    closeIcon: true,
-                    usePrototypeItem: false,
-                    startProcesses: startProcesses.value,
-                    callback: onDownloadDone,
-                  ),
-                if (startProcessesConda.value.isNotEmpty)
-                  StartProcessWidget(
-                    workspace: null,
-                    autoStart: true,
-                    height: 200,
-                    closeIcon: true,
-                    usePrototypeItem: false,
-                    startProcessesConda: startProcessesConda.value,
-                    callback: onInstallationDone,
-                  ),
-              ],
-            ))
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        MarkdownBody(
+                            selectable: true,
+                            data:
+                                """DeepFaceLab is installed here: `${storage?.deepFaceLabFolder}`"""),
+                        _SelectDeepfacelabFolderWidget(
+                            selectFolder: selectFolder),
+                      ],
+                    ),
+              if (showInstallationMessage.value)
+                const MarkdownBody(
+                    selectable: true,
+                    data:
+                        """The installation may take up to 15min according to your computer"""),
+              if (startProcesses.value.isNotEmpty)
+                StartProcessWidget(
+                  workspace: null,
+                  autoStart: true,
+                  height: 200,
+                  closeIcon: true,
+                  usePrototypeItem: false,
+                  startProcesses: startProcesses.value,
+                  callback: onDownloadDone,
+                ),
+              if (startProcessesConda.value.isNotEmpty)
+                StartProcessWidget(
+                  workspace: null,
+                  autoStart: true,
+                  height: 200,
+                  closeIcon: true,
+                  usePrototypeItem: false,
+                  startProcessesConda: startProcessesConda.value,
+                  callback: onInstallationDone,
+                ),
+            ],
+          )
         : const SizedBox.shrink();
+  }
+}
+
+class _SelectDeepfacelabFolderWidget extends HookWidget {
+  final Function selectFolder;
+
+  const _SelectDeepfacelabFolderWidget({Key? key, required this.selectFolder})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.folder),
+      splashRadius: 20,
+      onPressed: () {
+        selectFolder(
+            Platform.isLinux
+                ? "Select you DeepFaceLab folder (it should contains a main.py file)"
+                : "Select you DeepFaceLab folder (it should be named _internal)",
+            "Validate",
+            false);
+      },
+    );
   }
 }

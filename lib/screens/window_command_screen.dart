@@ -59,47 +59,74 @@ class WindowCommand2Screen extends HookWidget {
         theme: darkMode != false ? ThemeData.dark() : ThemeData.light(),
         themeMode: darkMode != false ? ThemeMode.dark : ThemeMode.light,
         home: init == true
-            ? Scaffold(
-                body: SingleChildScrollView(
-                child: StartProcessWidget(
-                  workspace: windowCommand.workspace,
-                  autoStart: true,
-                  closeIcon: false,
-                  usePrototypeItem: false,
-                  forceScrollDown: true,
-                  startProcessesConda: [
-                    StartProcessConda(
-                        command: windowCommand.command,
-                        similarMessageRegex: windowCommand.similarMessageRegex,
-                        getAnswer: (String questionString) {
-                          String regex = Questions.autoEnterQuestions;
-                          String? match = RegExp(r'' '$regex' '')
-                              .firstMatch(questionString)
-                              ?.group(0);
-                          if (match != null) {
-                            return "\n";
-                          }
-                          return windowCommand.questions
-                              .firstWhereOrNull((question) =>
-                                  questionString.contains(question.question))
-                              ?.answer;
-                        })
-                  ],
-                  callback: (int code) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      showCloseIcon: true,
-                      backgroundColor: Theme.of(context).colorScheme.background,
-                      content: SelectableText(
-                        code == 0
-                            ? 'Command finished with success'
-                            : 'Command exit with error code $code',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      duration: const Duration(days: 1),
-                    ));
-                  },
-                ),
-              ))
+            ? WindowCommand3Screen(windowCommand: windowCommand)
             : const Scaffold(body: LoadingScreen()));
+  }
+}
+
+class WindowCommand3Screen extends HookWidget {
+  final WindowCommand windowCommand;
+
+  const WindowCommand3Screen({Key? key, required this.windowCommand})
+      : super(key: key);
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    final dispatch = useDispatch<AppState>();
+
+    initWidget() async {
+      dispatch({
+        'init': true,
+        'storage': Storage.fromJson(await LocaleStorageService().readStorage()),
+      });
+    }
+
+    useEffect(() {
+      initWidget();
+      return null;
+    }, []);
+
+    return Scaffold(
+        body: SingleChildScrollView(
+      child: StartProcessWidget(
+        workspace: windowCommand.workspace,
+        autoStart: true,
+        closeIcon: false,
+        usePrototypeItem: false,
+        forceScrollDown: true,
+        startProcessesConda: [
+          StartProcessConda(
+              command: windowCommand.command,
+              similarMessageRegex: windowCommand.similarMessageRegex,
+              getAnswer: (String questionString) {
+                String regex = Questions.autoEnterQuestions;
+                String? match = RegExp(r'' '$regex' '')
+                    .firstMatch(questionString)
+                    ?.group(0);
+                if (match != null) {
+                  return "\n";
+                }
+                return windowCommand.questions
+                    .firstWhereOrNull((question) =>
+                        questionString.contains(question.question))
+                    ?.answer;
+              })
+        ],
+        callback: (int code) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            showCloseIcon: true,
+            backgroundColor: Theme.of(context).colorScheme.background,
+            content: SelectableText(
+              code == 0
+                  ? 'Command finished with success'
+                  : 'Command exit with error code $code',
+              style: const TextStyle(color: Colors.white),
+            ),
+            duration: const Duration(days: 1),
+          ));
+        },
+      ),
+    ));
   }
 }

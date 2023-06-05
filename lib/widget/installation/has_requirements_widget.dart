@@ -18,7 +18,8 @@ class HasRequirementsWidget extends HookWidget {
       if (Platform.isWindows) ...[
         const RequirementWindowsWidget(),
       ],
-      InstallationWidget(),
+      Container(
+          margin: const EdgeInsets.all(10.0), child: InstallationWidget()),
     ]);
   }
 }
