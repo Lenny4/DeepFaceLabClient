@@ -8,7 +8,7 @@ jobs:
   linux-ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
       - uses: mikefarah/yq@master
