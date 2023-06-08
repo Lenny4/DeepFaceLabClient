@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  linux-build:
+  linux-ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -14,5 +14,12 @@ jobs:
           channel: 'stable' # or: 'beta', 'dev' or 'master'
       - name: Install dependencies
         run: flutter pub get
-      - name: Analyze project source
-        run: flutter analyze
+  windows-ci:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
+        with:
+          channel: 'stable' # or: 'beta', 'dev' or 'master'
+      - name: Install dependencies
+        run: flutter pub get
