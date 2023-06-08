@@ -1,0 +1,21 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build release
+        run: |
+          flutter build linux --release
+#      - uses: ncipollo/release-action@v1
+#        with:
+#          artifacts: "release.tar.gz,foo/*.txt"
+
