@@ -1,0 +1,18 @@
+name: Create tag
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  linux-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
+      - uses: salsify/action-detect-and-tag-new-version@v2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
+        with:
+          version-command: |
+            yq '.version' pubspec.yaml
+
