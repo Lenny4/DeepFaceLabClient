@@ -7,7 +7,7 @@ on:
 jobs:
   linux-ci:
     runs-on: ubuntu-latest
-    steps:
+    steps: &steps-ci
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
         with:
@@ -17,9 +17,4 @@ jobs:
   windows-ci:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
-        with:
-          channel: 'stable' # or: 'beta', 'dev' or 'master'
-      - name: Install dependencies
-        run: flutter pub get
+      <<: *steps-ci # https://stackoverflow.com/questions/41063361/what-is-the-double-left-arrow-syntax-in-yaml-called-and-wheres-it-specifi
