@@ -19,13 +19,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       - name: Install build dependencies
-        run: |
-          apt install ninja-build libgtk-3-dev
-      - name: flutter doctor
-        run: flutter doctor
+        run: sudo apt install ninja-build libgtk-3-dev
+      - run: flutter doctor
       - name: Build release linux
-        run: |
-          flutter build linux --release
+        run: flutter build linux --release
 #      - uses: ncipollo/release-action@v1
 #        with:
 #          artifacts: "release.tar.gz,foo/*.txt"
