@@ -18,6 +18,8 @@ jobs:
           channel: 'stable' # or: 'beta', 'dev' or 'master'
       - name: Install dependencies
         run: flutter pub get
+      - name: flutter doctor
+        run: flutter doctor
       - name: Build release linux
         run: |
           flutter build linux --release
