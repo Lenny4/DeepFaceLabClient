@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
+          fetch-depth: 0 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
 #      - uses: mikefarah/yq@master
       - uses: salsify/action-detect-and-tag-new-version@v2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
         with:
