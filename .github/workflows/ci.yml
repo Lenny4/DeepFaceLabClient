@@ -1,19 +1,25 @@
 name: CI
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
 
 jobs:
   linux-ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
         with:
-          fetch-depth: 2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
-#      - uses: mikefarah/yq@master
-      - uses: salsify/action-detect-and-tag-new-version@v2 # https://github.com/marketplace/actions/detect-and-tag-new-version#usage
+          channel: 'stable' # or: 'beta', 'dev' or 'master'
+      - name: Install dependencies
+        run: flutter pub get
+  windows-ci:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
         with:
-          version-command: |
-            yq '.version' pubspec.yaml
-
+          channel: 'stable' # or: 'beta', 'dev' or 'master'
+      - name: Install dependencies
+        run: flutter pub get
