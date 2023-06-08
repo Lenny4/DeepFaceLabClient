@@ -13,7 +13,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      - name: Build release
+      - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
+        with:
+          channel: 'stable' # or: 'beta', 'dev' or 'master'
+      - name: Build release linux
         run: |
           flutter build linux --release
 #      - uses: ncipollo/release-action@v1
