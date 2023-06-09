@@ -30,10 +30,10 @@ jobs:
         run: flutter build linux --release
       - name: Zip release linux
         run: |
-          mv build/linux/x64/release/bundle linux-${{ steps.previoustag.outputs.tag }} && \
-          zip -r linux-${{ steps.previoustag.outputs.tag }}.zip linux-${{ steps.previoustag.outputs.tag }}
+          mv build/linux/x64/release/bundle linux-${{ steps.currentTag.outputs.tag }} && \
+          zip -r linux-${{ steps.currentTag.outputs.tag }}.zip linux-${{ steps.currentTag.outputs.tag }}
       - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
         with:
-          artifacts: linux-${{ steps.previoustag.outputs.tag }}.zip
-          tag: ${{ steps.previoustag.outputs.tag }}
+          artifacts: linux-${{ steps.currentTag.outputs.tag }}.zip
+          tag: ${{ steps.currentTag.outputs.tag }}
 
