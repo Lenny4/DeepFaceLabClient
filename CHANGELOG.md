@@ -1,4 +1,8 @@
-# 0.0.1
+# Changelog
+
+## [Unreleased]
+
+## [1.1.1] - 2023-06-08
 
 ### Added
 
@@ -11,6 +15,8 @@
 - Can change theme appearance (dark theme, light theme)
 - Launch Deepfacelab scripts
 
+### Fixed
+
 ### Changed
 
-### Fixed
+### Removed
