@@ -1,4 +1,4 @@
-name: Create release
+name: Create releases
 
 on:
   workflow_dispatch:
@@ -63,7 +63,7 @@ jobs:
         run: flutter build windows --release
       - name: Zip release windows
         run: |
-          move build/windows/runner/Release DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }} && ^
+          move build/windows/runner/Release DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
           7z a -r DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
