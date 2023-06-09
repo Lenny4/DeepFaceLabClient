@@ -39,7 +39,7 @@ jobs:
         with:
           artifacts: DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip
           tag: ${{ steps.currentTag.outputs.tag }}
-          name: DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}
+          name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
   release-windows:
@@ -72,6 +72,6 @@ jobs:
         with:
           artifacts: DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip
           tag: ${{ steps.currentTag.outputs.tag }}
-          name: DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
+          name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
