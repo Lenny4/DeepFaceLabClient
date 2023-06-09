@@ -36,4 +36,4 @@ jobs:
         with:
           artifacts: linux-${{ steps.currentTag.outputs.tag }}.zip
           tag: ${{ steps.currentTag.outputs.tag }}
-
+          name: linux-${{ steps.currentTag.outputs.tag }}
