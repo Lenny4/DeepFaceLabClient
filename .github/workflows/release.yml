@@ -2,9 +2,9 @@ name: Create releases
 
 on:
   workflow_dispatch:
-  push:
+  create:
     tags:
-      - '*'
+      - v*
 
 jobs:
   release-linux:

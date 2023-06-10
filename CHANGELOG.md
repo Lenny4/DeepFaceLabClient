@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## [1.1.1] - 2023-06-08
+### Added
+
+### Fixed
+
+### Changed
+
+### Removed
+
+## [0.1.0] - 2023-06-10
 
 ### Added
 
@@ -14,9 +22,3 @@
 - Show GPUs of the host
 - Can change theme appearance (dark theme, light theme)
 - Launch Deepfacelab scripts
-
-### Fixed
-
-### Changed
-
-### Removed
