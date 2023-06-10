@@ -15,12 +15,16 @@ class ReleaseWidget extends HookWidget {
   @override
   Widget build(BuildContext context) {
     var page = useState<int>(1);
-    var perPage = useState<int>(1);
+    var perPage = useState<int>(30);
     var releases = useState<List<Release>?>(null);
+    var canLoadMore = useState<bool>(false);
+    var loading = useState<bool>(true);
     final packageInfo =
         useSelector<AppState, PackageInfo?>((state) => state.packageInfo);
 
     getReleases() async {
+      loading.value = true;
+      // https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
       var url = Uri.https(
           'api.github.com', '/repos/Lenny4/DeepFaceLabClient/releases', {
         'page': page.value.toString(),
@@ -34,9 +38,10 @@ class ReleaseWidget extends HookWidget {
         for (var githubRelease in githubReleases) {
           newReleases.add(Release.fromJson(githubRelease));
         }
+        canLoadMore.value = githubReleases.length == perPage.value;
       }
       releases.value = newReleases;
-      print(packageInfo?.version);
+      loading.value = false;
     }
 
     useEffect(() {
@@ -47,39 +52,61 @@ class ReleaseWidget extends HookWidget {
     return Container(
         child: releases.value == null
             ? const CircularProgressIndicator()
-            : ListView.builder(
-                itemCount: releases.value!.length,
-                itemBuilder: (context, index) {
-                  var isInstalled = packageInfo?.version ==
-                      releases.value![index].tagName.substring(1);
-                  return Card(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        title: Text(releases.value![index].tagName),
-                      ),
-                      Padding(
-                        padding:
-                            const EdgeInsets.only(left: 8, bottom: 8, right: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: releases.value!.length,
+                      itemBuilder: (context, index) {
+                        var isInstalled = packageInfo?.version ==
+                            releases.value![index].tagName.substring(1);
+                        return Card(
+                            child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            MarkdownBody(
-                                selectable: true,
-                                data: releases.value![index].body),
-                            ElevatedButton(
-                              onPressed: isInstalled ? null : () {},
-                              child: isInstalled
-                                  ? const Text("Installed")
-                                  : const Text("Install"),
+                            ListTile(
+                              title: Text(releases.value![index].tagName),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 8, bottom: 8, right: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  MarkdownBody(
+                                      selectable: true,
+                                      data: releases.value![index].body),
+                                  ElevatedButton(
+                                    onPressed: isInstalled ? null : () {},
+                                    child: isInstalled
+                                        ? const Text("Installed")
+                                        : const Text("Install"),
+                                  )
+                                ],
+                              ),
                             )
                           ],
-                        ),
+                        ));
+                      },
+                    ),
+                    if (canLoadMore.value)
+                      ElevatedButton.icon(
+                        onPressed: loading.value
+                            ? null
+                            : () {
+                                page.value += 1;
+                              },
+                        icon: loading.value
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const SizedBox.shrink(),
+                        label: const Text('Load more ...'),
                       )
-                    ],
-                  ));
-                },
+                  ],
+                ),
               ));
   }
 }
