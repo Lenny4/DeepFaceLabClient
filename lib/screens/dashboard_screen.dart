@@ -1,4 +1,4 @@
-import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
+import 'package:deepfacelab_client/widget/common/release_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -11,8 +11,6 @@ class DashboardScreen extends HookWidget {
         appBar: AppBar(
           title: const SelectableText('Dashboard'),
         ),
-        body: const SingleChildScrollView(
-          child: HasRequirementsWidget(),
-        ));
+        body: const ReleaseWidget());
   }
 }

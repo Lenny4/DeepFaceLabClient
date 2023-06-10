@@ -2,6 +2,7 @@ import 'package:deepfacelab_client/class/action/switch_theme_action.dart';
 import 'package:deepfacelab_client/class/device.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redux/redux.dart' as redux;
 
 @immutable
@@ -11,6 +12,7 @@ class AppState {
   final int selectedScreenIndex;
   final List<Device>? devices;
   final Storage? storage;
+  final PackageInfo? packageInfo;
 
   const AppState({
     required this.init,
@@ -18,6 +20,7 @@ class AppState {
     required this.selectedScreenIndex,
     required this.storage,
     required this.devices,
+    required this.packageInfo,
   });
 
   factory AppState.initial() {
@@ -27,6 +30,7 @@ class AppState {
       storage: null,
       devices: null,
       selectedScreenIndex: 0,
+      packageInfo: null,
     );
   }
 
@@ -38,6 +42,7 @@ class AppState {
           newState['selectedScreenIndex'] ?? selectedScreenIndex,
       storage: newState['storage'] ?? storage,
       devices: newState['devices'] ?? devices,
+      packageInfo: newState['packageInfo'] ?? packageInfo,
     );
   }
 }

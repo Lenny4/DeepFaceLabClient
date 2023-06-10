@@ -84,8 +84,9 @@ class Root extends HookWidget {
         useSelector<AppState, bool>((state) => state.hasRequirements);
     final deepFaceLabFolder = useSelector<AppState, String?>(
         (state) => state.storage?.deepFaceLabFolder);
+    final packageInfo =
+        useSelector<AppState, PackageInfo?>((state) => state.packageInfo);
     final dispatch = useDispatch<AppState>();
-    var packageInfo = useState<PackageInfo?>(null);
 
     List<NavigationRailElement> getViews() {
       List<NavigationRailElement> result = [
@@ -144,8 +145,8 @@ class Root extends HookWidget {
       dispatch({
         'init': true,
         'storage': Storage.fromJson(await LocaleStorageService().readStorage()),
+        'packageInfo': await PackageInfo.fromPlatform(),
       });
-      packageInfo.value = await PackageInfo.fromPlatform();
     }
 
     useEffect(() {
@@ -182,8 +183,7 @@ class Root extends HookWidget {
                                       TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: packageInfo.value?.version ??
-                                                "",
+                                            text: packageInfo?.version ?? "",
                                             style: const TextStyle(
                                                 color: Colors.blue),
                                             recognizer: TapGestureRecognizer()
