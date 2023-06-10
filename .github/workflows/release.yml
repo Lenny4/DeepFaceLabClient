@@ -31,13 +31,13 @@ jobs:
       - name: Zip release linux
         run: |
           mv build/linux/x64/release/bundle DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}
-          zip -r DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}
+          zip -r DeepFaceLabClient-linux.zip DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
       - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
         with:
-          artifacts: DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip
+          artifacts: DeepFaceLabClient-linux.zip
           tag: ${{ steps.currentTag.outputs.tag }}
           name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true
@@ -64,13 +64,13 @@ jobs:
       - name: Zip release windows
         run: |
           move build/windows/runner/Release DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
-          7z a -r DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
+          7z a -r DeepFaceLabClient-windows.zip DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
       - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
         with:
-          artifacts: DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip
+          artifacts: DeepFaceLabClient-windows.zip
           tag: ${{ steps.currentTag.outputs.tag }}
           name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true

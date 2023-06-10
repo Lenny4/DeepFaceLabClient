@@ -35,6 +35,7 @@ class RequirementLinuxWidget extends HookWidget {
         'hasBash': (await Process.run('which', ['bash'])).stdout != '',
         'hasGit': (await Process.run('which', ['git'])).stdout != '',
         'hasFfmpeg': (await Process.run('which', ['ffmpeg'])).stdout != '',
+        'hasUnzip': (await Process.run('which', ['unzip'])).stdout != '',
         'hasConda': (await Process.run('which', ['conda'])).stdout != '',
       };
       requirements.value = newRequirements;
@@ -42,7 +43,8 @@ class RequirementLinuxWidget extends HookWidget {
       if (newRequirements['hasWget'] == false ||
           newRequirements['hasBash'] == false ||
           newRequirements['hasGit'] == false ||
-          newRequirements['hasFfmpeg'] == false) {
+          newRequirements['hasFfmpeg'] == false ||
+          newRequirements['hasUnzip'] == false) {
         newStartProcesses.add(StartProcess(executable: 'pkexec', arguments: [
           'bash',
           '-c',
@@ -52,6 +54,7 @@ ${newRequirements['hasBash'] == false ? "bash \\" : ""}
 ${newRequirements['hasWget'] == false ? "wget \\" : ""}
 ${newRequirements['hasGit'] == false ? "git \\" : ""}
 ${newRequirements['hasFfmpeg'] == false ? "ffmpeg \\" : ""}
+${newRequirements['hasUnzip'] == false ? "unzip \\" : ""}
 -y
           """
         ]));
@@ -147,6 +150,8 @@ ${requirements.value!['hasBash'] == true ? "✅ `bash`" : "❌ `bash` was not fo
 ${requirements.value!['hasGit'] == true ? "✅ `git`" : "❌ `git` was not found by running command `which git`, just run `sudo apt install git -y` to install it"}
 
 ${requirements.value!['hasFfmpeg'] == true ? "✅ `ffmpeg`" : "❌ `ffmpeg` was not found by running command `which ffmpeg`, just run `sudo apt install ffmpeg -y` to install it"}
+
+${requirements.value!['hasUnzip'] == true ? "✅ `unzip`" : "❌ `unzip` was not found by running command `which unzip`, just run `sudo apt install unzip -y` to install it"}
                   """,
             ),
             requirements.value!['hasConda'] == true
