@@ -5,9 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/release.dart';
 import 'package:deepfacelab_client/class/release_asset.dart';
-import 'package:deepfacelab_client/service/process_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
@@ -83,29 +81,57 @@ class ReleaseWidget extends HookWidget {
       folderPathArray.removeLast();
       var folderPath = folderPathArray.join(Platform.pathSeparator);
       var response = await http.get(Uri.parse(asset.browserDownloadUrl));
-      var downloadFileName = ProcessService.getRandomString() + ".zip";
-      var file =
-          await File("$folderPath${Platform.pathSeparator}$downloadFileName")
-              .writeAsBytes(response.bodyBytes);
+      var downloadFileName = "newDeepFaceLabRelease.zip";
+      await File("$folderPath${Platform.pathSeparator}$downloadFileName")
+          .writeAsBytes(response.bodyBytes);
+      // if (Platform.isWindows) {
+      //   await Process.run('tar', [
+      //     '-xf',
+      //     file.path,
+      //     '-C',
+      //     folderPath,
+      //   ]);
+      // } else {
+      //   await Process.run('unzip', ['-o', file.path, '-d', folderPath]);
+      // }
+      // await file.delete();
+      // var directoryToDelete =
+      //     (Directory(folderPath + Platform.pathSeparator + folderName));
+      // if (Platform.isWindows) {
+      //   await Process.run('rmdir',
+      //       [folderPath + Platform.pathSeparator + folderName, '/s', '/q']);
+      // } else {
+      //   await directoryToDelete.delete(recursive: true);
+      // }
+      // // if(createdFolder != folderName) {
+      // //
+      // // }
       // region see .github/workflows/release.yml
       var createdFolder = 'DeepFaceLabClient-linux';
       if (Platform.isWindows) {
         createdFolder = 'DeepFaceLabClient-windows';
       }
       // endregion
-      await Process.run('unzip', ['-o', file.path, '-d', folderPath]);
-      await Process.run('rm', [file.path]);
-      await Process.run(
-          'rm', ['-r', folderPath + Platform.pathSeparator + folderName]);
-      // if(createdFolder != folderName) {
-      //
-      // }
-      // to preserve shortcut and symbolic link
-      await Process.run('mv', [
-        folderPath + Platform.pathSeparator + createdFolder,
-        folderPath + Platform.pathSeparator + folderName
-      ]);
-      SystemNavigator.pop().then((value) => Process.run(execPath, []));
+      // await Directory(folderPath + Platform.pathSeparator + createdFolder)
+      //     .rename(folderName);
+      var platform = 'linux';
+      var file = 'install_release.sh';
+      if (Platform.isWindows) {
+        platform = 'windows';
+        file = 'install_release.bat';
+      }
+      Process.run(
+          "${Directory.current.path}${Platform.pathSeparator}lib${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$file",
+          [
+            folderName,
+            folderPath,
+            downloadFileName,
+            execPath,
+            createdFolder,
+          ],
+          runInShell: true);
+      await Future.delayed(const Duration(microseconds: 1));
+      exit(0);
     }
 
     useEffect(() {
