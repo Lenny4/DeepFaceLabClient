@@ -19,34 +19,46 @@ class ReleaseWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    var page = useState<int>(1);
     var perPage = useState<int>(30);
-    var releases = useState<List<Release>?>(null);
-    var canLoadMore = useState<bool>(false);
     var loadingPage = useState<bool>(true);
     var loadingInstall = useState<int?>(null);
     final packageInfo =
         useSelector<AppState, PackageInfo?>((state) => state.packageInfo);
+    final releases =
+        useSelector<AppState, List<Release>?>((state) => state.releases);
+    final canLoadMoreReleases =
+        useSelector<AppState, bool>((state) => state.canLoadMoreReleases);
+    final pageRelease =
+        useSelector<AppState, int>((state) => state.pageRelease);
+    final dispatch = useDispatch<AppState>();
 
     getReleases() async {
+      if (pageRelease == 1 && releases != null) {
+        loadingPage.value = false;
+        return;
+      }
       loadingPage.value = true;
       // https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
       var url = Uri.https(
           'api.github.com', '/repos/Lenny4/DeepFaceLabClient/releases', {
-        'page': page.value.toString(),
+        'page': pageRelease.toString(),
         'per_page': perPage.value.toString(),
       });
       var response = await http
           .get(url, headers: {'Accept': 'application/vnd.github+json'});
-      List<Release> newReleases = [...?releases.value];
+      List<Release> newReleases = [...?releases];
+      bool thisCanLoadMore = false;
       if (response.statusCode == 200) {
         List<dynamic> githubReleases = jsonDecode(response.body);
         for (var githubRelease in githubReleases) {
           newReleases.add(Release.fromJson(githubRelease));
         }
-        canLoadMore.value = githubReleases.length == perPage.value;
+        thisCanLoadMore = githubReleases.length == perPage.value;
       }
-      releases.value = newReleases;
+      dispatch({
+        'releases': newReleases,
+        'canLoadMoreReleases': thisCanLoadMore,
+      });
       loadingPage.value = false;
     }
 
@@ -75,18 +87,20 @@ class ReleaseWidget extends HookWidget {
       var file =
           await File("$folderPath${Platform.pathSeparator}$downloadFileName")
               .writeAsBytes(response.bodyBytes);
-      var createdFolderArray = (await Process.run('unzip', ['-ol', file.path]))
-          .stdout
-          .toString()
-          .split("\n")[3]
-          .split(" ");
-      var createdFolder = createdFolderArray[createdFolderArray.length - 1]
-          .substring(
-              0, createdFolderArray[createdFolderArray.length - 1].length - 1);
+      // region see .github/workflows/release.yml
+      var createdFolder = 'DeepFaceLabClient-linux';
+      if (Platform.isWindows) {
+        createdFolder = 'DeepFaceLabClient-windows';
+      }
+      // endregion
       await Process.run('unzip', ['-o', file.path, '-d', folderPath]);
       await Process.run('rm', [file.path]);
       await Process.run(
           'rm', ['-r', folderPath + Platform.pathSeparator + folderName]);
+      // if(createdFolder != folderName) {
+      //
+      // }
+      // to preserve shortcut and symbolic link
       await Process.run('mv', [
         folderPath + Platform.pathSeparator + createdFolder,
         folderPath + Platform.pathSeparator + folderName
@@ -97,10 +111,10 @@ class ReleaseWidget extends HookWidget {
     useEffect(() {
       getReleases();
       return null;
-    }, [page.value, perPage.value]);
+    }, [pageRelease, perPage.value]);
 
     return Container(
-        child: releases.value == null
+        child: releases == null
             ? const CircularProgressIndicator()
             : SingleChildScrollView(
                 child: Column(
@@ -108,16 +122,16 @@ class ReleaseWidget extends HookWidget {
                     const MarkdownBody(selectable: true, data: "# Releases"),
                     ListView.builder(
                       shrinkWrap: true,
-                      itemCount: releases.value!.length,
+                      itemCount: releases.length,
                       itemBuilder: (context, index) {
                         var isInstalled = packageInfo?.version ==
-                            releases.value![index].tagName.substring(1);
+                            releases[index].tagName.substring(1);
                         return Card(
                             child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ListTile(
-                              title: Text(releases.value![index].tagName),
+                              title: Text(releases[index].tagName),
                             ),
                             Padding(
                               padding: const EdgeInsets.only(
@@ -128,15 +142,16 @@ class ReleaseWidget extends HookWidget {
                                 children: [
                                   MarkdownBody(
                                       selectable: true,
-                                      data: releases.value![index].body),
+                                      data: releases[index].body),
                                   ElevatedButton.icon(
                                     onPressed: isInstalled ||
                                             loadingInstall.value != null
                                         ? null
                                         : () {
-                                            ReleaseAsset? asset = releases
-                                                .value![index].assets
-                                                .firstWhereOrNull((asset) {
+                                            ReleaseAsset? asset =
+                                                releases[index]
+                                                    .assets
+                                                    .firstWhereOrNull((asset) {
                                               if (Platform.isWindows) {
                                                 return asset.browserDownloadUrl
                                                     .contains('windows-v');
@@ -161,12 +176,14 @@ class ReleaseWidget extends HookWidget {
                         ));
                       },
                     ),
-                    if (canLoadMore.value)
+                    if (canLoadMoreReleases == true)
                       ElevatedButton.icon(
                         onPressed: loadingPage.value
                             ? null
                             : () {
-                                page.value += 1;
+                                dispatch({
+                                  'pageRelease': pageRelease! + 1,
+                                });
                               },
                         icon: loadingPage.value
                             ? const CircularProgressIndicator(

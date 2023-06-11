@@ -22,3 +22,4 @@
 - Show GPUs of the host
 - Can change theme appearance (dark theme, light theme)
 - Launch Deepfacelab scripts
+- See and install releases

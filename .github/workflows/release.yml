@@ -30,14 +30,14 @@ jobs:
         run: flutter build linux --release
       - name: Zip release linux
         run: |
-          mv build/linux/x64/release/bundle DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}
-          zip -r DeepFaceLabClient-linux.zip DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}
+          mv build/linux/x64/release/bundle DeepFaceLabClient-linux
+          zip -r DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-linux
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
       - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
         with:
-          artifacts: DeepFaceLabClient-linux.zip
+          artifacts: DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip
           tag: ${{ steps.currentTag.outputs.tag }}
           name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true
@@ -63,14 +63,14 @@ jobs:
         run: flutter build windows --release
       - name: Zip release windows
         run: |
-          move build/windows/runner/Release DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
-          7z a -r DeepFaceLabClient-windows.zip DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}
+          move build/windows/runner/Release DeepFaceLabClient-windows
+          7z a -r DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-windows
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
       - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
         with:
-          artifacts: DeepFaceLabClient-windows.zip
+          artifacts: DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip
           tag: ${{ steps.currentTag.outputs.tag }}
           name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true
