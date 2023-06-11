@@ -1,7 +1,6 @@
 name: Create releases
 
 on:
-  workflow_dispatch:
   create:
     tags:
       - '*'
