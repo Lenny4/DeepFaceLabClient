@@ -1,0 +1,1 @@
+https://docs.flutter.dev/platform-integration/windows/building#building-your-own-zip-file-for-windows
