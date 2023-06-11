@@ -1,9 +1,8 @@
 name: Create releases
 
 on:
-  push:
-    tags:
-      - '*'
+  #  https://github.com/orgs/community/discussions/27028#discussioncomment-3254360
+  workflow_dispatch:
 
 jobs:
   release-linux:
