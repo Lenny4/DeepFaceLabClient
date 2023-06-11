@@ -2,7 +2,7 @@ name: Create releases
 
 on:
   workflow_dispatch:
-  push:
+  create:
     tags:
       - '*'
 
