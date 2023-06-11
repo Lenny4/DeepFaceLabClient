@@ -1,8 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/release.dart';
+import 'package:deepfacelab_client/class/release_asset.dart';
+import 'package:deepfacelab_client/service/process_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
@@ -14,59 +19,119 @@ class ReleaseWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    var page = useState<int>(1);
     var perPage = useState<int>(30);
-    var releases = useState<List<Release>?>(null);
-    var canLoadMore = useState<bool>(false);
-    var loading = useState<bool>(true);
+    var loadingPage = useState<bool>(true);
+    var loadingInstall = useState<int?>(null);
     final packageInfo =
         useSelector<AppState, PackageInfo?>((state) => state.packageInfo);
+    final releases =
+        useSelector<AppState, List<Release>?>((state) => state.releases);
+    final canLoadMoreReleases =
+        useSelector<AppState, bool>((state) => state.canLoadMoreReleases);
+    final pageRelease =
+        useSelector<AppState, int>((state) => state.pageRelease);
+    final dispatch = useDispatch<AppState>();
 
     getReleases() async {
-      loading.value = true;
+      if (pageRelease == 1 && releases != null) {
+        loadingPage.value = false;
+        return;
+      }
+      loadingPage.value = true;
       // https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
       var url = Uri.https(
           'api.github.com', '/repos/Lenny4/DeepFaceLabClient/releases', {
-        'page': page.value.toString(),
+        'page': pageRelease.toString(),
         'per_page': perPage.value.toString(),
       });
       var response = await http
           .get(url, headers: {'Accept': 'application/vnd.github+json'});
-      List<Release> newReleases = [...?releases.value];
+      List<Release> newReleases = [...?releases];
+      bool thisCanLoadMore = false;
       if (response.statusCode == 200) {
         List<dynamic> githubReleases = jsonDecode(response.body);
         for (var githubRelease in githubReleases) {
           newReleases.add(Release.fromJson(githubRelease));
         }
-        canLoadMore.value = githubReleases.length == perPage.value;
+        thisCanLoadMore = githubReleases.length == perPage.value;
       }
-      releases.value = newReleases;
-      loading.value = false;
+      dispatch({
+        'releases': newReleases,
+        'canLoadMoreReleases': thisCanLoadMore,
+      });
+      loadingPage.value = false;
+    }
+
+    installRelease(ReleaseAsset? asset, int index) async {
+      if (asset == null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          showCloseIcon: true,
+          backgroundColor: Theme.of(context).colorScheme.background,
+          content: const SelectableText(
+            'This version is not yet available for your platform. Please restart DeepFaceLabClient and try to install it again in a few minutes',
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: const Duration(days: 1),
+        ));
+        return;
+      }
+      loadingInstall.value = index;
+      var execPath = Platform.resolvedExecutable;
+      var folderPathArray = execPath.split(Platform.pathSeparator);
+      folderPathArray.removeLast();
+      var folderName = folderPathArray[folderPathArray.length - 1];
+      folderPathArray.removeLast();
+      var folderPath = folderPathArray.join(Platform.pathSeparator);
+      var response = await http.get(Uri.parse(asset.browserDownloadUrl));
+      var downloadFileName = ProcessService.getRandomString() + ".zip";
+      var file =
+          await File("$folderPath${Platform.pathSeparator}$downloadFileName")
+              .writeAsBytes(response.bodyBytes);
+      // region see .github/workflows/release.yml
+      var createdFolder = 'DeepFaceLabClient-linux';
+      if (Platform.isWindows) {
+        createdFolder = 'DeepFaceLabClient-windows';
+      }
+      // endregion
+      await Process.run('unzip', ['-o', file.path, '-d', folderPath]);
+      await Process.run('rm', [file.path]);
+      await Process.run(
+          'rm', ['-r', folderPath + Platform.pathSeparator + folderName]);
+      // if(createdFolder != folderName) {
+      //
+      // }
+      // to preserve shortcut and symbolic link
+      await Process.run('mv', [
+        folderPath + Platform.pathSeparator + createdFolder,
+        folderPath + Platform.pathSeparator + folderName
+      ]);
+      SystemNavigator.pop().then((value) => Process.run(execPath, []));
     }
 
     useEffect(() {
       getReleases();
       return null;
-    }, [page.value, perPage.value]);
+    }, [pageRelease, perPage.value]);
 
     return Container(
-        child: releases.value == null
+        child: releases == null
             ? const CircularProgressIndicator()
             : SingleChildScrollView(
                 child: Column(
                   children: [
+                    const MarkdownBody(selectable: true, data: "# Releases"),
                     ListView.builder(
                       shrinkWrap: true,
-                      itemCount: releases.value!.length,
+                      itemCount: releases.length,
                       itemBuilder: (context, index) {
                         var isInstalled = packageInfo?.version ==
-                            releases.value![index].tagName.substring(1);
+                            releases[index].tagName.substring(1);
                         return Card(
                             child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ListTile(
-                              title: Text(releases.value![index].tagName),
+                              title: Text(releases[index].tagName),
                             ),
                             Padding(
                               padding: const EdgeInsets.only(
@@ -77,12 +142,32 @@ class ReleaseWidget extends HookWidget {
                                 children: [
                                   MarkdownBody(
                                       selectable: true,
-                                      data: releases.value![index].body),
-                                  ElevatedButton(
-                                    onPressed: isInstalled ? null : () {},
-                                    child: isInstalled
-                                        ? const Text("Installed")
-                                        : const Text("Install"),
+                                      data: releases[index].body),
+                                  ElevatedButton.icon(
+                                    onPressed: isInstalled ||
+                                            loadingInstall.value != null
+                                        ? null
+                                        : () {
+                                            ReleaseAsset? asset =
+                                                releases[index]
+                                                    .assets
+                                                    .firstWhereOrNull((asset) {
+                                              if (Platform.isWindows) {
+                                                return asset.browserDownloadUrl
+                                                    .contains('windows-v');
+                                              }
+                                              return asset.browserDownloadUrl
+                                                  .contains('linux-v');
+                                            });
+                                            installRelease(asset, index);
+                                          },
+                                    icon: loadingInstall.value == index
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white,
+                                          )
+                                        : const SizedBox.shrink(),
+                                    label: Text(
+                                        isInstalled ? "Installed" : "Install"),
                                   )
                                 ],
                               ),
@@ -91,14 +176,16 @@ class ReleaseWidget extends HookWidget {
                         ));
                       },
                     ),
-                    if (canLoadMore.value)
+                    if (canLoadMoreReleases == true)
                       ElevatedButton.icon(
-                        onPressed: loading.value
+                        onPressed: loadingPage.value
                             ? null
                             : () {
-                                page.value += 1;
+                                dispatch({
+                                  'pageRelease': pageRelease! + 1,
+                                });
                               },
-                        icon: loading.value
+                        icon: loadingPage.value
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )

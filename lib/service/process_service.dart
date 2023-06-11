@@ -17,15 +17,19 @@ class ProcessService {
     return _getCondaPrefixLinux(outputs: outputs, workspace: workspace);
   }
 
+  static getRandomString() {
+    const chars =
+        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+    return List.generate(15, (index) => chars[Random().nextInt(chars.length)])
+        .join();
+  }
+
   Future<Map<String, String>> getCondaEnvironment(Workspace? workspace,
       {ValueNotifier<List<String>>? outputs}) async {
     String condaCommand =
         (await getCondaPrefix(workspace, outputs: outputs)).trim();
-    var r = Random();
-    const chars =
-        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
     var filePath =
-        "${Platform.pathSeparator}ProgramData${Platform.pathSeparator}DeepFaceLabClient${Platform.pathSeparator}${List.generate(15, (index) => chars[r.nextInt(chars.length)]).join()}.bat";
+        "${Platform.pathSeparator}ProgramData${Platform.pathSeparator}DeepFaceLabClient${Platform.pathSeparator}${getRandomString()}.bat";
     File file = await File(filePath).create(recursive: true);
     await file.writeAsString("""@echo off
 $condaCommand""");

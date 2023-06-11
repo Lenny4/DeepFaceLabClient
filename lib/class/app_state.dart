@@ -1,5 +1,6 @@
 import 'package:deepfacelab_client/class/action/switch_theme_action.dart';
 import 'package:deepfacelab_client/class/device.dart';
+import 'package:deepfacelab_client/class/release.dart';
 import 'package:deepfacelab_client/class/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -13,6 +14,9 @@ class AppState {
   final List<Device>? devices;
   final Storage? storage;
   final PackageInfo? packageInfo;
+  final List<Release>? releases;
+  final bool canLoadMoreReleases;
+  final int pageRelease;
 
   const AppState({
     required this.init,
@@ -21,6 +25,9 @@ class AppState {
     required this.storage,
     required this.devices,
     required this.packageInfo,
+    required this.releases,
+    required this.canLoadMoreReleases,
+    required this.pageRelease,
   });
 
   factory AppState.initial() {
@@ -31,6 +38,9 @@ class AppState {
       devices: null,
       selectedScreenIndex: 0,
       packageInfo: null,
+      releases: null,
+      canLoadMoreReleases: false,
+      pageRelease: 1,
     );
   }
 
@@ -43,6 +53,10 @@ class AppState {
       storage: newState['storage'] ?? storage,
       devices: newState['devices'] ?? devices,
       packageInfo: newState['packageInfo'] ?? packageInfo,
+      releases: newState['releases'] ?? releases,
+      canLoadMoreReleases:
+          newState['canLoadMoreReleases'] ?? canLoadMoreReleases,
+      pageRelease: newState['pageRelease'] ?? pageRelease,
     );
   }
 }
