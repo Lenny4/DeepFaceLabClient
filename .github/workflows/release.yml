@@ -61,9 +61,9 @@ jobs:
         run: flutter build windows --release
       - name: Copy dll files
         run: |
-          cp lib/build/windows/msvcp140.dll build/windows/runner/Release
-          cp lib/build/windows/vcruntime140.dll build/windows/runner/Release
-          cp lib/build/windows/vcruntime140_1.dll build/windows/runner/Release
+          copy lib/build/windows/msvcp140.dll build/windows/runner/Release
+          copy lib/build/windows/vcruntime140.dll build/windows/runner/Release
+          copy lib/build/windows/vcruntime140_1.dll build/windows/runner/Release
       - name: Zip release windows
         run: |
           move build/windows/runner/Release DeepFaceLabClient-windows
