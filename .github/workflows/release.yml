@@ -31,10 +31,10 @@ jobs:
           cp -R script build/linux/x64/release/bundle/script
       - name: Copy ldd files
         run: |
-          ldd build/linux/x64/release/bundle/DeepFaceLabClient
+          mv build/linux/x64/release/bundle DeepFaceLabClient-linux
+          bash requirements/linux/import_lib.sh
       - name: Zip release linux
         run: |
-          mv build/linux/x64/release/bundle DeepFaceLabClient-linux
           zip -r DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-linux
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
