@@ -79,7 +79,7 @@ class WorkspaceService {
   deleteWorkspace(
       {required Workspace workspace, required bool deleteFolder}) async {
     if (deleteFolder) {
-      (await Process.run('rm', ['-rf', workspace.path]));
+      await Directory(workspace.path).delete(recursive: true);
     }
     var storage = store.state.storage;
     storage?.workspaces = [
