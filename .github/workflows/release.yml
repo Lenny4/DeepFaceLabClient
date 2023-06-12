@@ -31,6 +31,7 @@ jobs:
           cp -R script build/linux/x64/release/bundle/script
       - name: Copy ldd files
         run: |
+          ldd build/linux/x64/release/bundle/DeepFaceLabClient
           mv build/linux/x64/release/bundle DeepFaceLabClient-linux
           bash requirements/linux/import_lib.sh
       - name: Zip release linux
