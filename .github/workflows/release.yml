@@ -29,6 +29,9 @@ jobs:
       - name: Copy script files
         run: |
           cp -R script build/linux/x64/release/bundle/script
+      - name: Copy ldd files
+        run: |
+          ldd build/linux/x64/release/bundle/DeepFaceLabClient
       - name: Zip release linux
         run: |
           mv build/linux/x64/release/bundle DeepFaceLabClient-linux
