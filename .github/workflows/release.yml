@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  release-linux:
-    runs-on: ubuntu-latest
+  release-ubuntu-20:
+    runs-on: ubuntu-20.04
     permissions:
       contents: write
     steps:
@@ -31,17 +31,60 @@ jobs:
           cp -R script build/linux/x64/release/bundle/script
       - name: Copy ldd files
         run: |
-          mv build/linux/x64/release/bundle DeepFaceLabClient-linux
+          ldd build/linux/x64/release/bundle/DeepFaceLabClient
+          mv build/linux/x64/release/bundle DeepFaceLabClient-ubuntu-20
           bash requirements/linux/import_lib.sh
       - name: Zip release linux
         run: |
-          zip -r DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-linux
+          zip -r DeepFaceLabClient-ubuntu-20-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-ubuntu-20
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
       - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
         with:
-          artifacts: DeepFaceLabClient-linux-${{ steps.currentTag.outputs.tag }}.zip
+          artifacts: DeepFaceLabClient-ubuntu-20-${{ steps.currentTag.outputs.tag }}.zip
+          tag: ${{ steps.currentTag.outputs.tag }}
+          name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
+          allowUpdates: true
+          body: ${{ steps.extract-release-notes.outputs.release_notes }}
+  release-ubuntu-22:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # https://github.com/marketplace/actions/get-latest-tag
+      - uses: subosito/flutter-action@v2 # https://github.com/marketplace/actions/flutter-action
+        with:
+          channel: 'stable' # or: 'beta', 'dev' or 'master'
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Install build dependencies
+        run: sudo apt install -y ninja-build libgtk-3-dev
+      - run: flutter doctor
+      - name: Get tag for release
+        id: currentTag
+        uses: WyriHaximus/github-action-get-previous-tag@v1 # https://github.com/marketplace/actions/get-latest-tag
+      - name: Build release linux
+        run: flutter build linux --release
+      - name: Copy script files
+        run: |
+          cp -R script build/linux/x64/release/bundle/script
+      - name: Copy ldd files
+        run: |
+          ldd build/linux/x64/release/bundle/DeepFaceLabClient
+          mv build/linux/x64/release/bundle DeepFaceLabClient-ubuntu-22
+          bash requirements/linux/import_lib.sh
+      - name: Zip release linux
+        run: |
+          zip -r DeepFaceLabClient-ubuntu-22-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-ubuntu-22
+      - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v1
+      - uses: ncipollo/release-action@v1 # https://github.com/marketplace/actions/create-release
+        with:
+          artifacts: DeepFaceLabClient-ubuntu-22-${{ steps.currentTag.outputs.tag }}.zip
           tag: ${{ steps.currentTag.outputs.tag }}
           name: DeepFaceLabClient-${{ steps.currentTag.outputs.tag }}
           allowUpdates: true

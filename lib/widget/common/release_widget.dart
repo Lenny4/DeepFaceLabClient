@@ -30,6 +30,18 @@ class ReleaseWidget extends HookWidget {
         useSelector<AppState, int>((state) => state.pageRelease);
     final dispatch = useDispatch<AppState>();
 
+    String getAssetName() {
+      if (Platform.isWindows) {
+        return 'windows-';
+      }
+      if (Platform.operatingSystemVersion.contains('20.')) {
+        return "ubuntu-20";
+      }
+      return "ubuntu-22";
+    }
+
+    var assetName = useState<String>(getAssetName());
+
     getReleases() async {
       if (pageRelease == 1 && releases != null) {
         loadingPage.value = false;
@@ -84,36 +96,8 @@ class ReleaseWidget extends HookWidget {
       var downloadFileName = "newDeepFaceLabRelease.zip";
       await File("$folderPath${Platform.pathSeparator}$downloadFileName")
           .writeAsBytes(response.bodyBytes);
-      // if (Platform.isWindows) {
-      //   await Process.run('tar', [
-      //     '-xf',
-      //     file.path,
-      //     '-C',
-      //     folderPath,
-      //   ]);
-      // } else {
-      //   await Process.run('unzip', ['-o', file.path, '-d', folderPath]);
-      // }
-      // await file.delete();
-      // var directoryToDelete =
-      //     (Directory(folderPath + Platform.pathSeparator + folderName));
-      // if (Platform.isWindows) {
-      //   await Process.run('rmdir',
-      //       [folderPath + Platform.pathSeparator + folderName, '/s', '/q']);
-      // } else {
-      //   await directoryToDelete.delete(recursive: true);
-      // }
-      // // if(createdFolder != folderName) {
-      // //
-      // // }
       // region see .github/workflows/release.yml
-      var createdFolder = 'DeepFaceLabClient-linux';
-      if (Platform.isWindows) {
-        createdFolder = 'DeepFaceLabClient-windows';
-      }
-      // endregion
-      // await Directory(folderPath + Platform.pathSeparator + createdFolder)
-      //     .rename(folderName);
+      var createdFolder = 'DeepFaceLabClient-${assetName.value}';
       var platform = 'linux';
       var file = 'install_release.sh';
       if (Platform.isWindows) {
@@ -152,54 +136,51 @@ class ReleaseWidget extends HookWidget {
                       itemBuilder: (context, index) {
                         var isInstalled = packageInfo?.version ==
                             releases[index].tagName.substring(1);
-                        return Card(
-                            child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ListTile(
-                              title: Text(releases[index].tagName),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8, bottom: 8, right: 8),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                        ReleaseAsset? asset =
+                            releases[index].assets.firstWhereOrNull((asset) {
+                          return asset.browserDownloadUrl
+                              .contains(assetName.value);
+                        });
+                        return asset != null
+                            ? Card(
+                                child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  MarkdownBody(
-                                      selectable: true,
-                                      data: releases[index].body),
-                                  ElevatedButton.icon(
-                                    onPressed: isInstalled ||
-                                            loadingInstall.value != null
-                                        ? null
-                                        : () {
-                                            ReleaseAsset? asset =
-                                                releases[index]
-                                                    .assets
-                                                    .firstWhereOrNull((asset) {
-                                              if (Platform.isWindows) {
-                                                return asset.browserDownloadUrl
-                                                    .contains('windows-v');
-                                              }
-                                              return asset.browserDownloadUrl
-                                                  .contains('linux-v');
-                                            });
-                                            installRelease(asset, index);
-                                          },
-                                    icon: loadingInstall.value == index
-                                        ? const CircularProgressIndicator(
-                                            color: Colors.white,
-                                          )
-                                        : const SizedBox.shrink(),
-                                    label: Text(
-                                        isInstalled ? "Installed" : "Install"),
+                                  ListTile(
+                                    title: Text(releases[index].tagName),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 8, bottom: 8, right: 8),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        MarkdownBody(
+                                            selectable: true,
+                                            data: releases[index].body),
+                                        ElevatedButton.icon(
+                                          onPressed: isInstalled ||
+                                                  loadingInstall.value != null
+                                              ? null
+                                              : () {
+                                                  installRelease(asset, index);
+                                                },
+                                          icon: loadingInstall.value == index
+                                              ? const CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                )
+                                              : const SizedBox.shrink(),
+                                          label: Text(isInstalled
+                                              ? "Installed"
+                                              : "Install"),
+                                        )
+                                      ],
+                                    ),
                                   )
                                 ],
-                              ),
-                            )
-                          ],
-                        ));
+                              ))
+                            : const SizedBox.shrink();
                       },
                     ),
                     if (canLoadMoreReleases == true)
