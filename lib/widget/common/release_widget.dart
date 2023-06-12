@@ -121,7 +121,7 @@ class ReleaseWidget extends HookWidget {
         file = 'install_release.bat';
       }
       Process.run(
-          "${Directory.current.path}${Platform.pathSeparator}lib${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$file",
+          "${Directory.current.path}${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$file",
           [
             folderName,
             folderPath,

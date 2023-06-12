@@ -10,7 +10,7 @@ import 'package:deepfacelab_client/service/process_service.dart';
 class PythonService {
   Future<String> _getPythonScript(String filename) async {
     return (await (File(
-            ("${Directory.current.path}${Platform.pathSeparator}lib${Platform.pathSeparator}script${Platform.pathSeparator}python${Platform.pathSeparator}$filename")
+            ("${Directory.current.path}${Platform.pathSeparator}script${Platform.pathSeparator}python${Platform.pathSeparator}$filename")
                 .replaceAll("\n", "")))
         .readAsString());
   }
