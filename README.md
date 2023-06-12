@@ -11,7 +11,7 @@ Linux or Windows 10/11
 ## Install
 
 Go to the [release page](https://github.com/Lenny4/DeepFaceLabClient/releases) and download the
-latest release in the `Asset` section. Once downloaded just start `DeepFaceLabClient.exe` on windows
+latest release in the `Assets` section. Once downloaded just start `DeepFaceLabClient.exe` on windows
 or `DeepFaceLabClient` on linux.
 
 On windows you might have this message when starting DeepFaceLabClient
