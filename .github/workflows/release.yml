@@ -70,7 +70,7 @@ jobs:
       - name: Copy script files
         run: |
           mkdir build/windows/runner/Release/script
-          xcopy script build/windows/runner/Release/script /e
+          xcopy script build/windows/runner/Release/script
       - name: Zip release windows
         run: |
           move build/windows/runner/Release DeepFaceLabClient-windows
