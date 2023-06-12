@@ -26,6 +26,9 @@ jobs:
         uses: WyriHaximus/github-action-get-previous-tag@v1 # https://github.com/marketplace/actions/get-latest-tag
       - name: Build release linux
         run: flutter build linux --release
+      - name: Copy script files
+        run: |
+          cp -R script build/linux/x64/release/bundle/script
       - name: Zip release linux
         run: |
           mv build/linux/x64/release/bundle DeepFaceLabClient-linux
@@ -64,6 +67,10 @@ jobs:
           copy requirements/windows/msvcp140.dll build/windows/runner/Release
           copy requirements/windows/vcruntime140.dll build/windows/runner/Release
           copy requirements/windows/vcruntime140_1.dll build/windows/runner/Release
+      - name: Copy script files
+        run: |
+          mkdir build/windows/runner/Release/script
+          xcopy script build/windows/runner/Release/script /e
       - name: Zip release windows
         run: |
           move build/windows/runner/Release DeepFaceLabClient-windows
