@@ -97,10 +97,11 @@ class ReleaseWidget extends HookWidget {
       await File("$folderPath${Platform.pathSeparator}$downloadFileName")
           .writeAsBytes(response.bodyBytes);
       // region see .github/workflows/release.yml
-      var createdFolder = 'DeepFaceLabClient-${assetName.value}';
+      var createdFolder = 'DeepFaceLabClient-linux';
       var platform = 'linux';
       var file = 'install_release.sh';
       if (Platform.isWindows) {
+        createdFolder = 'DeepFaceLabClient-windows';
         platform = 'windows';
         file = 'install_release.bat';
       }
