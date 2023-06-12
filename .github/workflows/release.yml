@@ -32,11 +32,11 @@ jobs:
       - name: Copy ldd files
         run: |
           ldd build/linux/x64/release/bundle/DeepFaceLabClient
-          mv build/linux/x64/release/bundle DeepFaceLabClient-ubuntu-20
+          mv build/linux/x64/release/bundle DeepFaceLabClient-linux
           bash requirements/linux/import_lib.sh
       - name: Zip release linux
         run: |
-          zip -r DeepFaceLabClient-ubuntu-20-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-ubuntu-20
+          zip -r DeepFaceLabClient-ubuntu-20-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-linux
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
@@ -74,11 +74,11 @@ jobs:
       - name: Copy ldd files
         run: |
           ldd build/linux/x64/release/bundle/DeepFaceLabClient
-          mv build/linux/x64/release/bundle DeepFaceLabClient-ubuntu-22
+          mv build/linux/x64/release/bundle DeepFaceLabClient-linux
           bash requirements/linux/import_lib.sh
       - name: Zip release linux
         run: |
-          zip -r DeepFaceLabClient-ubuntu-22-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-ubuntu-22
+          zip -r DeepFaceLabClient-ubuntu-22-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-linux
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
