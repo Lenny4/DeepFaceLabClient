@@ -66,7 +66,7 @@ ${newRequirements['hasUnzip'] == false ? "unzip \\" : ""}
           """\\
 rm -f $miniCondaFolder.sh && \\
 rm -rf $miniCondaFolder && \\
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $miniCondaFolder.sh && \\
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $miniCondaFolder.sh --no-check-certificate && \\
 bash $miniCondaFolder.sh -b -p $miniCondaFolder && \\
 rm $miniCondaFolder.sh
 """
