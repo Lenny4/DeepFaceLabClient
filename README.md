@@ -20,8 +20,6 @@ Click on "More info" and click on "Run anyway"
 
 ![windows protected your pc](docs/windows-protected-your-pc.png)
 
-Click on "Run anyway"
-
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
