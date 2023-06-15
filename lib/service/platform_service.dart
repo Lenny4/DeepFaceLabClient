@@ -8,4 +8,12 @@ class PlatformService {
     }
     return Platform.environment[path] ?? Platform.pathSeparator;
   }
+
+  static getReleaseFilename() {
+    var fileName = 'install_release.sh';
+    if (Platform.isWindows) {
+      fileName = 'install_release.bat';
+    }
+    return fileName;
+  }
 }

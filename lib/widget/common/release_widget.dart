@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/release.dart';
 import 'package:deepfacelab_client/class/release_asset.dart';
+import 'package:deepfacelab_client/service/platform_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -99,14 +100,16 @@ class ReleaseWidget extends HookWidget {
       // region see .github/workflows/release.yml
       var createdFolder = 'DeepFaceLabClient-linux';
       var platform = 'linux';
-      var file = 'install_release.sh';
       if (Platform.isWindows) {
         createdFolder = 'DeepFaceLabClient-windows';
         platform = 'windows';
-        file = 'install_release.bat';
       }
+      var releaseFilename = PlatformService.getReleaseFilename();
+      var scriptFile = await File(
+          "${Directory.current.path}${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$releaseFilename")
+          .copy(folderPath + Platform.pathSeparator + releaseFilename);
       Process.run(
-          "${Directory.current.path}${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$file",
+          scriptFile.path,
           [
             folderName,
             folderPath,

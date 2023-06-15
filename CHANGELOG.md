@@ -10,7 +10,15 @@
 
 ### Removed
 
+## [0.1.2] - 2023-06-13
+
+### Fixed
+
+- Fix the bug on windows which erased DeepFaceLabClient when trying to install a release (/!\ the bug is still present in earlier versions) 
+
 ## [0.1.1] - 2023-06-13
+
+Note: on this version installing another release doesn't work (on windows), you need to install it manually from the github.
 
 ### Fixed
 
@@ -18,6 +26,8 @@
 
 
 ## [0.1.0] - 2023-06-12
+
+Note: on this version installing another release doesn't work (on windows), you need to install it manually from the github.
 
 ### Added
 
