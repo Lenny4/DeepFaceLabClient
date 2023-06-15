@@ -10,7 +10,9 @@
 
 ### Removed
 
-## [0.1.2] - 2023-06-13
+## [0.1.2] - 2023-06-14
+
+Note: need to install it manually from the github if on windows.
 
 ### Fixed
 
