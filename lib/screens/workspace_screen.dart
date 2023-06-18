@@ -68,7 +68,7 @@ class WorkspaceScreen extends HookWidget {
                     if (initWorkspace != null) ...[
                       const Divider(),
                       FileManagerWidget(
-                        rootPath: initWorkspace!.path,
+                        workspace: initWorkspace,
                         controller: mainController.value,
                         updateFileMissing: updateFileMissingController,
                       ),
