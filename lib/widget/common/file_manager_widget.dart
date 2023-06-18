@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:deepfacelab_client/class/folder_property.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
+import 'package:deepfacelab_client/service/file_manager_service.dart';
 import 'package:deepfacelab_client/service/platform_service.dart';
 import 'package:deepfacelab_client/service/workspace_service.dart';
 import 'package:deepfacelab_client/widget/common/context_menu_region.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_sizes/file_sizes.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +56,7 @@ class _FileManagerHeaderWidget extends HookWidget {
   final bool focusSearchField;
   final ValueNotifier<String> search;
   final ValueNotifier<String> pathNotifier;
-  final void Function() refresh;
+  final void Function({bool force}) refresh;
 
   const _FileManagerHeaderWidget({
     Key? key,
@@ -146,7 +149,7 @@ class _FileManagerHeaderWidget extends HookWidget {
           icon: const Icon(Icons.refresh),
           splashRadius: 20,
           tooltip: 'Refresh (f5)',
-          onPressed: refresh,
+          onPressed: () => refresh(force: true),
         ),
       ],
     );
@@ -281,14 +284,76 @@ ${missingDirectories.value.map((folderPath) => folderPath.replaceFirst(workspace
   }
 }
 
+class _FileManagerCardWidget extends HookWidget {
+  final _FileSystemEntity fileSystemEntity;
+  final String folderPath;
+  final FolderProperty? folderProperty;
+
+  const _FileManagerCardWidget(
+      {Key? key,
+      required this.fileSystemEntity,
+      required this.folderProperty,
+      required this.folderPath})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var size = useState<String>("");
+
+    updateSize() {
+      if (folderProperty == null) {
+        size.value = "";
+        return;
+      }
+      for (var childFolderProperty in folderProperty!.folderProperties) {
+        if (childFolderProperty.path
+            .endsWith(Platform.pathSeparator + fileSystemEntity.filename)) {
+          size.value = FileSize.getSize(childFolderProperty.size);
+          return;
+        }
+      }
+    }
+
+    useEffect(() {
+      updateSize();
+      return null;
+    }, [folderProperty]);
+
+    return Card(
+      color: fileSystemEntity.selected != null
+          ? Theme.of(context).colorScheme.primary
+          : null,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          fileSystemEntity.required
+              ? const Icon(Icons.add, size: 50)
+              : fileSystemEntity.directory
+                  ? const Icon(Icons.folder, size: 50)
+                  : fileSystemEntity.video
+                      ? const Icon(Icons.video_file, size: 50)
+                      : fileSystemEntity.image
+                          ? Image.file(
+                              File(
+                                  "$folderPath${Platform.pathSeparator}${fileSystemEntity.filename}"),
+                              height: 70)
+                          : const Icon(Icons.file_open, size: 50),
+          Text(fileSystemEntity.filename, maxLines: 1),
+          if (size.value != '') Text(size.value, maxLines: 1),
+        ],
+      ),
+    );
+  }
+}
+
 class FileManagerWidget extends HookWidget {
-  final String rootPath;
+  final Workspace? workspace;
   final UpdateChildController controller;
   final Null Function() updateFileMissing;
 
   const FileManagerWidget(
       {Key? key,
-      required this.rootPath,
+      required this.workspace,
       required this.controller,
       required this.updateFileMissing})
       : super(key: key);
@@ -297,7 +362,8 @@ class FileManagerWidget extends HookWidget {
   Widget build(BuildContext context) {
     String homeDirectory = PlatformService.getHomeDirectory();
 
-    var folderPath = useState<String>(rootPath);
+    var folderPath = useState<String>(workspace!.path);
+    var folderProperty = useState<FolderProperty?>(workspace?.folderProperty);
     var fileSystemEntities = useState<List<_FileSystemEntity>?>(null);
     var nbSelectedItems = useState<int>(0);
     var myFocusNode = useState<FocusNode>(FocusNode());
@@ -308,18 +374,27 @@ class FileManagerWidget extends HookWidget {
     var search = useState<String>("");
     final formRenameKey = GlobalKey<FormState>();
 
-    loadFilesFolders() async {
+    loadFilesFolders({bool force = false}) async {
       fileSystemEntities.value = null;
-      var thisFiles = Directory(folderPath.value).list();
-      if (search.value != "") {
-        thisFiles = thisFiles.where(
-            (thisFile) => p.basename(thisFile.path).contains(search.value));
+      List<FileSystemEntity> thisFiles;
+      try {
+        thisFiles = await Directory(folderPath.value).list().toList();
+      } catch (e) {
+        return;
       }
-      List<_FileSystemEntity> newFileSystemEntities =
-          await thisFiles.map((fileSystemEntity) {
-        // https://stackoverflow.com/questions/75915594/pathinfo-method-equivalent-for-dart-language#answer-75915804
+      List<_FileSystemEntity> newFileSystemEntities = [];
+      folderProperty.value = await FileManagerService().updateFolderProperty(
+          workspace: workspace!,
+          path: folderPath.value,
+          fileSystemEntities: thisFiles,
+          force: force);
+      for (var fileSystemEntity in thisFiles) {
+        if (search.value != "" &&
+            !p.basename(fileSystemEntity.path).contains(search.value)) {
+          continue;
+        }
         String filename = p.basename(fileSystemEntity.path);
-        return _FileSystemEntity(
+        newFileSystemEntities.add(_FileSystemEntity(
             filename: filename,
             directory: fileSystemEntity is Directory,
             image: filename.endsWith('.png') ||
@@ -360,8 +435,8 @@ class FileManagerWidget extends HookWidget {
                 filename.endsWith('.vob') ||
                 filename.endsWith('.webm') ||
                 filename.endsWith('.wmv') ||
-                filename.endsWith('.yuv'));
-      }).toList();
+                filename.endsWith('.yuv')));
+      }
       newFileSystemEntities.sort((a, b) {
         if (a.directory == true && b.directory == true) {
           return a.filename.compareTo(b.filename);
@@ -374,7 +449,7 @@ class FileManagerWidget extends HookWidget {
         }
         return a.filename.compareTo(b.filename);
       });
-      if (folderPath.value == rootPath && search.value == "") {
+      if (folderPath.value == workspace!.path && search.value == "") {
         for (var video in ["data_src", "data_dst"]) {
           if (newFileSystemEntities.indexWhere(
                   (element) => element.filename.contains("$video.")) ==
@@ -755,9 +830,9 @@ class FileManagerWidget extends HookWidget {
     controller.updateFromParent = updateFromParent;
 
     useEffect(() {
-      folderPath.value = rootPath;
+      folderPath.value = workspace!.path;
       return null;
-    }, [rootPath]);
+    }, [workspace!.path]);
 
     useEffect(() {
       loadFilesFolders();
@@ -807,7 +882,7 @@ class FileManagerWidget extends HookWidget {
                     pathNotifier: folderPath,
                     folderPath: folderPath.value,
                     focusSearchField: focusSearchField.value,
-                    rootPath: rootPath,
+                    rootPath: workspace!.path,
                     search: search,
                     refresh: loadFilesFolders),
                 Expanded(
@@ -817,8 +892,8 @@ class FileManagerWidget extends HookWidget {
                           control: true): selectAll,
                       const SingleActivator(LogicalKeyboardKey.f2): rename,
                       const SingleActivator(LogicalKeyboardKey.delete): delete,
-                      const SingleActivator(LogicalKeyboardKey.f5):
-                          loadFilesFolders,
+                      const SingleActivator(LogicalKeyboardKey.f5): () =>
+                          loadFilesFolders(force: true),
                       const SingleActivator(LogicalKeyboardKey.keyC,
                           control: true): copyClipboard,
                       const SingleActivator(LogicalKeyboardKey.keyV,
@@ -878,7 +953,8 @@ class FileManagerWidget extends HookWidget {
                                               ),
                                             ],
                                             if (nbSelectedItems.value == 2 &&
-                                                folderPath.value == rootPath &&
+                                                folderPath.value ==
+                                                    workspace!.path &&
                                                 ((fileSystemEntities
                                                             .value![index]
                                                             .filename
@@ -908,50 +984,12 @@ class FileManagerWidget extends HookWidget {
                                         onTap: () => onTapCard(index,
                                             keysPressed: RawKeyboard
                                                 .instance.keysPressed),
-                                        child: Card(
-                                          color: fileSystemEntities
-                                                      .value![index].selected !=
-                                                  null
-                                              ? Theme.of(context)
-                                                  .colorScheme
-                                                  .primary
-                                              : null,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              fileSystemEntities
-                                                      .value![index].required
-                                                  ? const Icon(Icons.add,
-                                                      size: 50)
-                                                  : fileSystemEntities
-                                                          .value![index]
-                                                          .directory
-                                                      ? const Icon(Icons.folder,
-                                                          size: 50)
-                                                      : fileSystemEntities
-                                                              .value![index]
-                                                              .video
-                                                          ? const Icon(
-                                                              Icons.video_file,
-                                                              size: 50)
-                                                          : fileSystemEntities
-                                                                  .value![index]
-                                                                  .image
-                                                              ? Image.file(
-                                                                  File("${folderPath.value}${Platform.pathSeparator}${fileSystemEntities.value![index].filename}"),
-                                                                  height: 70)
-                                                              : const Icon(
-                                                                  Icons
-                                                                      .file_open,
-                                                                  size: 50),
-                                              Text(
-                                                  fileSystemEntities
-                                                      .value![index].filename,
-                                                  maxLines: 1),
-                                            ],
-                                          ),
-                                        ),
+                                        child: _FileManagerCardWidget(
+                                            fileSystemEntity: fileSystemEntities
+                                                .value![index],
+                                            folderProperty:
+                                                folderProperty.value,
+                                            folderPath: folderPath.value),
                                       ),
                                     );
                                     if (fileSystemEntities

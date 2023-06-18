@@ -10,6 +10,12 @@
 
 ### Removed
 
+## [0.2.0] - 2023-06-18
+
+### Added
+
+- Show the size of all folders in workspace
+
 ## [0.1.2] - 2023-06-14
 
 Note: need to install it manually from the github if on windows.

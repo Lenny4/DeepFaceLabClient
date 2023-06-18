@@ -13,6 +13,7 @@ import 'package:deepfacelab_client/screens/window_command_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
+import 'package:file_sizes/file_sizes.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -112,7 +113,8 @@ class Root extends HookWidget {
                 destination: NavigationRailDestination(
                   icon: const Icon(Icons.movie),
                   selectedIcon: const Icon(Icons.movie),
-                  label: Text(workspace.name),
+                  label: Text(
+                      '${workspace.name}\n${FileSize.getSize(workspace.folderProperty?.size ?? 0)}'),
                 ),
                 widget: WorkspaceScreen(initWorkspace: workspace)),
           );
