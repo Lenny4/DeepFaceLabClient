@@ -141,8 +141,8 @@ fi
           ),
           if (requirements.value != null) ...[
             MarkdownBody(
-              selectable: true,
-              data: """
+                selectable: true,
+                data: """
 ${requirements.value!['hasWget'] == true ? "✅ `wget`" : "❌ `wget` was not found by running command `which wget`, just run `sudo apt install wget -y` to install it"}
 
 ${requirements.value!['hasBash'] == true ? "✅ `bash`" : "❌ `bash` was not found by running command `which bash`, just run `sudo apt install bash -y` to install it"}
@@ -152,99 +152,12 @@ ${requirements.value!['hasGit'] == true ? "✅ `git`" : "❌ `git` was not found
 ${requirements.value!['hasFfmpeg'] == true ? "✅ `ffmpeg`" : "❌ `ffmpeg` was not found by running command `which ffmpeg`, just run `sudo apt install ffmpeg -y` to install it"}
 
 ${requirements.value!['hasUnzip'] == true ? "✅ `unzip`" : "❌ `unzip` was not found by running command `which unzip`, just run `sudo apt install unzip -y` to install it"}
+
+${requirements.value!['hasConda'] == true ? "✅ `conda`" : "❌ `conda` was not found by running command which conda, to install conda [follow the tutorial](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)"}
                   """,
-            ),
-            requirements.value!['hasConda'] == true
-                ? Container(
-                    margin: const EdgeInsets.only(top: 10.0),
-                    child: SelectableText.rich(TextSpan(
-                      children: [
-                        TextSpan(
-                          style: TextStyle(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.color),
-                          text: "✅ ",
-                        ),
-                        TextSpan(
-                            text: "conda",
-                            style: TextStyle(
-                              background: Paint()..color = Colors.white10,
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
-                            )),
-                      ],
-                    )),
-                  )
-                : Container(
-                    margin: const EdgeInsets.only(top: 10.0),
-                    child: SelectableText.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "❌ ",
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
-                          ),
-                          TextSpan(
-                              text: "conda",
-                              style: TextStyle(
-                                background: Paint()..color = Colors.white10,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color,
-                              )),
-                          TextSpan(
-                            text: " was not found by running command ",
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
-                          ),
-                          TextSpan(
-                              text: "which conda",
-                              style: TextStyle(
-                                background: Paint()..color = Colors.white10,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color,
-                              )),
-                          TextSpan(
-                            text: ", to install ",
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
-                          ),
-                          TextSpan(
-                              text: "conda",
-                              style: TextStyle(
-                                background: Paint()..color = Colors.white10,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color,
-                              )),
-                          TextSpan(
-                            text: ' follow the tutorial',
-                            style: const TextStyle(color: Colors.blue),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                launchUrl(
-                                    Uri.parse(
-                                        'https://docs.conda.io/projects/conda/en/latest/user-guide/install/'),
-                                    mode: LaunchMode.platformDefault);
-                              },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                onTapLink: (text, url, title) {
+                  if (url != null) launchUrl(Uri.parse(url));
+                }),
             hasRequirements != true
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

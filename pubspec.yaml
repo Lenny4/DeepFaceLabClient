@@ -51,6 +51,7 @@ dependencies:
   desktop_drop: ^0.4.1
   http: ^0.13.6
   file_sizes: ^1.0.6
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:
