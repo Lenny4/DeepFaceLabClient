@@ -6,18 +6,18 @@ import 'package:deepfacelab_client/class/storage.dart';
 import 'package:deepfacelab_client/class/window_command.dart';
 import 'package:deepfacelab_client/class/workspace.dart';
 import 'package:deepfacelab_client/screens/dashboard_screen.dart';
+import 'package:deepfacelab_client/screens/help_screen.dart';
 import 'package:deepfacelab_client/screens/loading_screen.dart';
 import 'package:deepfacelab_client/screens/settings_screen.dart';
-import 'package:deepfacelab_client/screens/tutorial_screen.dart';
 import 'package:deepfacelab_client/screens/window_command_screen.dart';
 import 'package:deepfacelab_client/screens/workspace_screen.dart';
 import 'package:deepfacelab_client/service/locale_storage_service.dart';
 import 'package:deepfacelab_client/widget/installation/has_requirements_widget.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redux/redux.dart' as redux;
@@ -134,9 +134,9 @@ class Root extends HookWidget {
             destination: const NavigationRailDestination(
               icon: Icon(Icons.lightbulb),
               selectedIcon: Icon(Icons.lightbulb),
-              label: Text('Tutorials'),
+              label: Text('Help'),
             ),
-            widget: const TutorialScreen()),
+            widget: const HelpScreen()),
       );
       return result;
     }
@@ -181,25 +181,15 @@ class Root extends HookWidget {
                                   alignment: Alignment.bottomCenter,
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: SelectableText.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: packageInfo?.version ?? "",
-                                            style: const TextStyle(
-                                                color: Colors.blue),
-                                            recognizer: TapGestureRecognizer()
-                                              ..onTap = () {
-                                                launchUrl(
-                                                    Uri.parse(
-                                                        'https://github.com/Lenny4/DeepFaceLabClient/releases'),
-                                                    mode: LaunchMode
-                                                        .platformDefault);
-                                              },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                    child: MarkdownBody(
+                                        selectable: true,
+                                        data:
+                                            "[${packageInfo?.version ?? ''}](https://github.com/Lenny4/DeepFaceLabClient/releases)",
+                                        onTapLink: (text, url, title) {
+                                          if (url != null) {
+                                            launchUrl(Uri.parse(url));
+                                          }
+                                        }),
                                   ),
                                 ),
                               ),

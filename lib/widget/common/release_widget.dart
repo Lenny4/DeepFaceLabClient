@@ -6,11 +6,13 @@ import 'package:deepfacelab_client/class/app_state.dart';
 import 'package:deepfacelab_client/class/release.dart';
 import 'package:deepfacelab_client/class/release_asset.dart';
 import 'package:deepfacelab_client/service/platform_service.dart';
+import 'package:deepfacelab_client/widget/common/self_promotion_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class ReleaseWidget extends HookWidget {
@@ -106,7 +108,7 @@ class ReleaseWidget extends HookWidget {
       }
       var releaseFilename = PlatformService.getReleaseFilename();
       var scriptFile = await File(
-          "${Directory.current.path}${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$releaseFilename")
+              "${Directory.current.path}${Platform.pathSeparator}script${Platform.pathSeparator}$platform${Platform.pathSeparator}$releaseFilename")
           .copy(folderPath + Platform.pathSeparator + releaseFilename);
       Process.run(
           scriptFile.path,
@@ -134,6 +136,7 @@ class ReleaseWidget extends HookWidget {
                 child: Column(
                   children: [
                     const MarkdownBody(selectable: true, data: "# Releases"),
+                    const SelfPromotionWidget(),
                     ListView.builder(
                       shrinkWrap: true,
                       itemCount: releases.length,
@@ -179,6 +182,31 @@ class ReleaseWidget extends HookWidget {
                                               ? "Installed"
                                               : "Install"),
                                         )
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 8, bottom: 8, right: 8),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: releases[index]
+                                                .assets
+                                                .map((asset) => SelectableText(
+                                                    "${asset.name}, downloaded ${asset.downloadCount} times."))
+                                                .toList()),
+                                        SelectableText(DateFormat(
+                                                'yyyy-MM-dd HH:mm:ss')
+                                            .format(
+                                                releases[index].publishedAt))
                                       ],
                                     ),
                                   )

@@ -12,10 +12,12 @@ Release _$ReleaseFromJson(Map<String, dynamic> json) => Release(
           .map((e) => ReleaseAsset.fromJson(e as Map<String, dynamic>))
           .toList(),
       tagName: json['tag_name'] as String,
+      publishedAt: DateTime.parse(json['published_at'] as String),
     );
 
 Map<String, dynamic> _$ReleaseToJson(Release instance) => <String, dynamic>{
       'body': instance.body,
       'tag_name': instance.tagName,
       'assets': instance.assets,
+      'published_at': instance.publishedAt.toIso8601String(),
     };
