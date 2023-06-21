@@ -1,6 +1,6 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OpenIssueWidget extends HookWidget {
@@ -8,35 +8,13 @@ class OpenIssueWidget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SelectableText.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'If you encounter a problem please ',
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
-          TextSpan(
-            text: 'open an issue',
-            style: const TextStyle(color: Colors.blue),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                launchUrl(
-                    Uri.parse(
-                        'https://github.com/Lenny4/DeepFaceLabClient/issues'),
-                    mode: LaunchMode.platformDefault);
-              },
-          ),
-          TextSpan(
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-            text: '.',
-          ),
-        ],
-      ),
-    );
+    return MarkdownBody(
+        selectable: true,
+        data:
+            "If you encounter a problem please [open an issue](https://github.com/Lenny4/DeepFaceLabClient/issues).",
+        onTapLink: (text, url, title) {
+          if (url != null) launchUrl(Uri.parse(url));
+        });
   }
 }
 
@@ -45,28 +23,12 @@ class OpenIssue2Widget extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SelectableText.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'Open an issue',
-            style: const TextStyle(color: Colors.blue),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                launchUrl(
-                    Uri.parse(
-                        'https://github.com/Lenny4/DeepFaceLabClient/issues'),
-                    mode: LaunchMode.platformDefault);
-              },
-          ),
-          TextSpan(
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-            text: '.',
-          ),
-        ],
-      ),
-    );
+    return MarkdownBody(
+        selectable: true,
+        data:
+            "[Open an issue](https://github.com/Lenny4/DeepFaceLabClient/issues).",
+        onTapLink: (text, url, title) {
+          if (url != null) launchUrl(Uri.parse(url));
+        });
   }
 }
