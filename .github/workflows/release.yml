@@ -110,9 +110,9 @@ jobs:
         run: flutter build windows --release
       - name: Copy dll files
         run: |
-          copy C:\Windows\System32\msvcp140.dll build\windows\runner\Release
-          copy C:\Windows\System32\vcruntime140.dll build\windows\runner\Release
-          copy C:\Windows\System32\vcruntime140_1.dll build\windows\runner\Release
+          copy .\requirements\windows\msvcp140.dll build\windows\runner\Release
+          copy .\requirements\windows\vcruntime140.dll build\windows\runner\Release
+          copy .\requirements\windows\vcruntime140_1.dll build\windows\runner\Release
       - name: Copy script files
         run: |
           mkdir .\build\windows\runner\Release\script\
