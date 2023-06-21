@@ -20,7 +20,9 @@
 ### Changed
 
 - Copy `msvcp140.dll` `vcruntime140.dll` and `vcruntime140_1.dll` directly from the github host (
-  windows), see `Copy dll files` in `.github/workflows/release.yml`
+  windows)
+
+see `Copy dll files` in `.github/workflows/release.yml`
 - Change screen `Tutorials` to `Help` and add more useful links
 
 ## [0.2.0] - 2023-06-18
