@@ -32,7 +32,7 @@ class HelpScreen extends HookWidget {
 
 Watching all videos takes time (about 7h20) but worth it.
 
-Please not that none of these tutorials have been made with DeepFaceLabClient but only with DeepFaceLab.
+Please note that none of these tutorials have been made with DeepFaceLabClient but only with DeepFaceLab.
 
 1. [DeepFace Lab Tutorial: How to make a DeepFake](https://www.youtube.com/watch?v=QSmHho1uHFM) by Druuzil [Dec 17, 2021]
 2. [Deepface Live Tutorial - How to make your own Live Model!](https://www.youtube.com/watch?v=_bc3SPbCdW8) by Druuzil [Apr 14, 2022]
