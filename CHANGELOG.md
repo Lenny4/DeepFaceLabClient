@@ -10,6 +10,12 @@
 
 ### Removed
 
+## [0.4.0] - 2023-09-16
+
+### Changed
+
+- On Linux source files are no longer downloaded from https://github.com/iperov/DeepFaceLab as project as been shutdown by github.
+
 ## [0.3.0] - 2023-06-20
 
 ### Added
