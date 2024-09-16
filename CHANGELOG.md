@@ -10,6 +10,13 @@
 
 ### Removed
 
+## [0.4.1] - 2023-09-16
+
+### Added
+
+- Add release for ubuntu 24.
+
+
 ## [0.4.0] - 2023-09-16
 
 ### Changed
