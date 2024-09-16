@@ -14,7 +14,7 @@
 
 ### Changed
 
-- On Linux source files are no longer downloaded from https://github.com/iperov/DeepFaceLab as project as been shutdown by github.
+- On Linux source files are no longer downloaded from [DeepFaceLab](https://github.com/iperov/DeepFaceLab) as project as been shutdown by github.
 
 ## [0.3.0] - 2023-06-20
 
