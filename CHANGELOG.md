@@ -10,6 +10,25 @@
 
 ### Removed
 
+## [0.4.2] - 2023-09-16
+
+### Fixed
+
+- Fix release windows.
+
+## [0.4.1] - 2023-09-16
+
+### Added
+
+- Add release for ubuntu 24.
+
+
+## [0.4.0] - 2023-09-16
+
+### Changed
+
+- On Linux source files are no longer downloaded from [DeepFaceLab](https://github.com/iperov/DeepFaceLab) as project as been shutdown by github.
+
 ## [0.3.0] - 2023-06-20
 
 ### Added

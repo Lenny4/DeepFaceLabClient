@@ -45,8 +45,8 @@ class InstallationWidget extends HookWidget {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           showCloseIcon: true,
           backgroundColor: Theme.of(context).colorScheme.background,
-          content: Row(
-            children: const [
+          content: const Row(
+            children: [
               SelectableText(
                 'An error occurred while installing DeepFaceLab.',
                 style: TextStyle(color: Colors.white),
@@ -103,13 +103,20 @@ pip install -r $path/requirements-cuda.txt
           if (Platform.isLinux) {
             String thisInstallationPath =
                 "$value${Platform.pathSeparator}DeepFaceLab";
+            String installationFilePath =
+                "$thisInstallationPath${Platform.pathSeparator}DeepFaceLabIperov-master.zip";
             installationPath.value = thisInstallationPath;
             startProcesses.value = [
               StartProcess(executable: 'bash', arguments: [
                 '-c',
                 """
-rm -rf $thisInstallationPath &&
-git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationPath
+rm -rf $thisInstallationPath && \
+mkdir $thisInstallationPath && \
+curl https://deepfacelab-internal.s3.amazonaws.com/DeepFaceLabIperov-master.zip --output $installationFilePath  && \
+unzip -o $installationFilePath -d $thisInstallationPath && \
+mv $thisInstallationPath/DeepFaceLabIperov-master/* $thisInstallationPath && \
+rm -r $thisInstallationPath/DeepFaceLabIperov-master && \
+rm $installationFilePath
             """
               ])
             ];
@@ -201,6 +208,8 @@ git clone --depth 1 https://github.com/iperov/DeepFaceLab.git $thisInstallationP
           if (fileZip.existsSync()) {
             fileZip.deleteSync();
           }
+        } else if (Platform.isLinux) {
+          startProcesses.value = [];
         }
         afterFolderSelected(installationPath.value ?? Platform.pathSeparator);
       }
