@@ -2,9 +2,8 @@ import json
 import sys
 import os
 
-# Set up the path to include the directory of your modules
-deepFaceLabFolder = os.getenv('DEEPLFACELAB_FOLDER', '/path/to/deepFaceLabFolder')
-sys.path.insert(1, deepFaceLabFolder)
+# caution: path[0] is reserved for script path (or '' in REPL)
+sys.path.insert(1, '%deepFaceLabFolder%')
 
 from core.leras.device import Devices
 
