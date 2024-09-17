@@ -161,7 +161,7 @@ jobs:
           xcopy .\script\ .\build\windows\x64\runner\Release\script\ /e
       - name: Zip release windows
         run: |
-          move build/windows/runner/Release DeepFaceLabClient-windows
+          move build/windows/x64/runner/Release DeepFaceLabClient-windows
           7z a -r DeepFaceLabClient-windows-${{ steps.currentTag.outputs.tag }}.zip DeepFaceLabClient-windows
       - name: Extract release notes # https://github.com/marketplace/actions/extract-release-notes
         id: extract-release-notes

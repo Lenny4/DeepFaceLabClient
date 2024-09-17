@@ -10,6 +10,12 @@
 
 ### Removed
 
+## [0.4.2] - 2023-09-16
+
+### Fixed
+
+- Fix release windows.
+
 ## [0.4.1] - 2023-09-16
 
 ### Added
