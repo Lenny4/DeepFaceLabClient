@@ -18,4 +18,4 @@ except Exception as e:
     print(f"An error occurred: {e}", file=sys.stderr)
 
 # Convert device data to JSON format and print it
-print(json.dumps(all_devices, indent=2), end='')
+print(json.dumps(all_devices), end='')
