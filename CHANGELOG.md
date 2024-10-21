@@ -10,6 +10,12 @@
 
 ### Removed
 
+## [0.4.4] - 2024-10-21
+
+### Fixed
+
+- Can click the links on the releases.
+
 ## [0.4.3] - 2024-10-21
 
 ### Fixed
