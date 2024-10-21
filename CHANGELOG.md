@@ -10,6 +10,12 @@
 
 ### Removed
 
+## [0.4.3] - 2024-10-21
+
+### Fixed
+
+- Fix GPU not showing up on Windows, thanks to [Lumerica](https://github.com/Lenny4/DeepFaceLabClient/issues/73#issuecomment-2424318499).
+
 ## [0.4.2] - 2023-09-16
 
 ### Fixed
