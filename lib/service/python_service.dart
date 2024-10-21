@@ -47,7 +47,8 @@ class PythonService {
     if (Platform.isWindows) {
       // https://stackoverflow.com/a/35651859/6824121
       result =
-          await Process.run(pythonExec, ['-c', 'exec(r"""$pythonScript""")']);
+          await Process.run(pythonExec, ['-c', 'exec(r"""$pythonScript""")'],
+              environment: await ProcessService().getCondaEnvironment(workspace));
     } else {
       // https://stackoverflow.com/a/2043499/6824121
       result = await Process.run("bash", [
