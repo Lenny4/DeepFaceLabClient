@@ -14,6 +14,7 @@ import 'package:flutter_redux_hooks/flutter_redux_hooks.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ReleaseWidget extends HookWidget {
   const ReleaseWidget({Key? key}) : super(key: key);
@@ -165,7 +166,12 @@ class ReleaseWidget extends HookWidget {
                                       children: [
                                         MarkdownBody(
                                             selectable: true,
-                                            data: releases[index].body),
+                                            data: releases[index].body,
+                                            onTapLink: (text, url, title) {
+                                              if (url != null) {
+                                                launchUrl(Uri.parse(url));
+                                              }
+                                            }),
                                         ElevatedButton.icon(
                                           onPressed: isInstalled ||
                                                   loadingInstall.value != null
